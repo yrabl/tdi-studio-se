@@ -30,6 +30,7 @@ import org.talend.designer.codegen.additionaljet.AbstractJetFileProvider;
 import org.talend.designer.codegen.additionaljet.CustomizeJetFilesProviderManager;
 import org.talend.designer.codegen.config.EInternalTemplate;
 import org.talend.designer.codegen.config.TemplateUtil;
+import org.talend.designer.codegen.model.template.BundleJetTemplate;
 
 /**
  * Create a list of Available templates in the application.
@@ -41,7 +42,7 @@ public class CodeGeneratorInternalTemplatesFactory {
 
     private List<TemplateUtil> templates;
 
-    private ECodeLanguage language;
+    private List<BundleJetTemplate> bundleJetTemplates;
 
     /**
      * Constructor.
@@ -54,15 +55,18 @@ public class CodeGeneratorInternalTemplatesFactory {
      */
     public void init() {
         templates = new ArrayList<TemplateUtil>();
+        bundleJetTemplates = new ArrayList<BundleJetTemplate>();
 
         // 0. clear the content of the "header_additional.javajet"
-        copyStubAdditionalJetFile();
+        copyStubAdditionalJetFile(); // TODO will remvoe it later.
 
         // 1. copy additional jet file from extension point: additional_jetfile
-        copyAdditionalJetFileFromProviderExtension();
+        // copyAdditionalJetFileFromProviderExtension();
+
+        retrieveBundleTemplatesFromExtension();
 
         // 2. Load system frame:
-        loadSystemFrame();
+        // loadSystemFrame();
 
     }
 
@@ -78,6 +82,8 @@ public class CodeGeneratorInternalTemplatesFactory {
             installationFolder = new File(FileLocator.toFileURL(url).getPath());
 
             final FileFilter sourceFolderFilter = new FileFilter() {
+
+                @Override
                 public boolean accept(File pathname) {
                     return false;
                 }
@@ -98,7 +104,7 @@ public class CodeGeneratorInternalTemplatesFactory {
         try {
             for (EInternalTemplate utilTemplate : EInternalTemplate.values()) {
                 file = new File(FileLocator.toFileURL(url).getPath() + utilTemplate.getTemplateName() + TemplateUtil.EXT_SEP
-                        + language.getExtension() + TemplateUtil.TEMPLATE_EXT);
+                        + ECodeLanguage.JAVA.getExtension() + TemplateUtil.TEMPLATE_EXT);
                 if (file.exists()) {
                     TemplateUtil template = new TemplateUtil(utilTemplate);
                     templates.add(template);
@@ -107,16 +113,22 @@ public class CodeGeneratorInternalTemplatesFactory {
             // Add all additional headers
             file = new File(FileLocator.toFileURL(url).getPath());
             for (File f : file.listFiles(new FileFilter() {
+
+                @Override
                 public boolean accept(File pathname) {
-                    if (pathname.getName().contains(EInternalTemplate.HEADER_ADDITIONAL.toString()))
-                        if (pathname.getName().contains(language.getExtension() + TemplateUtil.TEMPLATE_EXT))
+                    if (pathname.getName().contains(EInternalTemplate.HEADER_ADDITIONAL.toString())) {
+                        if (pathname.getName().contains(ECodeLanguage.JAVA.getExtension() + TemplateUtil.TEMPLATE_EXT)) {
                             return true;
+                        }
+                    }
                     return false;
                 }
             })) {
                 if (f.exists()) {
-                    TemplateUtil template = new TemplateUtil(f.getName().substring(0,f.getName().lastIndexOf(".")),"0.0.1");
-                    if (!templates.contains(template)) templates.add(template);
+                    TemplateUtil template = new TemplateUtil(f.getName().substring(0, f.getName().lastIndexOf(".")), "0.0.1");
+                    if (!templates.contains(template)) {
+                        templates.add(template);
+                    }
                 }
             }
         } catch (IOException e) {
@@ -136,6 +148,16 @@ public class CodeGeneratorInternalTemplatesFactory {
         }
     }
 
+    private void retrieveBundleTemplatesFromExtension() {
+        CustomizeJetFilesProviderManager componentsProviderManager = CustomizeJetFilesProviderManager.getInstance();
+        for (AbstractJetFileProvider componentsProvider : componentsProviderManager.getProviders()) {
+            List<BundleJetTemplate> retrievedTempaltes = componentsProvider.retrieveTempaltes();
+            if (retrievedTempaltes != null) {
+                this.bundleJetTemplates.addAll(retrievedTempaltes);
+            }
+        }
+    }
+
     /**
      * Return list of available templates.
      * 
@@ -145,7 +167,8 @@ public class CodeGeneratorInternalTemplatesFactory {
         return templates;
     }
 
-    public void setCurrentLanguage(ECodeLanguage language) {
-        this.language = language;
+    public List<BundleJetTemplate> getBundleJetTemplates() {
+        return this.bundleJetTemplates;
     }
+
 }

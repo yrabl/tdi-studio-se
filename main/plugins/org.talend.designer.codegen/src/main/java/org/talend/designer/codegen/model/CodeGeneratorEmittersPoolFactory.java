@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -75,6 +76,7 @@ import org.talend.designer.codegen.config.LightJetBean;
 import org.talend.designer.codegen.config.TalendJetEmitter;
 import org.talend.designer.codegen.config.TemplateUtil;
 import org.talend.designer.codegen.i18n.Messages;
+import org.talend.designer.codegen.model.template.BundleJetTemplate;
 import org.talend.designer.core.model.components.EmfComponent;
 
 /**
@@ -146,7 +148,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                 TimeMeasure.step("initialize Jet Emitters", "initialize JET Project"); //$NON-NLS-1$ //$NON-NLS-2$
                 CodeGeneratorInternalTemplatesFactory templatesFactory = CodeGeneratorInternalTemplatesFactoryProvider
                         .getInstance();
-                templatesFactory.setCurrentLanguage(codeLanguage);
+                // templatesFactory.setCurrentLanguage(codeLanguage);
                 templatesFactory.init();
 
                 IComponentsFactory componentsFactory = ComponentsFactoryProvider.getInstance();
@@ -159,11 +161,12 @@ public final class CodeGeneratorEmittersPoolFactory {
                 List<JetBean> jetBeans = new ArrayList<JetBean>();
 
                 List<TemplateUtil> templates = templatesFactory.getTemplates();
+                List<BundleJetTemplate> bundleJetTemplates = templatesFactory.getBundleJetTemplates();
                 Set<IComponent> components = componentsFactory.getComponents();
                 TimeMeasure.step("initialize Jet Emitters", "getComponents"); //$NON-NLS-1$ //$NON-NLS-2$
 
                 monitorWrap.beginTask(Messages.getString("CodeGeneratorEmittersPoolFactory.initMessage"), //$NON-NLS-1$
-                        (2 * templates.size() + 5 * components.size()));
+                        (2 * templates.size() + 2 * bundleJetTemplates.size() + 5 * components.size()));
 
                 int monitorBuffer = 0;
                 for (TemplateUtil template : templates) {
@@ -175,6 +178,13 @@ public final class CodeGeneratorEmittersPoolFactory {
                         monitorBuffer = 0;
                     }
                 }
+                //
+                for (BundleJetTemplate template : bundleJetTemplates) {
+                    JetBean jetBean = initializeBundleJetTemplate(template);
+                    jetBeans.add(jetBean);
+                    monitorWrap.worked(1);
+                }
+
                 TimeMeasure.step("initialize Jet Emitters", "initialize jet beans from templates"); //$NON-NLS-1$ //$NON-NLS-2$
 
                 if (components != null) {
@@ -359,6 +369,27 @@ public final class CodeGeneratorEmittersPoolFactory {
         jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
         jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
         jetBean.setClassLoader(new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader());
+        return jetBean;
+    }
+
+    private static JetBean initializeBundleJetTemplate(BundleJetTemplate template) {
+
+        JetBean jetBean = new JetBean(template.getBundleId(), template.getRelativePath(), template.getName(),
+                template.getVersion(), ECodeLanguage.JAVA.getName(), ""); //$NON-NLS-1$
+
+        Map<String, String> jetTempalteDependences = template.getJetTempalteDependences();
+        for (String key : jetTempalteDependences.keySet()) {
+            String bundleId = jetTempalteDependences.get(key);
+            if (bundleId != null && bundleId.length() > 0) {
+                jetBean.addClassPath(key, bundleId);
+            }
+        }
+        ClassLoader jetTempalteClassLoader = template.getJetTempalteClassLoader();
+        if (jetTempalteClassLoader != null) {
+            jetBean.setClassLoader(jetTempalteClassLoader);
+        } else {
+            jetBean.setClassLoader(new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader());
+        }
         return jetBean;
     }
 

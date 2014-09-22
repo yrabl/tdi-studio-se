@@ -5,17 +5,18 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.talend.designer.codegen.additionaljet.AbstractJetFileProvider;
 import org.talend.designer.components.ComponentsLocalProviderPlugin;
 
 public class BoxJetFileProvider extends AbstractJetFileProvider {
-	
-	private static Logger logger = Logger.getLogger(MDMTriggerJetFileProvider.class);
 
-	@Override
-	protected File getExternalFrameLocation() {
-		try {
+    private static Logger logger = Logger.getLogger(MDMTriggerJetFileProvider.class);
+
+    @Override
+    protected File getExternalFrameLocation() {
+        try {
             URL url = FileLocator.find(ComponentsLocalProviderPlugin.getDefault().getBundle(), new Path("resources/box"), null);
 
             URL fileUrl = FileLocator.toFileURL(url);
@@ -25,7 +26,16 @@ public class BoxJetFileProvider extends AbstractJetFileProvider {
             logger.error(e);
         }
         return null;
-	}
+    }
 
-	
+    @Override
+    protected String getBundleId() {
+        return ComponentsLocalProviderPlugin.PLUGIN_ID;
+    }
+
+    @Override
+    protected IPath getBasePath() {
+        return new Path("resources/box"); //$NON-NLS-1$
+    }
+
 }
