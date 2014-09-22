@@ -83,5 +83,12 @@
             name="UserComponents">
       </provider>
    </extension>
+   <extension
+         point="org.talend.designer.codegen.additional_jetfile">
+      <jetProvider
+            class="org.talend.designer.codegen.additionaljet.JetStubFileProvider"
+            id="org.talend.designer.codegen.jetStubProvider">
+      </jetProvider>
+   </extension>
    
 </plugin>

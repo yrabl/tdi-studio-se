@@ -58,7 +58,8 @@ public class CodeGeneratorInternalTemplatesFactory {
         bundleJetTemplates = new ArrayList<BundleJetTemplate>();
 
         // 0. clear the content of the "header_additional.javajet"
-        copyStubAdditionalJetFile(); // TODO will remvoe it later.
+        // have impl and move to the extension point.
+        // copyStubAdditionalJetFile();
 
         // 1. copy additional jet file from extension point: additional_jetfile
         // copyAdditionalJetFileFromProviderExtension();

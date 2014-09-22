@@ -74,7 +74,9 @@ public abstract class AbstractJetFileProvider {
         }
     }
 
-    protected abstract File getExternalFrameLocation();
+    protected File getExternalFrameLocation() {
+        return null;
+    }
 
     public File getInstallationFolder() throws IOException {
 
@@ -87,10 +89,18 @@ public abstract class AbstractJetFileProvider {
     }
 
     // --------------------------------------------------------------------------------------//
+    /**
+     * 
+     * Need override it.
+     */
     protected String getBundleId() {
         return null; // by default no bundle, need override
     }
 
+    /**
+     * 
+     * if need, override it.
+     */
     protected IPath getBasePath() {
         // by default
         return new Path("resources"); //$NON-NLS-1$
@@ -122,9 +132,11 @@ public abstract class AbstractJetFileProvider {
     public List<BundleJetTemplate> retrieveTempaltes() {
         try {
             List<BundleJetTemplate> tempaltes = new ArrayList<BundleJetTemplate>();
-            File resRootFolder = getResourcesRootFolder();
 
-            retrieveTemplatesFromFolder(resRootFolder, tempaltes);
+            File resRootFolder = getResourcesRootFolder();
+            if (resRootFolder != null && resRootFolder.exists()) {
+                retrieveTemplatesFromFolder(resRootFolder, tempaltes);
+            }
 
             return tempaltes;
         } catch (Exception e) {
@@ -205,6 +217,7 @@ public abstract class AbstractJetFileProvider {
     }
 
     protected ClassLoader getJetTempalteClassLoader() {
+        // return this.getClass().getClassLoader(); // ???
         return null;
     }
 
