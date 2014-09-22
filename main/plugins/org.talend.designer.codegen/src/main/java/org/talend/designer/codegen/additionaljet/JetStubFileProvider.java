@@ -34,7 +34,8 @@ public class JetStubFileProvider extends AbstractJetFileProvider {
 
     @Override
     protected ClassLoader getJetTempalteClassLoader() {
-        return this.getClass().getClassLoader(); // ???
+        // same as ComponentsFactoryProviderManager.getInstance().getClass().getClassLoader();
+        return this.getClass().getClassLoader();
     }
 
 }

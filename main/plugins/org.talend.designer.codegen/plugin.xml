@@ -89,6 +89,10 @@
             class="org.talend.designer.codegen.additionaljet.JetStubFileProvider"
             id="org.talend.designer.codegen.jetStubProvider">
       </jetProvider>
+      <jetProvider
+            class="org.talend.designer.codegen.additionaljet.SystemJetFilesProvider"
+            id="org.talend.designer.codegen.SystemJetFilesProvider">
+      </jetProvider>
    </extension>
    
 </plugin>
