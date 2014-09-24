@@ -59,7 +59,6 @@ import org.talend.core.GlobalServiceRegister;
 import org.talend.core.IService;
 import org.talend.core.PluginChecker;
 import org.talend.core.language.ECodeLanguage;
-import org.talend.core.language.LanguageManager;
 import org.talend.core.model.components.ComponentCompilations;
 import org.talend.core.model.components.IComponent;
 import org.talend.core.model.components.IComponentFileNaming;
@@ -141,7 +140,6 @@ public final class CodeGeneratorEmittersPoolFactory {
 
                 IProgressMonitor monitorWrap = null;
                 monitorWrap = new NullProgressMonitor();
-                ECodeLanguage codeLanguage = LanguageManager.getCurrentLanguage();
 
                 initializeJetEmittersProject(monitorWrap);
 
@@ -156,7 +154,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                 long startTime = System.currentTimeMillis();
 
                 defaultTemplate = TemplateUtil.RESOURCES_DIRECTORY + TemplateUtil.DIR_SEP + EInternalTemplate.DEFAULT_TEMPLATE
-                        + TemplateUtil.EXT_SEP + codeLanguage.getExtension() + TemplateUtil.TEMPLATE_EXT;
+                        + TemplateUtil.EXT_SEP + ECodeLanguage.JAVA.getExtension() + TemplateUtil.TEMPLATE_EXT;
 
                 List<JetBean> jetBeans = new ArrayList<JetBean>();
 
@@ -170,7 +168,7 @@ public final class CodeGeneratorEmittersPoolFactory {
 
                 int monitorBuffer = 0;
                 for (TemplateUtil template : templates) {
-                    JetBean jetBean = initializeUtilTemplate(template, codeLanguage);
+                    JetBean jetBean = initializeUtilTemplate(template);
                     jetBeans.add(jetBean);
                     monitorBuffer++;
                     if (monitorBuffer % 100 == 0) {
@@ -191,7 +189,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                     ECodePart codePart = ECodePart.MAIN;
                     for (IComponent component : new ArrayList<IComponent>(components)) {
                         if (component.getAvailableCodeParts().size() > 0) {
-                            initComponent(codeLanguage, jetBeans, codePart, component);
+                            initComponent(ECodeLanguage.JAVA, jetBeans, codePart, component);
                         }
                         monitorBuffer++;
                         if (monitorBuffer % 100 == 0) {
@@ -203,7 +201,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                 TimeMeasure.step("initialize Jet Emitters", "initialize jet beans from components"); //$NON-NLS-1$ //$NON-NLS-2$
                 monitorWrap.worked(monitorBuffer);
 
-                initializeEmittersPool(jetBeans, codeLanguage, monitorWrap);
+                initializeEmittersPool(jetBeans, ECodeLanguage.JAVA, monitorWrap);
                 monitorWrap.done();
                 TimeMeasure.step("initialize Jet Emitters", "initialize and generate each jet emitters"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -359,10 +357,10 @@ public final class CodeGeneratorEmittersPoolFactory {
      * @param codeLanguage
      * @return
      */
-    private static JetBean initializeUtilTemplate(TemplateUtil template, ECodeLanguage codeLanguage) {
+    private static JetBean initializeUtilTemplate(TemplateUtil template) {
         JetBean jetBean = new JetBean(CodeGeneratorActivator.PLUGIN_ID, TemplateUtil.RESOURCES_DIRECTORY + TemplateUtil.DIR_SEP
-                + template.getResourceName() + TemplateUtil.EXT_SEP + codeLanguage.getExtension() + TemplateUtil.TEMPLATE_EXT,
-                template.getResourceName(), template.getVersion(), codeLanguage.getName(), ""); //$NON-NLS-1$
+                + template.getResourceName() + TemplateUtil.EXT_SEP + ECodeLanguage.JAVA.getExtension()
+                + TemplateUtil.TEMPLATE_EXT, template.getResourceName(), template.getVersion(), ECodeLanguage.JAVA.getName(), ""); //$NON-NLS-1$
         jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
         jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
         jetBean.addClassPath("CORE_LIBRARIES", CorePlugin.PLUGIN_ID); //$NON-NLS-1$
@@ -496,13 +494,13 @@ public final class CodeGeneratorEmittersPoolFactory {
      * @return
      * @throws JETException
      */
-    private static void initializeEmittersPool(List<JetBean> components, ECodeLanguage codeLanguage, IProgressMonitor monitorWrap) {
+    private static void initializeEmittersPool(List<JetBean> jetBeans, ECodeLanguage codeLanguage, IProgressMonitor monitorWrap) {
         IProgressMonitor monitor = new NullProgressMonitor();
         IProgressMonitor sub = new SubProgressMonitor(monitor, 1);
         int monitorBuffer = 0;
 
         HashMap<String, String> globalClasspath = new HashMap<String, String>();
-        for (JetBean jetBean : components) {
+        for (JetBean jetBean : jetBeans) {
             globalClasspath.putAll(jetBean.getClassPath());
             // compute the CRC
             jetBean.setCrc(extractTemplateHashCode(jetBean));
@@ -526,7 +524,7 @@ public final class CodeGeneratorEmittersPoolFactory {
         if (!isSkeletonChanged) {
             try {
                 alreadyCompiledEmitters = loadEmfPersistentData(EmfEmittersPersistenceFactory.getInstance(codeLanguage)
-                        .loadEmittersPool(), components, monitorWrap);
+                        .loadEmittersPool(), jetBeans, monitorWrap);
                 for (JetBean jetBean : alreadyCompiledEmitters) {
                     TalendJetEmitter emitter = new TalendJetEmitter(jetBean, dummyEmitter.getTalendEclipseHelper());
                     emitterPool.put(jetBean, emitter);
@@ -544,7 +542,7 @@ public final class CodeGeneratorEmittersPoolFactory {
             ComponentCompilations.deleteMarkers();
         }
 
-        synchronizedComponent(components, sub, alreadyCompiledEmitters, dummyEmitter, monitorBuffer, monitorWrap);
+        synchronizedComponent(jetBeans, sub, alreadyCompiledEmitters, dummyEmitter, monitorBuffer, monitorWrap);
 
         monitorWrap.worked(monitorBuffer);
         try {
