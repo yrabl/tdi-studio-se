@@ -212,6 +212,7 @@ public class JetBean {
         if (pluginIdToBundle.containsKey(pluginId)) {
             base = pluginIdToBundle.get(pluginId);
         } else {
+            // TODO, If the bundle is jar, maybe need change for this.
             base = Platform.getBundle(pluginId).getEntry("/").toString(); //$NON-NLS-1$
             pluginIdToBundle.put(pluginId, base);
         }

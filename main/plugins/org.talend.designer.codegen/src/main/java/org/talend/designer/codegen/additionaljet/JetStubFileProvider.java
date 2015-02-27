@@ -14,7 +14,6 @@ package org.talend.designer.codegen.additionaljet;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.talend.designer.codegen.CodeGeneratorActivator;
 
 /**
  * created by ggu on Sep 22, 2014 Detailled comment
@@ -22,20 +21,20 @@ import org.talend.designer.codegen.CodeGeneratorActivator;
  */
 public class JetStubFileProvider extends AbstractJetFileProvider {
 
-    @Override
-    protected String getBundleId() {
-        return CodeGeneratorActivator.PLUGIN_ID;
-    }
+    // @Override
+    // public String getBundleId() {
+    // return CodeGeneratorActivator.PLUGIN_ID;
+    // }
 
     @Override
     protected IPath getBasePath() {
         return new Path("jet_stub"); //$NON-NLS-1$
     }
 
-    @Override
-    protected ClassLoader getJetTempalteClassLoader() {
-        // same as ComponentsFactoryProviderManager.getInstance().getClass().getClassLoader();
-        return this.getClass().getClassLoader();
-    }
+    // @Override
+    // protected ClassLoader getJetTempalteClassLoader() {
+    // // same as ComponentsFactoryProviderManager.getInstance().getClass().getClassLoader();
+    // return this.getClass().getClassLoader();
+    // }
 
 }

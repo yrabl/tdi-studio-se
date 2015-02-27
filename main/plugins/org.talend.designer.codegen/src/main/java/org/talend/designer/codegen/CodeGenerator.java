@@ -57,6 +57,7 @@ import org.talend.designer.codegen.exception.CodeGeneratorException;
 import org.talend.designer.codegen.i18n.Messages;
 import org.talend.designer.codegen.model.CodeGeneratorEmittersPoolFactory;
 import org.talend.designer.codegen.model.CodeGeneratorInternalTemplatesFactoryProvider;
+import org.talend.designer.codegen.model.template.BundleJetTemplate;
 import org.talend.designer.codegen.proxy.JetProxy;
 import org.talend.designer.core.ICamelDesignerCoreService;
 
@@ -563,12 +564,12 @@ public class CodeGenerator implements ICodeGenerator {
         StringBuffer content = new StringBuffer();
         if (type == EInternalTemplate.HEADER_ADDITIONAL) {
             // loop over all HEADER_ADDITIONAL previously loaded
-            List<TemplateUtil> allTemplates = CodeGeneratorInternalTemplatesFactoryProvider.getInstance().getTemplates();
-            for (TemplateUtil template : allTemplates) {
-                if (template.getResourceName().contains(EInternalTemplate.HEADER_ADDITIONAL.toString())) {
-                    jetBean.setTemplateRelativeUri(TemplateUtil.RESOURCES_DIRECTORY + TemplateUtil.DIR_SEP
-                            + template.getResourceName() + TemplateUtil.EXT_SEP + language.getExtension()
-                            + TemplateUtil.TEMPLATE_EXT);
+            List<BundleJetTemplate> bundleJetTemplates = CodeGeneratorInternalTemplatesFactoryProvider.getInstance()
+                    .getBundleJetTemplates();
+            for (BundleJetTemplate template : bundleJetTemplates) {
+                if (template.getName().contains(EInternalTemplate.HEADER_ADDITIONAL.toString())) {
+                    jetBean.setTemplateRelativeUri(TemplateUtil.RESOURCES_DIRECTORY + TemplateUtil.DIR_SEP + template.getName()
+                            + TemplateUtil.EXT_SEP + language.getExtension() + TemplateUtil.TEMPLATE_EXT);
                     content.append(instantiateJetProxy(jetBean));
                 }
             }

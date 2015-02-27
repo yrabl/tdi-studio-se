@@ -158,29 +158,33 @@ public final class CodeGeneratorEmittersPoolFactory {
 
                 List<JetBean> jetBeans = new ArrayList<JetBean>();
 
-                List<TemplateUtil> templates = templatesFactory.getTemplates();
+                // List<TemplateUtil> templates = templatesFactory.getTemplates();
                 List<BundleJetTemplate> bundleJetTemplates = templatesFactory.getBundleJetTemplates();
                 Set<IComponent> components = componentsFactory.getComponents();
                 TimeMeasure.step("initialize Jet Emitters", "getComponents"); //$NON-NLS-1$ //$NON-NLS-2$
 
                 monitorWrap.beginTask(Messages.getString("CodeGeneratorEmittersPoolFactory.initMessage"), //$NON-NLS-1$
-                        (2 * templates.size() + 2 * bundleJetTemplates.size() + 5 * components.size()));
+                        (2 * bundleJetTemplates.size() + 5 * components.size()));
 
                 int monitorBuffer = 0;
-                for (TemplateUtil template : templates) {
-                    JetBean jetBean = initializeUtilTemplate(template);
+                // for (TemplateUtil template : templates) {
+                // JetBean jetBean = initializeUtilTemplate(template);
+                // jetBeans.add(jetBean);
+                // monitorBuffer++;
+                // if (monitorBuffer % 100 == 0) {
+                // monitorWrap.worked(100);
+                // monitorBuffer = 0;
+                // }
+                // }
+                //
+                for (BundleJetTemplate template : bundleJetTemplates) {
+                    JetBean jetBean = initializeBundleJetTemplate(template);
                     jetBeans.add(jetBean);
                     monitorBuffer++;
                     if (monitorBuffer % 100 == 0) {
                         monitorWrap.worked(100);
                         monitorBuffer = 0;
                     }
-                }
-                //
-                for (BundleJetTemplate template : bundleJetTemplates) {
-                    JetBean jetBean = initializeBundleJetTemplate(template);
-                    jetBeans.add(jetBean);
-                    monitorWrap.worked(1);
                 }
 
                 TimeMeasure.step("initialize Jet Emitters", "initialize jet beans from templates"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -350,25 +354,26 @@ public final class CodeGeneratorEmittersPoolFactory {
         return job;
     }
 
-    /**
-     * initialization of available templates.
-     * 
-     * @param template
-     * @param codeLanguage
-     * @return
-     */
-    private static JetBean initializeUtilTemplate(TemplateUtil template) {
-        JetBean jetBean = new JetBean(CodeGeneratorActivator.PLUGIN_ID, TemplateUtil.RESOURCES_DIRECTORY + TemplateUtil.DIR_SEP
-                + template.getResourceName() + TemplateUtil.EXT_SEP + ECodeLanguage.JAVA.getExtension()
-                + TemplateUtil.TEMPLATE_EXT, template.getResourceName(), template.getVersion(), ECodeLanguage.JAVA.getName(), ""); //$NON-NLS-1$
-        jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
-        jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
-        jetBean.addClassPath("CORE_LIBRARIES", CorePlugin.PLUGIN_ID); //$NON-NLS-1$
-        jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
-        jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
-        jetBean.setClassLoader(new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader());
-        return jetBean;
-    }
+    // /**
+    // * initialization of available templates.
+    // *
+    // * @param template
+    // * @param codeLanguage
+    // * @return
+    // */
+    // private static JetBean initializeUtilTemplate(TemplateUtil template) {
+    // JetBean jetBean = new JetBean(CodeGeneratorActivator.PLUGIN_ID, TemplateUtil.RESOURCES_DIRECTORY +
+    // TemplateUtil.DIR_SEP
+    // + template.getResourceName() + TemplateUtil.EXT_SEP + ECodeLanguage.JAVA.getExtension()
+    //                + TemplateUtil.TEMPLATE_EXT, template.getResourceName(), template.getVersion(), ECodeLanguage.JAVA.getName(), ""); //$NON-NLS-1$
+    //        jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
+    //        jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
+    //        jetBean.addClassPath("CORE_LIBRARIES", CorePlugin.PLUGIN_ID); //$NON-NLS-1$
+    //        jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
+    //        jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
+    // jetBean.setClassLoader(new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader());
+    // return jetBean;
+    // }
 
     private static JetBean initializeBundleJetTemplate(BundleJetTemplate template) {
 

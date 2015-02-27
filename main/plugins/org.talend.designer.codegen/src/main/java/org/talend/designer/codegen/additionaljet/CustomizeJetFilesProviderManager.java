@@ -61,6 +61,7 @@ public final class CustomizeJetFilesProviderManager {
                     AbstractJetFileProvider jetProvider = (AbstractJetFileProvider) configurationElement
                             .createExecutableExtension("class"); //$NON-NLS-1$
                     jetProvider.setId(id);
+                    jetProvider.setBundleId(configurationElement.getContributor().getName());
 
                     providers.add(jetProvider);
 

@@ -31,6 +31,7 @@ import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.io.FilesUtils;
 import org.talend.core.CorePlugin;
 import org.talend.core.language.ECodeLanguage;
+import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.config.TemplateUtil;
 import org.talend.designer.codegen.model.template.BundleJetTemplate;
@@ -40,18 +41,10 @@ import org.talend.designer.codegen.model.template.BundleJetTemplate;
  */
 public abstract class AbstractJetFileProvider {
 
-    private String id;
-
-    private File resourcesRootFolder;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
+    /**
+     * @deprecated won't overwrite it, will use from bundle directly.
+     */
+    @Deprecated
     public void overwriteStubAdditionalFile() throws IOException {
         File installationFolder = getInstallationFolder();
 
@@ -74,10 +67,18 @@ public abstract class AbstractJetFileProvider {
         }
     }
 
+    /**
+     * @deprecated
+     */
+    @Deprecated
     protected File getExternalFrameLocation() {
         return null;
     }
 
+    /**
+     * @deprecated
+     */
+    @Deprecated
     public File getInstallationFolder() throws IOException {
 
         File installationFolder = null;
@@ -89,12 +90,25 @@ public abstract class AbstractJetFileProvider {
     }
 
     // --------------------------------------------------------------------------------------//
-    /**
-     * 
-     * Need override it.
-     */
-    protected String getBundleId() {
-        return null; // by default no bundle, need override
+
+    private String id, bundleId;
+
+    private File resourcesRootFolder;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setBundleId(String bundleId) {
+        this.bundleId = bundleId;
+    }
+
+    public String getBundleId() {
+        return bundleId;
     }
 
     /**
@@ -108,14 +122,12 @@ public abstract class AbstractJetFileProvider {
 
     protected File getResourcesRootFolder() {
         if (resourcesRootFolder == null) {
-
-            String bundleId = getBundleId();
             IPath basePath = getBasePath();
-
-            if (bundleId != null && basePath != null) {
+            if (basePath != null) {
                 try {
-                    URL url = FileLocator.find(Platform.getBundle(bundleId), basePath, null);
-                    // FIXME, need test in jar, path with space or special charactor(Chinese, etc).
+                    URL url = FileLocator.find(Platform.getBundle(getBundleId()), basePath, null);
+                    // FIXME TUP-2233, need test in jar, path with space or special charactor(Chinese, etc).
+                    // also for JetBean.getUri
                     URL fileUrl = FileLocator.toFileURL(url);
                     resourcesRootFolder = new File(fileUrl.getPath());
                 } catch (IOException e) {
@@ -181,7 +193,7 @@ public abstract class AbstractJetFileProvider {
         Path basePath = new Path(resRootFolder.getAbsolutePath());
 
         IPath relativePath = new Path(file.getAbsolutePath()).makeRelativeTo(basePath);
-        // TODO, the relativePath is ok or not?
+        // FIXME TUP-2233, the relativePath is ok or not?
         BundleJetTemplate template = new BundleJetTemplate(getBundleId(), getBasePath().append(relativePath).toString());
 
         template.getJetTempalteDependences().putAll(getJetTempalteDependences(file));
@@ -206,8 +218,8 @@ public abstract class AbstractJetFileProvider {
     protected Map<String, String> getJetTempalteDependences(File file) {
         Map<String, String> jetTempalteDependences = new LinkedHashMap<String, String>();
 
-        // default.
-        jetTempalteDependences.put("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
+        // default for all files.
+        jetTempalteDependences.put("CORERUNTIME_LIBRARIES", CoreRuntimePlugin.PLUGIN_ID); //$NON-NLS-1$ 
         jetTempalteDependences.put("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
         jetTempalteDependences.put("CORE_LIBRARIES", CorePlugin.PLUGIN_ID); //$NON-NLS-1$
         jetTempalteDependences.put("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
@@ -217,8 +229,7 @@ public abstract class AbstractJetFileProvider {
     }
 
     protected ClassLoader getJetTempalteClassLoader() {
-        // return this.getClass().getClassLoader(); // ???
-        return null;
+        return this.getClass().getClassLoader(); // FIXME TUP-2233, need check or not?
     }
 
 }

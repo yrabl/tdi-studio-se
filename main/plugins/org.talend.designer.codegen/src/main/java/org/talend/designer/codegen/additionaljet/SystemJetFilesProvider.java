@@ -15,7 +15,6 @@ package org.talend.designer.codegen.additionaljet;
 import java.io.File;
 
 import org.talend.core.language.ECodeLanguage;
-import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.config.EInternalTemplate;
 import org.talend.designer.codegen.config.TemplateUtil;
 
@@ -25,10 +24,10 @@ import org.talend.designer.codegen.config.TemplateUtil;
  */
 public class SystemJetFilesProvider extends AbstractJetFileProvider {
 
-    @Override
-    protected String getBundleId() {
-        return CodeGeneratorActivator.PLUGIN_ID;
-    }
+    // @Override
+    // public String getBundleId() {
+    // return CodeGeneratorActivator.PLUGIN_ID;
+    // }
 
     @Override
     protected boolean validResource(File res) {
@@ -42,7 +41,6 @@ public class SystemJetFilesProvider extends AbstractJetFileProvider {
                 return true;
             }
         }
-        // System.out.println(">>>>" + res.getName());
         return false;
     }
 

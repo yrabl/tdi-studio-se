@@ -24,7 +24,7 @@ import org.eclipse.core.runtime.Path;
  */
 public class BundleJetTemplate {
 
-    private static final String DEFAULT_VERSION = "0.0.1"; //$NON-NLS-1$
+    public static final String DEFAULT_VERSION = "0.0.1"; //$NON-NLS-1$
 
     private final String bundleId;
 
