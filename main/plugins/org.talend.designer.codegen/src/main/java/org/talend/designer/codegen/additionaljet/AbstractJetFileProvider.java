@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +34,8 @@ import org.talend.core.CorePlugin;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.designer.codegen.CodeGeneratorActivator;
+import org.talend.designer.codegen.config.BundleJetBean;
 import org.talend.designer.codegen.config.TemplateUtil;
-import org.talend.designer.codegen.model.template.BundleJetTemplate;
 
 /**
  * DOC wyang class global comment. Detailled comment
@@ -139,25 +140,25 @@ public abstract class AbstractJetFileProvider {
     }
 
     /**
-     * retrieve the templates from the base path.
+     * retrieve the jet from the base path.
      */
-    public List<BundleJetTemplate> retrieveTempaltes() {
+    public List<BundleJetBean> retrieveJetBeans() {
         try {
-            List<BundleJetTemplate> tempaltes = new ArrayList<BundleJetTemplate>();
+            List<BundleJetBean> jetBeans = new ArrayList<BundleJetBean>();
 
             File resRootFolder = getResourcesRootFolder();
             if (resRootFolder != null && resRootFolder.exists()) {
-                retrieveTemplatesFromFolder(resRootFolder, tempaltes);
+                retrieveJetBeansFromFolder(resRootFolder, jetBeans);
             }
 
-            return tempaltes;
+            return jetBeans;
         } catch (Exception e) {
             ExceptionHandler.process(e);
         }
         return Collections.emptyList();
     }
 
-    protected void retrieveTemplatesFromFolder(File resourcesFolder, List<BundleJetTemplate> tempaltes) {
+    protected void retrieveJetBeansFromFolder(File resourcesFolder, List<BundleJetBean> beans) {
         if (resourcesFolder.isDirectory()) {
             File[] childrenFiles = resourcesFolder.listFiles(new FileFilter() {
 
@@ -172,12 +173,12 @@ public abstract class AbstractJetFileProvider {
             if (childrenFiles != null) {
                 for (File f : childrenFiles) {
                     if (f.isFile()) {
-                        BundleJetTemplate template = createTemplate(f);
-                        if (template != null) {
-                            tempaltes.add(template);
+                        BundleJetBean jetBean = createJetBean(f);
+                        if (jetBean != null) {
+                            beans.add(jetBean);
                         }
                     } else if (f.isDirectory()) {
-                        retrieveTemplatesFromFolder(f, tempaltes);
+                        retrieveJetBeansFromFolder(f, beans);
                     }
                 }
             }
@@ -186,25 +187,27 @@ public abstract class AbstractJetFileProvider {
 
     /**
      * 
-     * according to the template file to create the template bundle.
+     * according to the jet file to create the jet bean bundle.
      */
-    protected BundleJetTemplate createTemplate(File file) {
+    protected BundleJetBean createJetBean(File file) {
         File resRootFolder = getResourcesRootFolder();
         Path basePath = new Path(resRootFolder.getAbsolutePath());
 
-        IPath relativePath = new Path(file.getAbsolutePath()).makeRelativeTo(basePath);
-        // FIXME TUP-2233, the relativePath is ok or not?
-        BundleJetTemplate template = new BundleJetTemplate(getBundleId(), getBasePath().append(relativePath).toString());
+        IPath relativePath = getBasePath().append(new Path(file.getAbsolutePath()).makeRelativeTo(basePath));
+        // FIXME TUP-2233, the className is same file name?
+        String className = relativePath.removeFileExtension().lastSegment();
 
-        template.getJetTempalteDependences().putAll(getJetTempalteDependences(file));
-        template.setJetTempalteClassLoader(getJetTempalteClassLoader());
+        BundleJetBean jetBean = new BundleJetBean(getBundleId(), relativePath.toString(), className);
 
-        return template;
+        jetBean.setClassPath(new HashMap<String, String>(getJetBeanDependences(file)));
+        jetBean.setClassLoader(getJetBeanClassLoader());
+
+        return jetBean;
     }
 
     /**
      * 
-     * valid the file is jet template or not.
+     * valid the file is jet bean or not.
      */
     protected boolean validResource(File res) {
         if (res != null && res.isFile()) {
@@ -215,7 +218,7 @@ public abstract class AbstractJetFileProvider {
         return false;
     }
 
-    protected Map<String, String> getJetTempalteDependences(File file) {
+    protected Map<String, String> getJetBeanDependences(File file) {
         Map<String, String> jetTempalteDependences = new LinkedHashMap<String, String>();
 
         // default for all files.
@@ -228,7 +231,7 @@ public abstract class AbstractJetFileProvider {
         return jetTempalteDependences;
     }
 
-    protected ClassLoader getJetTempalteClassLoader() {
+    protected ClassLoader getJetBeanClassLoader() {
         return this.getClass().getClassLoader(); // FIXME TUP-2233, need check or not?
     }
 

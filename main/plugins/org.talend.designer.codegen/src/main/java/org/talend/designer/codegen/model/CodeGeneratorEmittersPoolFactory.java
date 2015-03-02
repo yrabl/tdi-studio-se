@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -69,13 +68,13 @@ import org.talend.core.ui.branding.IBrandingService;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.ICodeGeneratorService;
+import org.talend.designer.codegen.config.BundleJetBean;
 import org.talend.designer.codegen.config.EInternalTemplate;
 import org.talend.designer.codegen.config.JetBean;
 import org.talend.designer.codegen.config.LightJetBean;
 import org.talend.designer.codegen.config.TalendJetEmitter;
 import org.talend.designer.codegen.config.TemplateUtil;
 import org.talend.designer.codegen.i18n.Messages;
-import org.talend.designer.codegen.model.template.BundleJetTemplate;
 import org.talend.designer.core.model.components.EmfComponent;
 
 /**
@@ -159,12 +158,12 @@ public final class CodeGeneratorEmittersPoolFactory {
                 List<JetBean> jetBeans = new ArrayList<JetBean>();
 
                 // List<TemplateUtil> templates = templatesFactory.getTemplates();
-                List<BundleJetTemplate> bundleJetTemplates = templatesFactory.getBundleJetTemplates();
+                List<BundleJetBean> bundleJetBeans = templatesFactory.getBundleJetBeans();
                 Set<IComponent> components = componentsFactory.getComponents();
                 TimeMeasure.step("initialize Jet Emitters", "getComponents"); //$NON-NLS-1$ //$NON-NLS-2$
 
                 monitorWrap.beginTask(Messages.getString("CodeGeneratorEmittersPoolFactory.initMessage"), //$NON-NLS-1$
-                        (2 * bundleJetTemplates.size() + 5 * components.size()));
+                        (5 + 5 * components.size()));
 
                 int monitorBuffer = 0;
                 // for (TemplateUtil template : templates) {
@@ -177,15 +176,8 @@ public final class CodeGeneratorEmittersPoolFactory {
                 // }
                 // }
                 //
-                for (BundleJetTemplate template : bundleJetTemplates) {
-                    JetBean jetBean = initializeBundleJetTemplate(template);
-                    jetBeans.add(jetBean);
-                    monitorBuffer++;
-                    if (monitorBuffer % 100 == 0) {
-                        monitorWrap.worked(100);
-                        monitorBuffer = 0;
-                    }
-                }
+                jetBeans.addAll(bundleJetBeans);
+                monitorWrap.worked(5);
 
                 TimeMeasure.step("initialize Jet Emitters", "initialize jet beans from templates"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -374,27 +366,6 @@ public final class CodeGeneratorEmittersPoolFactory {
     // jetBean.setClassLoader(new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader());
     // return jetBean;
     // }
-
-    private static JetBean initializeBundleJetTemplate(BundleJetTemplate template) {
-
-        JetBean jetBean = new JetBean(template.getBundleId(), template.getRelativePath(), template.getName(),
-                template.getVersion(), ECodeLanguage.JAVA.getName(), ""); //$NON-NLS-1$
-
-        Map<String, String> jetTempalteDependences = template.getJetTempalteDependences();
-        for (String key : jetTempalteDependences.keySet()) {
-            String bundleId = jetTempalteDependences.get(key);
-            if (bundleId != null && bundleId.length() > 0) {
-                jetBean.addClassPath(key, bundleId);
-            }
-        }
-        ClassLoader jetTempalteClassLoader = template.getJetTempalteClassLoader();
-        if (jetTempalteClassLoader != null) {
-            jetBean.setClassLoader(jetTempalteClassLoader);
-        } else {
-            jetBean.setClassLoader(new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader());
-        }
-        return jetBean;
-    }
 
     /**
      * initialization of the available components.

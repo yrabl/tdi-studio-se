@@ -45,6 +45,7 @@ import org.talend.core.model.temp.ECodePart;
 import org.talend.core.model.temp.ETypeGen;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
+import org.talend.designer.codegen.config.BundleJetBean;
 import org.talend.designer.codegen.config.CloseBlocksCodeArgument;
 import org.talend.designer.codegen.config.CodeGeneratorArgument;
 import org.talend.designer.codegen.config.EInternalTemplate;
@@ -57,7 +58,6 @@ import org.talend.designer.codegen.exception.CodeGeneratorException;
 import org.talend.designer.codegen.i18n.Messages;
 import org.talend.designer.codegen.model.CodeGeneratorEmittersPoolFactory;
 import org.talend.designer.codegen.model.CodeGeneratorInternalTemplatesFactoryProvider;
-import org.talend.designer.codegen.model.template.BundleJetTemplate;
 import org.talend.designer.codegen.proxy.JetProxy;
 import org.talend.designer.core.ICamelDesignerCoreService;
 
@@ -564,13 +564,16 @@ public class CodeGenerator implements ICodeGenerator {
         StringBuffer content = new StringBuffer();
         if (type == EInternalTemplate.HEADER_ADDITIONAL) {
             // loop over all HEADER_ADDITIONAL previously loaded
-            List<BundleJetTemplate> bundleJetTemplates = CodeGeneratorInternalTemplatesFactoryProvider.getInstance()
-                    .getBundleJetTemplates();
-            for (BundleJetTemplate template : bundleJetTemplates) {
-                if (template.getName().contains(EInternalTemplate.HEADER_ADDITIONAL.toString())) {
-                    jetBean.setTemplateRelativeUri(TemplateUtil.RESOURCES_DIRECTORY + TemplateUtil.DIR_SEP + template.getName()
-                            + TemplateUtil.EXT_SEP + language.getExtension() + TemplateUtil.TEMPLATE_EXT);
-                    content.append(instantiateJetProxy(jetBean));
+            List<BundleJetBean> bundleJetBeans = CodeGeneratorInternalTemplatesFactoryProvider.getInstance().getBundleJetBeans();
+            for (BundleJetBean bean : bundleJetBeans) {
+                if (bean.getName().contains(EInternalTemplate.HEADER_ADDITIONAL.toString())) {
+                    try {
+                        BundleJetBean clonedBean = bean.clone();
+                        clonedBean.setArgument(argument);
+                        content.append(instantiateJetProxy(clonedBean));
+                    } catch (CloneNotSupportedException e) {
+                        //
+                    }
                 }
             }
         } else {
