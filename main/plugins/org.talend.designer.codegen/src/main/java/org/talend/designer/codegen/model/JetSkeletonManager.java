@@ -45,6 +45,7 @@ import org.talend.core.model.components.ComponentCompilations;
 import org.talend.core.model.components.IComponentsFactory;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.designer.codegen.CodeGeneratorActivator;
+import org.talend.designer.codegen.config.TalendJetEmitter;
 import org.talend.designer.codegen.config.TemplateUtil;
 import org.talend.designer.codegen.i18n.Messages;
 
@@ -129,7 +130,7 @@ public final class JetSkeletonManager {
     }
 
     private File getSerializationFilePath() throws CoreException {
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(".JETEmitters"); //$NON-NLS-1$
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(TalendJetEmitter.JET_PROJECT_NAME);
         if (!project.exists()) {
             project.create(new NullProgressMonitor());
         }

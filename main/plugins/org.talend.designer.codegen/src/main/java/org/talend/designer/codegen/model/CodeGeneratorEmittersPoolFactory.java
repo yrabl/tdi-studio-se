@@ -98,8 +98,6 @@ public final class CodeGeneratorEmittersPoolFactory {
 
     private static String defaultTemplate = null;
 
-    public static final String JET_PROJECT = ".JETEmitters"; //$NON-NLS-1$
-
     /**
      * Default Constructor. Must not be used.
      */
@@ -278,10 +276,10 @@ public final class CodeGeneratorEmittersPoolFactory {
         private void initializeJetEmittersProject(IProgressMonitor progressMonitor) throws CoreException {
             final IWorkspace workspace = ResourcesPlugin.getWorkspace();
 
-            IProject project = workspace.getRoot().getProject(JET_PROJECT);
+            IProject project = workspace.getRoot().getProject(TalendJetEmitter.JET_PROJECT_NAME);
             progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETPreparingProject_message", //$NON-NLS-1$
                     new Object[] { project.getName() }));
-            File file = new File(workspace.getRoot().getLocation().append(JET_PROJECT).toPortableString());
+            File file = new File(project.getLocation().toPortableString());
             if (file.exists() && !project.isAccessible()) {
                 // .metadata missing, so need to reimport project to add it in the metadata.
                 progressMonitor.subTask("Reinitilializing project " + project.getName()); //$NON-NLS-1$
@@ -622,10 +620,11 @@ public final class CodeGeneratorEmittersPoolFactory {
             IProgressMonitor monitorWrap) throws BusinessException {
         List<JetBean> toReturn = new ArrayList<JetBean>();
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        IProject project = workspace.getRoot().getProject(".JETEmitters"); //$NON-NLS-1$
+        IProject project = workspace.getRoot().getProject(TalendJetEmitter.JET_PROJECT_NAME);
         URL url;
         try {
-            url = new File(project.getLocation() + "/runtime").toURL(); //$NON-NLS-1$
+
+            url = project.getFolder(TalendJetEmitter.JET_OUTPUT_PATH).getLocation().toFile().toURL();
             int lightBeanIndex = 0;
             LightJetBean lightBean = null;
             LightJetBean myLightJetBean = null;

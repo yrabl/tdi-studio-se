@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.emf.codegen.CodeGenPlugin;
 import org.talend.core.language.ECodeLanguage;
+import org.talend.designer.codegen.config.TalendJetEmitter;
 
 /**
  * DOC mhirt class global comment. Detailled comment <br/>
@@ -70,7 +71,7 @@ public final class EmfEmittersPersistenceFactory {
             IProgressMonitor progressMonitor = new SubProgressMonitor(monitor, 1);
 
             IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            project = workspace.getRoot().getProject(".JETEmitters"); //$NON-NLS-1$
+            project = workspace.getRoot().getProject(TalendJetEmitter.JET_PROJECT_NAME);
             if (!project.exists()) {
                 project.create(new SubProgressMonitor(progressMonitor, 1));
                 progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETCreatingProject_message", //$NON-NLS-1$

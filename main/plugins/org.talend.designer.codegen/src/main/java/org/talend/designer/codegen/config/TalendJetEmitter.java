@@ -75,6 +75,13 @@ import org.talend.designer.core.model.components.ComponentBundleToPath;
  */
 public class TalendJetEmitter extends JETEmitter {
 
+    // same as projectName field
+    public static final String JET_PROJECT_NAME = ".JETEmitters"; //$NON-NLS-1$
+
+    public static final String JET_SRC_PATH = "src"; //$NON-NLS-1$
+
+    public static final String JET_OUTPUT_PATH = "runtime"; //$NON-NLS-1$
+
     private String templateName;
 
     private String templateLanguage;
@@ -200,11 +207,11 @@ public class TalendJetEmitter extends JETEmitter {
                     project.refreshLocal(IResource.DEPTH_INFINITE, new SubProgressMonitor(progressMonitor, 1));
                 }
 
-                IFolder sourceFolder = project.getFolder(new Path("src")); //$NON-NLS-1$
+                IFolder sourceFolder = project.getFolder(new Path(TalendJetEmitter.JET_SRC_PATH));
                 if (!sourceFolder.exists()) {
                     sourceFolder.create(false, true, new SubProgressMonitor(progressMonitor, 1));
                 }
-                IFolder runtimeFolder = project.getFolder(new Path("runtime")); //$NON-NLS-1$
+                IFolder runtimeFolder = project.getFolder(new Path(TalendJetEmitter.JET_OUTPUT_PATH));
                 if (!runtimeFolder.exists()) {
                     runtimeFolder.create(false, true, new SubProgressMonitor(progressMonitor, 1));
                 }
@@ -285,7 +292,7 @@ public class TalendJetEmitter extends JETEmitter {
                 IProgressMonitor subProgressMonitor = new SubProgressMonitor(progressMonitor, 1);
                 subProgressMonitor.beginTask("", stringTokenizer.countTokens() + 4); //$NON-NLS-1$
                 subProgressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_CreateTargetFile_message")); //$NON-NLS-1$
-                IFolder sourceContainer = project.getFolder("src");
+                IFolder sourceContainer = project.getFolder(TalendJetEmitter.JET_SRC_PATH);
 
                 while (stringTokenizer.hasMoreElements()) {
                     String folderName = stringTokenizer.nextToken();
@@ -299,7 +306,7 @@ public class TalendJetEmitter extends JETEmitter {
                     }
                 }
                 boolean needRebuild = true;
-                String targetFileName = jetCompiler.getSkeleton().getClassName() + ".java"; //$NON-NLS-1$
+                String targetFileName = jetCompiler.getSkeleton().getClassName() + JavaUtils.JAVA_EXTENSION;
                 IFile targetFile = sourceContainer.getFile(new Path(targetFileName));
                 if (!targetFile.exists()) {
                     subProgressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETCreating_message", //$NON-NLS-1$
@@ -364,9 +371,9 @@ public class TalendJetEmitter extends JETEmitter {
                                 new Object[] { jetCompiler.getSkeleton().getClassName() + ".class" })); //$NON-NLS-1$
 
                         // Construct a proper URL for relative lookup.
-                        //
-                        URL url = new File(project.getLocation() + "/" + "runtime" + "/") //$NON-NLS-1$ //$NON-NLS-2$
-                                .toURL();
+
+                        IFolder runtimeFolder = project.getFolder(TalendJetEmitter.JET_OUTPUT_PATH);
+                        URL url = runtimeFolder.getLocation().toFile().toURL();
                         URLClassLoader theClassLoader = new URLClassLoader(new URL[] { url }, jetEmitter.classLoader);
                         Class theClass = theClassLoader.loadClass((packageName.length() == 0 ? "" : packageName + ".") //$NON-NLS-1$ //$NON-NLS-2$
                                 + jetCompiler.getSkeleton().getClassName());
@@ -479,7 +486,7 @@ public class TalendJetEmitter extends JETEmitter {
      * @return
      */
     private String getClassOutputPath(IProject project, IFile javaFile) {
-        IFolder runtimeFolder = project.getFolder("runtime"); //$NON-NLS-1$
+        IFolder runtimeFolder = project.getFolder(TalendJetEmitter.JET_OUTPUT_PATH);
         return runtimeFolder.getLocation().toPortableString();
     }
 
@@ -621,7 +628,7 @@ public class TalendJetEmitter extends JETEmitter {
             final IWorkspace workspace = ResourcesPlugin.getWorkspace();
             IProject project = workspace.getRoot().getProject(projectName);
 
-            URL url = new File(project.getLocation() + "/runtime").toURL(); //$NON-NLS-1$
+            URL url = project.getFolder(TalendJetEmitter.JET_OUTPUT_PATH).getLocation().toFile().toURL();
             currentClassLoader = jetbean.getClassLoader();
             theClassLoader = new URLClassLoader(new URL[] { url }, jetbean.getClassLoader());
         }

@@ -45,6 +45,7 @@ import org.talend.core.model.properties.User;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.repository.model.RepositoryFactoryProvider;
 import org.talend.core.repository.utils.ProjectHelper;
+import org.talend.designer.codegen.config.TalendJetEmitter;
 import org.talend.designer.codegen.i18n.Messages;
 import org.talend.repository.model.RepositoryConstants;
 
@@ -81,7 +82,7 @@ public class CodeGenInit implements IApplication {
     private void removeLinkedResources() throws CoreException {
         info(Messages.getString("CodeGenInit.removeLink")); //$NON-NLS-1$
 
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(".JETEmitters"); //$NON-NLS-1$
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(TalendJetEmitter.JET_PROJECT_NAME);
         project.accept(new IResourceVisitor() {
 
             @Override
