@@ -34,7 +34,7 @@ import org.talend.core.CorePlugin;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.designer.codegen.CodeGeneratorActivator;
-import org.talend.designer.codegen.config.BundleJetBean;
+import org.talend.designer.codegen.config.BundleTemplateJetBean;
 import org.talend.designer.codegen.config.TemplateUtil;
 
 /**
@@ -112,14 +112,7 @@ public abstract class AbstractJetFileProvider {
         return bundleId;
     }
 
-    /**
-     * 
-     * if need, override it.
-     */
-    protected IPath getBasePath() {
-        // by default
-        return new Path("resources"); //$NON-NLS-1$
-    }
+    protected abstract IPath getBasePath();
 
     protected File getResourcesRootFolder() {
         if (resourcesRootFolder == null) {
@@ -142,9 +135,9 @@ public abstract class AbstractJetFileProvider {
     /**
      * retrieve the jet from the base path.
      */
-    public List<BundleJetBean> retrieveJetBeans() {
+    public List<BundleTemplateJetBean> retrieveJetBeans() {
         try {
-            List<BundleJetBean> jetBeans = new ArrayList<BundleJetBean>();
+            List<BundleTemplateJetBean> jetBeans = new ArrayList<BundleTemplateJetBean>();
 
             File resRootFolder = getResourcesRootFolder();
             if (resRootFolder != null && resRootFolder.exists()) {
@@ -158,7 +151,7 @@ public abstract class AbstractJetFileProvider {
         return Collections.emptyList();
     }
 
-    protected void retrieveJetBeansFromFolder(File resourcesFolder, List<BundleJetBean> beans) {
+    protected void retrieveJetBeansFromFolder(File resourcesFolder, List<BundleTemplateJetBean> beans) {
         if (resourcesFolder.isDirectory()) {
             File[] childrenFiles = resourcesFolder.listFiles(new FileFilter() {
 
@@ -173,7 +166,7 @@ public abstract class AbstractJetFileProvider {
             if (childrenFiles != null) {
                 for (File f : childrenFiles) {
                     if (f.isFile()) {
-                        BundleJetBean jetBean = createJetBean(f);
+                        BundleTemplateJetBean jetBean = createJetBean(f);
                         if (jetBean != null) {
                             beans.add(jetBean);
                         }
@@ -189,7 +182,7 @@ public abstract class AbstractJetFileProvider {
      * 
      * according to the jet file to create the jet bean bundle.
      */
-    protected BundleJetBean createJetBean(File file) {
+    protected BundleTemplateJetBean createJetBean(File file) {
         File resRootFolder = getResourcesRootFolder();
         Path basePath = new Path(resRootFolder.getAbsolutePath());
 
@@ -197,7 +190,7 @@ public abstract class AbstractJetFileProvider {
         // FIXME TUP-2233, the className is same file name?
         String className = relativePath.removeFileExtension().lastSegment();
 
-        BundleJetBean jetBean = new BundleJetBean(getBundleId(), relativePath.toString(), className);
+        BundleTemplateJetBean jetBean = new BundleTemplateJetBean(getBundleId(), relativePath.toString(), className);
 
         jetBean.setClassPath(new HashMap<String, String>(getJetBeanDependences(file)));
         jetBean.setClassLoader(getJetBeanClassLoader());

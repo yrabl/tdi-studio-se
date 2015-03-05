@@ -24,25 +24,17 @@ import org.talend.commons.utils.StringUtils;
  * $Id$
  * 
  */
-public class JetBean {
+public class JetBean extends LightJetBean {
+
+    private static final long serialVersionUID = -4453156746871080436L;
 
     private Object argument;
 
-    private String jetPluginRepository;
-
     private HashMap<String, String> classPath;
-
-    private String templateRelativeUri;
 
     private boolean forceOverwrite = true;
 
     private ClassLoader loader = null;
-
-    private String className = ""; //$NON-NLS-1$
-
-    private String version = null;
-
-    private String language = null;
 
     private String codePart = null;
 
@@ -51,28 +43,6 @@ public class JetBean {
     private String generationError;
 
     private static Map<String, String> pluginIdToBundle = new HashMap<String, String>();
-
-    private long crc = 0;
-
-    private String methodName;
-
-    /**
-     * Getter for crc.
-     * 
-     * @return the crc
-     */
-    public long getCrc() {
-        return this.crc;
-    }
-
-    /**
-     * Sets the crc.
-     * 
-     * @param crc the crc to set
-     */
-    public void setCrc(long crc) {
-        this.crc = crc;
-    }
 
     /**
      * Minimal Constructor.
@@ -90,18 +60,17 @@ public class JetBean {
      */
     public JetBean(String jetPluginRepository, String templateRelativeUri, String className, String version, String language,
             String codePart) {
+        super(jetPluginRepository, templateRelativeUri, EMPTY, EMPTY, version, language, 0);
         this.classPath = new HashMap<String, String>();
-        this.jetPluginRepository = jetPluginRepository;
-        this.templateRelativeUri = templateRelativeUri;
-        this.version = version;
+
         String tmpClassName = ""; //$NON-NLS-1$
         if (className.lastIndexOf(".") > -1) { //$NON-NLS-1$
             tmpClassName = className.substring(className.lastIndexOf(".")); //$NON-NLS-1$
         } else {
             tmpClassName = className;
         }
-        this.className = StringUtils.capitalize(tmpClassName);
-        this.language = StringUtils.capitalize(language);
+        this.setClassName(StringUtils.capitalize(tmpClassName));
+        this.setLanguage(StringUtils.capitalize(language));
         if ((codePart != null) && (codePart.length() != 0)) {
             this.codePart = StringUtils.capitalize(codePart);
         } else {
@@ -138,24 +107,6 @@ public class JetBean {
     }
 
     /**
-     * Getter for jetPluginRepository.
-     * 
-     * @return the jetPluginRepository
-     */
-    public String getJetPluginRepository() {
-        return jetPluginRepository;
-    }
-
-    /**
-     * Sets the jetPluginRepository.
-     * 
-     * @param jetPluginRepository the jetPluginRepository to set
-     */
-    public void setJetPluginRepository(String jetPluginRepository) {
-        this.jetPluginRepository = jetPluginRepository;
-    }
-
-    /**
      * Getter for argument.
      * 
      * @return the argument
@@ -171,24 +122,6 @@ public class JetBean {
      */
     public void setArgument(Object argument) {
         this.argument = argument;
-    }
-
-    /**
-     * Getter for templateRelativeUri.
-     * 
-     * @return the templateRelativeUri
-     */
-    public String getTemplateRelativeUri() {
-        return templateRelativeUri;
-    }
-
-    /**
-     * Sets the templateRelativeUri.
-     * 
-     * @param templateRelativeUri the templateRelativeUri to set
-     */
-    public void setTemplateRelativeUri(String templateRelativeUri) {
-        this.templateRelativeUri = templateRelativeUri;
     }
 
     /**
@@ -212,7 +145,6 @@ public class JetBean {
         if (pluginIdToBundle.containsKey(pluginId)) {
             base = pluginIdToBundle.get(pluginId);
         } else {
-            // TODO, If the bundle is jar, maybe need change for this.
             base = Platform.getBundle(pluginId).getEntry("/").toString(); //$NON-NLS-1$
             pluginIdToBundle.put(pluginId, base);
         }
@@ -238,45 +170,6 @@ public class JetBean {
         this.forceOverwrite = forceOverwrite;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = prime + ((this.templateRelativeUri == null) ? 0 : this.templateRelativeUri.hashCode());
-        return result;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final JetBean other = (JetBean) obj;
-        if (this.templateRelativeUri == null) {
-            if (other.templateRelativeUri != null) {
-                return false;
-            }
-        } else if (!this.templateRelativeUri.equals(other.templateRelativeUri)) {
-            return false;
-        }
-        return true;
-    }
-
     /**
      * Getter for loader.
      * 
@@ -293,60 +186,6 @@ public class JetBean {
      */
     public void setClassLoader(ClassLoader newloader) {
         this.loader = newloader;
-    }
-
-    /**
-     * Getter for className.
-     * 
-     * @return the className
-     */
-    public String getClassName() {
-        return this.className;
-    }
-
-    /**
-     * Sets the className.
-     * 
-     * @param className the className to set
-     */
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    /**
-     * Getter for version.
-     * 
-     * @return the version
-     */
-    public String getVersion() {
-        return this.version;
-    }
-
-    /**
-     * Sets the version.
-     * 
-     * @param version the version to set
-     */
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    /**
-     * Getter for language.
-     * 
-     * @return the language
-     */
-    public String getLanguage() {
-        return this.language;
-    }
-
-    /**
-     * Sets the language.
-     * 
-     * @param language the language to set
-     */
-    public void setLanguage(String language) {
-        this.language = language;
     }
 
     /**
@@ -375,28 +214,6 @@ public class JetBean {
         this.family = family;
     }
 
-    /**
-     * Getter for methodName.
-     * 
-     * @return the methodName
-     */
-    public String getMethodName() {
-        return this.methodName;
-    }
-
-    /**
-     * Sets the methodName.
-     * 
-     * @param methodName the methodName to set
-     */
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
-    }
-
-    public String getFullTemplatePath() {
-        return Platform.getPlugin(getJetPluginRepository()).getDescriptor().getInstallURL().toString() + getTemplateRelativeUri();
-    }
-
     public String getGenerationError() {
         return generationError;
     }
@@ -405,4 +222,8 @@ public class JetBean {
         this.generationError = generationError;
     }
 
+    public LightJetBean createLightJetBean() {
+        return new LightJetBean(getJetPluginRepository(), getTemplateRelativeUri(), getClassName(), getMethodName(),
+                getVersion(), getLanguage(), getCrc());
+    }
 }

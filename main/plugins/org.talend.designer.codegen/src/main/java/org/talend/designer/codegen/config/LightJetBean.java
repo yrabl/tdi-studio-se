@@ -24,28 +24,25 @@ public class LightJetBean implements Serializable {
 
     private static final long serialVersionUID = 2549445027941196550L;
 
-    private String templateRelativeUri = ""; //$NON-NLS-1$
+    protected static final String EMPTY = ""; //$NON-NLS-1$
 
-    private String className = ""; //$NON-NLS-1$
+    private String jetPluginRepository;
 
-    private String methodName = ""; //$NON-NLS-1$
+    private String templateRelativeUri = EMPTY;
 
-    private String version = ""; //$NON-NLS-1$
+    private String className = EMPTY;
 
-    private String language = ""; //$NON-NLS-1$
+    private String methodName = EMPTY;
+
+    private String version = EMPTY;
+
+    private String language = EMPTY;
 
     private long crc = 0;
 
-    /**
-     * DOC mhirt LightJetBean constructor comment.
-     * 
-     * @param templateRelativeUri
-     * @param className
-     * @param methodName
-     * @param version
-     */
-    public LightJetBean(String templateRelativeUri, String className, String methodName, String version,
-            String language, long crc) {
+    public LightJetBean(String jetPluginRepository, String templateRelativeUri, String className, String methodName,
+            String version, String language, long crc) {
+        this.jetPluginRepository = jetPluginRepository;
         this.templateRelativeUri = templateRelativeUri;
         this.className = className;
         this.methodName = methodName;
@@ -54,11 +51,52 @@ public class LightJetBean implements Serializable {
         this.crc = crc;
     }
 
+    public LightJetBean(String templateRelativeUri, String className, String methodName, String version, String language, long crc) {
+        this(null, templateRelativeUri, className, methodName, version, language, crc);
+    }
+
+    public LightJetBean() {
+        this(EMPTY, EMPTY, 0);
+    }
+
     public LightJetBean(String templateRelativeUri, String version, long crc) {
-        super();
+        this(templateRelativeUri, EMPTY, EMPTY, version, EMPTY, crc);
+    }
+
+    /**
+     * Getter for jetPluginRepository.
+     * 
+     * @return the jetPluginRepository
+     */
+    public String getJetPluginRepository() {
+        return jetPluginRepository;
+    }
+
+    /**
+     * Sets the jetPluginRepository.
+     * 
+     * @param jetPluginRepository the jetPluginRepository to set
+     */
+    public void setJetPluginRepository(String jetPluginRepository) {
+        this.jetPluginRepository = jetPluginRepository;
+    }
+
+    /**
+     * Getter for templateRelativeUri.
+     * 
+     * @return the templateRelativeUri
+     */
+    public String getTemplateRelativeUri() {
+        return this.templateRelativeUri;
+    }
+
+    /**
+     * Sets the templateRelativeUri.
+     * 
+     * @param templateRelativeUri the templateRelativeUri to set
+     */
+    public void setTemplateRelativeUri(String templateRelativeUri) {
         this.templateRelativeUri = templateRelativeUri;
-        this.version = version;
-        this.crc = crc;
     }
 
     /**
@@ -95,24 +133,6 @@ public class LightJetBean implements Serializable {
      */
     public void setMethodName(String methodName) {
         this.methodName = methodName;
-    }
-
-    /**
-     * Getter for templateRelativeUri.
-     * 
-     * @return the templateRelativeUri
-     */
-    public String getTemplateRelativeUri() {
-        return this.templateRelativeUri;
-    }
-
-    /**
-     * Sets the templateRelativeUri.
-     * 
-     * @param templateRelativeUri the templateRelativeUri to set
-     */
-    public void setTemplateRelativeUri(String templateRelativeUri) {
-        this.templateRelativeUri = templateRelativeUri;
     }
 
     /**
@@ -169,11 +189,15 @@ public class LightJetBean implements Serializable {
         this.language = language;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((this.jetPluginRepository == null) ? 0 : this.jetPluginRepository.hashCode());
+        result = prime * result + ((this.templateRelativeUri == null) ? 0 : this.templateRelativeUri.hashCode());
+        return result;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -182,32 +206,32 @@ public class LightJetBean implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof LightJetBean)) {
             return false;
         }
-        final LightJetBean other = (LightJetBean) obj;
+        LightJetBean other = (LightJetBean) obj;
+        if (this.jetPluginRepository == null) {
+            if (other.jetPluginRepository != null) {
+                return false;
+            }
+        } else if (!this.jetPluginRepository.equals(other.jetPluginRepository)) {
+            return false;
+        }
         if (this.templateRelativeUri == null) {
             if (other.templateRelativeUri != null) {
                 return false;
             }
         } else if (!this.templateRelativeUri.equals(other.templateRelativeUri)) {
             return false;
-        } else if (this.crc != other.crc) {
-            return false;
         }
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode()
-     */
+    @SuppressWarnings("nls")
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = prime + ((this.templateRelativeUri == null) ? 0 : this.templateRelativeUri.hashCode());
-        return result;
+    public String toString() {
+        return this.getClass().getSimpleName() + " [Bundle=" + this.jetPluginRepository + ", Uri=" + this.templateRelativeUri
+                + "]";
     }
 
 }

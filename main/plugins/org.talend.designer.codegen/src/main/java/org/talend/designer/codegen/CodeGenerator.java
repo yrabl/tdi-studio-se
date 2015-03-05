@@ -45,7 +45,7 @@ import org.talend.core.model.temp.ECodePart;
 import org.talend.core.model.temp.ETypeGen;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
-import org.talend.designer.codegen.config.BundleJetBean;
+import org.talend.designer.codegen.config.BundleTemplateJetBean;
 import org.talend.designer.codegen.config.CloseBlocksCodeArgument;
 import org.talend.designer.codegen.config.CodeGeneratorArgument;
 import org.talend.designer.codegen.config.EInternalTemplate;
@@ -564,12 +564,13 @@ public class CodeGenerator implements ICodeGenerator {
         StringBuffer content = new StringBuffer();
         if (type == EInternalTemplate.HEADER_ADDITIONAL) {
             // loop over all HEADER_ADDITIONAL previously loaded
-            List<BundleJetBean> bundleJetBeans = CodeGeneratorInternalTemplatesFactoryProvider.getInstance().getBundleJetBeans();
-            for (BundleJetBean bean : bundleJetBeans) {
-                if (bean.getName().contains(EInternalTemplate.HEADER_ADDITIONAL.toString())) {
+            List<BundleTemplateJetBean> bundleJetBeans = CodeGeneratorInternalTemplatesFactoryProvider.getInstance()
+                    .getBundleJetBeans();
+            for (BundleTemplateJetBean bean : bundleJetBeans) {
+                if (bean.getName().contains(EInternalTemplate.HEADER_ADDITIONAL.getTemplateName())) {
                     try {
-                        BundleJetBean clonedBean = bean.clone();
-                        clonedBean.setArgument(argument);
+                        BundleTemplateJetBean clonedBean = bean.clone();
+                        clonedBean.setArgument(codeGenArgument);
                         content.append(instantiateJetProxy(clonedBean));
                     } catch (CloneNotSupportedException e) {
                         //

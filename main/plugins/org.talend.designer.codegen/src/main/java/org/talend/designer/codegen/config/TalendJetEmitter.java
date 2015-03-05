@@ -49,6 +49,7 @@ import org.eclipse.emf.codegen.CodeGenPlugin;
 import org.eclipse.emf.codegen.jet.JETCompiler;
 import org.eclipse.emf.codegen.jet.JETEmitter;
 import org.eclipse.emf.codegen.jet.JETException;
+import org.eclipse.emf.codegen.jet.JETSkeleton;
 import org.eclipse.emf.common.EMFPlugin;
 import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.Monitor;
@@ -106,9 +107,9 @@ public class TalendJetEmitter extends JETEmitter {
      * @param globalClasspath
      * @throws JETException
      */
-    public TalendJetEmitter(String arg0, ClassLoader arg1, IProgressMonitor progressMonitor,
+    public TalendJetEmitter(String templateURI, ClassLoader classLoader, IProgressMonitor progressMonitor,
             HashMap<String, String> globalClasspath, boolean rebuild) throws JETException {
-        super(arg0, arg1);
+        super(templateURI, classLoader);
 
         for (String classKey : globalClasspath.keySet()) {
             this.addVariable(classKey, globalClasspath.get(classKey));
@@ -116,8 +117,8 @@ public class TalendJetEmitter extends JETEmitter {
         this.talendEclipseHelper = new TalendEclipseHelper(progressMonitor, this, rebuild);
     }
 
-    public TalendJetEmitter(JetBean jetbean, TalendEclipseHelper teh) {
-        super(jetbean.getFullTemplatePath(), jetbean.getClassLoader());
+    public TalendJetEmitter(JetBean jetbean, TalendEclipseHelper teh) throws JETException {
+        super(jetbean.getTemplateFullUri(), jetbean.getClassLoader());
         this.jetbean = jetbean;
         this.templateName = jetbean.getClassName();
         this.componentFamily = jetbean.getFamily();
@@ -126,7 +127,13 @@ public class TalendJetEmitter extends JETEmitter {
         if (templateName.endsWith(codePart + "" + templateLanguage)) { //$NON-NLS-1$
             this.templateName = templateName.substring(templateName.lastIndexOf(".") + 1, templateName.lastIndexOf(codePart)); //$NON-NLS-1$
         }
+        HashMap<String, String> beanClassPath = jetbean.getClassPath();
+        for (String classKey : beanClassPath.keySet()) {
+            this.addVariable(classKey, beanClassPath.get(classKey));
+        }
+
         this.talendEclipseHelper = teh;
+
     }
 
     public TalendEclipseHelper getTalendEclipseHelper() {
@@ -269,15 +276,26 @@ public class TalendJetEmitter extends JETEmitter {
                 JETCompiler jetCompiler = null;
                 if (jetEmitter.templateURIPath == null) {
                     jetCompiler = new TalendJETCompiler(jetEmitter.templateURI, jetEmitter.encoding, jetEmitter.classLoader);
-                } else {
+                } else { // seems never used for us
                     jetCompiler = new TalendJETCompiler(jetEmitter.templateURIPath, jetEmitter.templateURI, jetEmitter.encoding,
                             jetEmitter.classLoader);
                 }
                 progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETParsing_message", //$NON-NLS-1$
                         new Object[] { jetCompiler.getResolvedTemplateURI() }));
-                jetCompiler.parse();
-                jetCompiler.getSkeleton().setPackageName("org.talend.designer.codegen.translators." + componentFamily); //$NON-NLS-1$
-                jetCompiler.getSkeleton().setClassName(templateName + codePart + templateLanguage);
+                try {
+                    jetCompiler.parse();
+                } catch (Exception e) {
+                    ExceptionHandler.process(e);
+                    return; // ignore
+                }
+                JETSkeleton skeleton = jetCompiler.getSkeleton();
+                if (skeleton == null) {
+                    log.error("FIXME just add mark here to check the problems. there are some problem for "
+                            + jetEmitter.templateURI);
+                    return; // ignore
+                }
+                skeleton.setPackageName("org.talend.designer.codegen.translators." + componentFamily); //$NON-NLS-1$
+                skeleton.setClassName(templateName + codePart + templateLanguage);
                 progressMonitor.worked(1);
 
                 outputStream = new ByteArrayOutputStream();
@@ -287,7 +305,7 @@ public class TalendJetEmitter extends JETEmitter {
                 progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETOpeningJavaProject_message", //$NON-NLS-1$
                         new Object[] { project.getName() }));
 
-                String packageName = jetCompiler.getSkeleton().getPackageName();
+                String packageName = skeleton.getPackageName();
                 StringTokenizer stringTokenizer = new StringTokenizer(packageName, "."); //$NON-NLS-1$
                 IProgressMonitor subProgressMonitor = new SubProgressMonitor(progressMonitor, 1);
                 subProgressMonitor.beginTask("", stringTokenizer.countTokens() + 4); //$NON-NLS-1$
@@ -306,7 +324,7 @@ public class TalendJetEmitter extends JETEmitter {
                     }
                 }
                 boolean needRebuild = true;
-                String targetFileName = jetCompiler.getSkeleton().getClassName() + JavaUtils.JAVA_EXTENSION;
+                String targetFileName = skeleton.getClassName() + JavaUtils.JAVA_EXTENSION;
                 IFile targetFile = sourceContainer.getFile(new Path(targetFileName));
                 if (!targetFile.exists()) {
                     subProgressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETCreating_message", //$NON-NLS-1$
@@ -368,7 +386,7 @@ public class TalendJetEmitter extends JETEmitter {
 
                     if (!errors) {
                         subProgressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETLoadingClass_message", //$NON-NLS-1$
-                                new Object[] { jetCompiler.getSkeleton().getClassName() + ".class" })); //$NON-NLS-1$
+                                new Object[] { skeleton.getClassName() + ".class" })); //$NON-NLS-1$
 
                         // Construct a proper URL for relative lookup.
 
@@ -376,8 +394,8 @@ public class TalendJetEmitter extends JETEmitter {
                         URL url = runtimeFolder.getLocation().toFile().toURL();
                         URLClassLoader theClassLoader = new URLClassLoader(new URL[] { url }, jetEmitter.classLoader);
                         Class theClass = theClassLoader.loadClass((packageName.length() == 0 ? "" : packageName + ".") //$NON-NLS-1$ //$NON-NLS-2$
-                                + jetCompiler.getSkeleton().getClassName());
-                        String methodName = jetCompiler.getSkeleton().getMethodName();
+                                + skeleton.getClassName());
+                        String methodName = skeleton.getMethodName();
                         Method[] methods = theClass.getDeclaredMethods();
                         for (Method method2 : methods) {
                             if (method2.getName().equals(methodName)) {
@@ -388,23 +406,23 @@ public class TalendJetEmitter extends JETEmitter {
                     }
                 }
                 subProgressMonitor.done();
-            } catch (CoreException exception) {
-                TalendDebugHandler.debug(exception);
-                throw new JETException(
-                        Messages.getString("TalendJetEmitter.exception") + templateName + codePart + templateLanguage, exception); //$NON-NLS-1$
             } catch (Exception exception) {
                 TalendDebugHandler.debug(exception);
                 throw new JETException(
-                        Messages.getString("TalendJetEmitter.exception") + templateName + codePart + templateLanguage, exception); //$NON-NLS-1$
+                        Messages.getString("TalendJetEmitter.exception") + ' ' + templateName + codePart + templateLanguage, exception); //$NON-NLS-1$
             } finally {
                 try {
-                    contents.close();
+                    if (contents != null) {
+                        contents.close();
+                    }
                 } catch (Exception e) {
                     // ignore me even if i'm null
                 }
 
                 try {
-                    outputStream.close();
+                    if (outputStream != null) {
+                        outputStream.close();
+                    }
                 } catch (Exception e) {
                     // ignore me even if i'm null
                 }

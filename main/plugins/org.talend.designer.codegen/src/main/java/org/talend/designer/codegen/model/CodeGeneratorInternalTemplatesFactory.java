@@ -17,7 +17,7 @@ import java.util.List;
 
 import org.talend.designer.codegen.additionaljet.AbstractJetFileProvider;
 import org.talend.designer.codegen.additionaljet.CustomizeJetFilesProviderManager;
-import org.talend.designer.codegen.config.BundleJetBean;
+import org.talend.designer.codegen.config.BundleTemplateJetBean;
 
 /**
  * Create a list of Available templates in the application.
@@ -27,7 +27,7 @@ import org.talend.designer.codegen.config.BundleJetBean;
  */
 public class CodeGeneratorInternalTemplatesFactory {
 
-    private List<BundleJetBean> bundleJetBeans;
+    private List<BundleTemplateJetBean> bundleJetBeans;
 
     /**
      * Constructor.
@@ -39,21 +39,21 @@ public class CodeGeneratorInternalTemplatesFactory {
      * init list of templates.
      */
     public void init() {
-        bundleJetBeans = new ArrayList<BundleJetBean>();
+        bundleJetBeans = new ArrayList<BundleTemplateJetBean>();
         retrieveBundleBeansFromExtension();
     }
 
     private void retrieveBundleBeansFromExtension() {
         CustomizeJetFilesProviderManager componentsProviderManager = CustomizeJetFilesProviderManager.getInstance();
         for (AbstractJetFileProvider componentsProvider : componentsProviderManager.getProviders()) {
-            List<BundleJetBean> retrievedJetBeans = componentsProvider.retrieveJetBeans();
+            List<BundleTemplateJetBean> retrievedJetBeans = componentsProvider.retrieveJetBeans();
             if (retrievedJetBeans != null) {
                 this.bundleJetBeans.addAll(retrievedJetBeans);
             }
         }
     }
 
-    public List<BundleJetBean> getBundleJetBeans() {
+    public List<BundleTemplateJetBean> getBundleJetBeans() {
         return this.bundleJetBeans;
     }
 

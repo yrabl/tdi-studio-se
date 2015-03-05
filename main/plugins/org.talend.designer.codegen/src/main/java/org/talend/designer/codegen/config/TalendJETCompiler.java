@@ -89,7 +89,6 @@ public class TalendJETCompiler extends JETCompiler {
         super.handleDirective(directive, start, stop, newAttributes);
     }
 
-    @SuppressWarnings("deprecation")
     private String checkAndReplace(String fileURI) {
         if (fileURI != null) {
             Matcher matcher = PLUGIN_VAR_PATTERN.matcher(fileURI);
@@ -99,9 +98,9 @@ public class TalendJETCompiler extends JETCompiler {
                 // retrieve the plugin URI by pluginName.
                 Bundle refBundle = Platform.getBundle(refPluginName);
                 if (refBundle != null) {
-                    String realURI = Platform.getPlugin(refPluginName).getDescriptor().getInstallURL().toString();
-                    // replace the old fileURI to new one by pluginURI
-                    String newFileURI = fileURI.replaceFirst(PLUGIN_VAR_PATTERN.pattern(), realURI);
+                    // String realURI = Platform.getPlugin(refPluginName).getDescriptor().getInstallURL().toString();
+                    // replace the old fileURI to standard way "platform:/plugin/....".
+                    String newFileURI = fileURI.replaceFirst(PLUGIN_VAR_PATTERN.pattern(), refBundle.getEntry("/").toString()); //$NON-NLS-1$
                     return newFileURI;
 
                 }

@@ -68,7 +68,7 @@ import org.talend.core.ui.branding.IBrandingService;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.ICodeGeneratorService;
-import org.talend.designer.codegen.config.BundleJetBean;
+import org.talend.designer.codegen.config.BundleTemplateJetBean;
 import org.talend.designer.codegen.config.EInternalTemplate;
 import org.talend.designer.codegen.config.JetBean;
 import org.talend.designer.codegen.config.LightJetBean;
@@ -155,30 +155,19 @@ public final class CodeGeneratorEmittersPoolFactory {
 
                 List<JetBean> jetBeans = new ArrayList<JetBean>();
 
-                // List<TemplateUtil> templates = templatesFactory.getTemplates();
-                List<BundleJetBean> bundleJetBeans = templatesFactory.getBundleJetBeans();
+                List<BundleTemplateJetBean> bundleJetBeans = templatesFactory.getBundleJetBeans();
                 Set<IComponent> components = componentsFactory.getComponents();
                 TimeMeasure.step("initialize Jet Emitters", "getComponents"); //$NON-NLS-1$ //$NON-NLS-2$
 
                 monitorWrap.beginTask(Messages.getString("CodeGeneratorEmittersPoolFactory.initMessage"), //$NON-NLS-1$
                         (5 + 5 * components.size()));
 
-                int monitorBuffer = 0;
-                // for (TemplateUtil template : templates) {
-                // JetBean jetBean = initializeUtilTemplate(template);
-                // jetBeans.add(jetBean);
-                // monitorBuffer++;
-                // if (monitorBuffer % 100 == 0) {
-                // monitorWrap.worked(100);
-                // monitorBuffer = 0;
-                // }
-                // }
-                //
                 jetBeans.addAll(bundleJetBeans);
                 monitorWrap.worked(5);
 
                 TimeMeasure.step("initialize Jet Emitters", "initialize jet beans from templates"); //$NON-NLS-1$ //$NON-NLS-2$
 
+                int monitorBuffer = 0;
                 if (components != null) {
                     ECodePart codePart = ECodePart.MAIN;
                     for (IComponent component : new ArrayList<IComponent>(components)) {
@@ -377,7 +366,7 @@ public final class CodeGeneratorEmittersPoolFactory {
 
         if (component.getAvailableCodeParts().contains(codePart)) {
             IComponentFileNaming fileNamingInstance = ComponentsFactoryProvider.getFileNamingInstance();
-            String templateURI = component.getPathSource() + TemplateUtil.DIR_SEP + component.getName() + TemplateUtil.DIR_SEP
+            String templateURI = component.getPathSource() + '/' + component.getName() + '/'
                     + fileNamingInstance.getJetFileName(component, codeLanguage.getExtension(), codePart);
             String componentsPath = IComponentsFactory.COMPONENTS_LOCATION;
             IBrandingService breaningService = (IBrandingService) GlobalServiceRegister.getDefault().getService(
@@ -500,8 +489,12 @@ public final class CodeGeneratorEmittersPoolFactory {
                 alreadyCompiledEmitters = loadEmfPersistentData(EmfEmittersPersistenceFactory.getInstance(codeLanguage)
                         .loadEmittersPool(), jetBeans, monitorWrap);
                 for (JetBean jetBean : alreadyCompiledEmitters) {
-                    TalendJetEmitter emitter = new TalendJetEmitter(jetBean, dummyEmitter.getTalendEclipseHelper());
-                    emitterPool.put(jetBean, emitter);
+                    try {
+                        TalendJetEmitter emitter = new TalendJetEmitter(jetBean, dummyEmitter.getTalendEclipseHelper());
+                        emitterPool.put(jetBean, emitter);
+                    } catch (JETException e) {
+                        ExceptionHandler.process(e);
+                    }
                     monitorBuffer++;
                     if (monitorBuffer % 100 == 0) {
                         monitorWrap.worked(100);
@@ -516,7 +509,7 @@ public final class CodeGeneratorEmittersPoolFactory {
             ComponentCompilations.deleteMarkers();
         }
 
-        synchronizedComponent(jetBeans, sub, alreadyCompiledEmitters, dummyEmitter, monitorBuffer, monitorWrap);
+        synchronizedJets(jetBeans, sub, alreadyCompiledEmitters, dummyEmitter, monitorBuffer, monitorWrap);
 
         monitorWrap.worked(monitorBuffer);
         try {
@@ -527,45 +520,48 @@ public final class CodeGeneratorEmittersPoolFactory {
         }
     }
 
-    private static void synchronizedComponent(List<JetBean> components, IProgressMonitor sub,
-            List<JetBean> alreadyCompiledEmitters, TalendJetEmitter dummyEmitter, int monitorBuffer, IProgressMonitor monitorWrap) {
-        for (JetBean jetBean : components) {
+    private static void synchronizedJets(List<JetBean> jetBeans, IProgressMonitor sub, List<JetBean> alreadyCompiledEmitters,
+            TalendJetEmitter dummyEmitter, int monitorBuffer, IProgressMonitor monitorWrap) {
+        for (JetBean jetBean : jetBeans) {
             if (!emitterPool.containsKey(jetBean)) {
                 ComponentCompilations.deleteMarkers();
-
-                // System.out.println("The new file is not in JetPersistence* cache:" + getFullTemplatePath(jetBean));
-                TalendJetEmitter emitter = new TalendJetEmitter(jetBean, dummyEmitter.getTalendEclipseHelper());
-                // wzhang modified to fix bug 11439
-                if (monitorWrap.isCanceled()) {
-                    if (!CommonUIPlugin.isFullyHeadless()) {
-                        Display.getDefault().syncExec(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                MessageDialog.openError(Display.getDefault().getActiveShell(),
-                                        Messages.getString("CodeGeneratorEmittersPoolFactory.operationCanceled"), //$NON-NLS-1$
-                                        Messages.getString("CodeGeneratorEmittersPoolFactory.dialogContent")); //$NON-NLS-1$
-
-                            }
-                        });
-                    }
-                    return;
-                }
-                // 10901: Component synchronization fails
                 try {
+                    // System.out.println("The new file is not in JetPersistence* cache:" +
+                    // getFullTemplatePath(jetBean));
+                    TalendJetEmitter emitter = new TalendJetEmitter(jetBean, dummyEmitter.getTalendEclipseHelper());
+                    // wzhang modified to fix bug 11439
+                    if (monitorWrap.isCanceled()) {
+                        if (!CommonUIPlugin.isFullyHeadless()) {
+                            Display.getDefault().syncExec(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    MessageDialog.openError(Display.getDefault().getActiveShell(),
+                                            Messages.getString("CodeGeneratorEmittersPoolFactory.operationCanceled"), //$NON-NLS-1$
+                                            Messages.getString("CodeGeneratorEmittersPoolFactory.dialogContent")); //$NON-NLS-1$
+
+                                }
+                            });
+                        }
+                        return;
+                    }
+                    // 10901: Component synchronization fails
+
                     emitter.initialize(sub);
+
+                    if (emitter.isClassAvailable()) {
+                        alreadyCompiledEmitters.add(jetBean);
+                    } else {
+                        jetFilesCompileFail.add(jetBean);
+                    }
+                    emitterPool.put(jetBean, emitter);
+
                 } catch (JETException e) {
                     log.error(
                             Messages.getString("CodeGeneratorEmittersPoolFactory.jetEmitterInitialException") + e.getMessage(), e); //$NON-NLS-1$
                     continue;
                 }
 
-                if (emitter.isClassAvailable()) {
-                    alreadyCompiledEmitters.add(jetBean);
-                } else {
-                    jetFilesCompileFail.add(jetBean);
-                }
-                emitterPool.put(jetBean, emitter);
                 monitorBuffer++;
                 if (monitorBuffer % 100 == 0) {
                     monitorWrap.worked(100);
@@ -585,9 +581,7 @@ public final class CodeGeneratorEmittersPoolFactory {
         List<LightJetBean> toReturn = new ArrayList<LightJetBean>();
         for (JetBean unit : alreadyCompiledEmitters) {
             // long unitCRC = extractTemplateHashCode(unit);
-            long unitCRC = unit.getCrc();
-            toReturn.add(new LightJetBean(unit.getTemplateRelativeUri(), unit.getClassName(), unit.getMethodName(), unit
-                    .getVersion(), unit.getLanguage(), unitCRC));
+            toReturn.add(unit.createLightJetBean());
         }
         return toReturn;
     }
@@ -628,15 +622,13 @@ public final class CodeGeneratorEmittersPoolFactory {
             int lightBeanIndex = 0;
             LightJetBean lightBean = null;
             LightJetBean myLightJetBean = null;
-            String unitTemplateFullURI = ""; //$NON-NLS-1$
-            long unitTemplateHashCode = 0;
 
             HashMap<String, LightJetBean> mapOnName = new HashMap<String, LightJetBean>();
             boolean forceMethodLoad = ComponentCompilations.getMarkers();
             if (forceMethodLoad) {
                 // init specific map based on component name : mapOnName
                 for (LightJetBean ljb : datas) {
-                    mapOnName.put(ljb.getTemplateRelativeUri().substring(ljb.getTemplateRelativeUri().lastIndexOf("/")), ljb); //$NON-NLS-1$
+                    mapOnName.put(ljb.getJetPluginRepository() + '/' + ljb.getTemplateRelativeUri(), ljb);
                 }
             }
             int monitorBuffer = 0;
@@ -646,16 +638,14 @@ public final class CodeGeneratorEmittersPoolFactory {
                     monitorWrap.worked(200);
                     monitorBuffer = 0;
                 }
-                unitTemplateFullURI = unit.getTemplateRelativeUri();
-                unitTemplateHashCode = unit.getCrc();
 
-                myLightJetBean = new LightJetBean(unitTemplateFullURI, unit.getVersion(), unitTemplateHashCode);
+                myLightJetBean = unit.createLightJetBean();
                 if (((lightBeanIndex = datas.indexOf(myLightJetBean)) > -1) || forceMethodLoad) {
                     if (!forceMethodLoad) {
                         lightBean = datas.get(lightBeanIndex);
                     } else {
-                        lightBean = mapOnName.get(myLightJetBean.getTemplateRelativeUri().substring(
-                                myLightJetBean.getTemplateRelativeUri().lastIndexOf("/"))); //$NON-NLS-1$
+                        lightBean = mapOnName.get(myLightJetBean.getJetPluginRepository() + '/'
+                                + myLightJetBean.getTemplateRelativeUri());
                     }
                     if (lightBean != null && lightBean.getCrc() == unit.getCrc()) {
                         unit.setClassName(lightBean.getClassName());

@@ -1,10 +1,9 @@
 package org.talend.designer.components.localprovider;
 
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
-import org.talend.designer.codegen.additionaljet.AbstractJetFileProvider;
+import org.talend.designer.codegen.additionaljet.AbstractResourcesJetFileProvider;
 
-public class BoxJetFileProvider extends AbstractJetFileProvider {
+public class BoxJetFileProvider extends AbstractResourcesJetFileProvider {
 
     // @Override
     // public String getBundleId() {
@@ -13,7 +12,7 @@ public class BoxJetFileProvider extends AbstractJetFileProvider {
 
     @Override
     protected IPath getBasePath() {
-        return new Path("resources/box"); //$NON-NLS-1$
+        return super.getBasePath().append("box"); //$NON-NLS-1$
     }
 
 }

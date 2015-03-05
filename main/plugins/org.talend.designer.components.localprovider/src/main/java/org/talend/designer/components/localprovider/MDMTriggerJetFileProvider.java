@@ -13,14 +13,13 @@
 package org.talend.designer.components.localprovider;
 
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
-import org.talend.designer.codegen.additionaljet.AbstractJetFileProvider;
+import org.talend.designer.codegen.additionaljet.AbstractResourcesJetFileProvider;
 
 /**
  * @author rdubois
  *
  */
-public class MDMTriggerJetFileProvider extends AbstractJetFileProvider {
+public class MDMTriggerJetFileProvider extends AbstractResourcesJetFileProvider {
 
     // @Override
     // public String getBundleId() {
@@ -29,7 +28,7 @@ public class MDMTriggerJetFileProvider extends AbstractJetFileProvider {
 
     @Override
     protected IPath getBasePath() {
-        return new Path("resources/mdmTrigger"); //$NON-NLS-1$
+        return super.getBasePath().append("mdmTrigger"); //$NON-NLS-1$
     }
 
 }

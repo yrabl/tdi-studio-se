@@ -22,7 +22,7 @@ import org.talend.designer.codegen.config.TemplateUtil;
  * created by ggu on Sep 22, 2014 Detailled comment
  *
  */
-public class SystemJetFilesProvider extends AbstractJetFileProvider {
+public class SystemJetFilesProvider extends AbstractResourcesJetFileProvider {
 
     // @Override
     // public String getBundleId() {
