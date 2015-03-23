@@ -170,12 +170,16 @@ public abstract class AbstractJetFileProvider {
                         if (jetBean != null) {
                             beans.add(jetBean);
                         }
-                    } else if (f.isDirectory()) { // don't process the sub folders.
-                        // retrieveJetBeansFromFolder(f, beans);
+                    } else if (enableRetrievingSubFolders() && f.isDirectory()) {
+                        retrieveJetBeansFromFolder(f, beans);
                     }
                 }
             }
         }
+    }
+
+    protected boolean enableRetrievingSubFolders() {
+        return false; // by default, don't process the sub folders.
     }
 
     /**
@@ -204,7 +208,7 @@ public abstract class AbstractJetFileProvider {
      */
     protected boolean validResource(File res) {
         if (res != null && res.isFile()) {
-            if (res.getName().endsWith(ECodeLanguage.JAVA.getExtension() + TemplateUtil.TEMPLATE_EXT)) {
+            if (res.getName().endsWith('.' + ECodeLanguage.JAVA.getExtension() + TemplateUtil.TEMPLATE_EXT)) {
                 return true;
             }
         }
