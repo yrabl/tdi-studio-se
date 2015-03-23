@@ -170,8 +170,8 @@ public abstract class AbstractJetFileProvider {
                         if (jetBean != null) {
                             beans.add(jetBean);
                         }
-                    } else if (f.isDirectory()) {
-                        retrieveJetBeansFromFolder(f, beans);
+                    } else if (f.isDirectory()) { // don't process the sub folders.
+                        // retrieveJetBeansFromFolder(f, beans);
                     }
                 }
             }
@@ -225,7 +225,11 @@ public abstract class AbstractJetFileProvider {
     }
 
     protected ClassLoader getJetBeanClassLoader() {
-        return this.getClass().getClassLoader(); // FIXME TUP-2233, need check or not?
+        // return this.getClass().getClassLoader(); // FIXME TUP-2233, need check or not?
+        ProxyAdditionalClassLoader proxyClassLoader = new ProxyAdditionalClassLoader(this.getClass().getClassLoader());
+        // add codegen class loader
+        proxyClassLoader.addAdditionalClassLoader(CodeGeneratorActivator.class.getClassLoader());
+        return proxyClassLoader;
     }
 
 }

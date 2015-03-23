@@ -14,18 +14,10 @@ package org.talend.designer.codegen.model;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
-import org.eclipse.emf.codegen.CodeGenPlugin;
 import org.talend.core.language.ECodeLanguage;
-import org.talend.designer.codegen.config.TalendJetEmitter;
 
 /**
  * DOC mhirt class global comment. Detailled comment <br/>
@@ -35,54 +27,24 @@ import org.talend.designer.codegen.config.TalendJetEmitter;
  */
 public final class EmfEmittersPersistenceFactory {
 
-    private static Logger log = Logger.getLogger(EmfEmittersPersistenceFactory.class);
-
     private static EmfEmittersPersistence singleton = null;
 
     private EmfEmittersPersistenceFactory() {
     }
 
-    public static EmfEmittersPersistence getInstance(ECodeLanguage language) {
-        if (singleton == null || !singleton.getLanguage().equals(language)) {
+    public static EmfEmittersPersistence getInstance() {
+        if (singleton == null) {
 
-            final IProject project = getJetProject();
-            IFile iFile = null;
+            final IProject project = CodeGeneratorEmittersPoolFactory.initializeJetEmittersProject(new NullProgressMonitor());
+            IFile jetPersistenceFile = null;
             if (project != null) {
-                iFile = project.getFile("JetPersistence" + language); //$NON-NLS-1$
+                jetPersistenceFile = project.getFile("JetPersistence" + ECodeLanguage.JAVA); //$NON-NLS-1$
+                File file = jetPersistenceFile.getLocation().toFile();
+                singleton = new EmfEmittersPersistence(ECodeLanguage.JAVA, file);
             }
-            File file = iFile.getLocation().toFile();
-
-            singleton = new EmfEmittersPersistence(language, file);
         }
 
         return singleton;
-    }
-
-    /**
-     * DOC mhirt Comment method "getJetProject".
-     * 
-     * @return
-     * @throws CoreException
-     */
-    private static IProject getJetProject() {
-        IProject project = null;
-        try {
-            IProgressMonitor monitor = new NullProgressMonitor();
-            IProgressMonitor progressMonitor = new SubProgressMonitor(monitor, 1);
-
-            IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            project = workspace.getRoot().getProject(TalendJetEmitter.JET_PROJECT_NAME);
-            if (!project.exists()) {
-                project.create(new SubProgressMonitor(progressMonitor, 1));
-                progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETCreatingProject_message", //$NON-NLS-1$
-                        new Object[] { project.getName() }));
-                project.open(new SubProgressMonitor(progressMonitor, 1));
-            }
-        } catch (CoreException e) {
-            log.error(e.getMessage(), e);
-            project = null;
-        }
-        return project;
     }
 
 }

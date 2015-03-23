@@ -58,6 +58,7 @@ import org.talend.core.GlobalServiceRegister;
 import org.talend.core.IService;
 import org.talend.core.PluginChecker;
 import org.talend.core.language.ECodeLanguage;
+import org.talend.core.model.components.AbstractComponentsProvider;
 import org.talend.core.model.components.ComponentCompilations;
 import org.talend.core.model.components.IComponent;
 import org.talend.core.model.components.IComponentFileNaming;
@@ -68,6 +69,7 @@ import org.talend.core.ui.branding.IBrandingService;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.ICodeGeneratorService;
+import org.talend.designer.codegen.additionaljet.ProxyAdditionalClassLoader;
 import org.talend.designer.codegen.config.BundleTemplateJetBean;
 import org.talend.designer.codegen.config.EInternalTemplate;
 import org.talend.designer.codegen.config.JetBean;
@@ -257,41 +259,6 @@ public final class CodeGeneratorEmittersPoolFactory {
             return Status.OK_STATUS;
         }
 
-        /**
-         * DOC nrousseau Comment method "initializeJetEmittersProject".
-         * 
-         * @throws CoreException
-         */
-        private void initializeJetEmittersProject(IProgressMonitor progressMonitor) throws CoreException {
-            final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-
-            IProject project = workspace.getRoot().getProject(TalendJetEmitter.JET_PROJECT_NAME);
-            progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETPreparingProject_message", //$NON-NLS-1$
-                    new Object[] { project.getName() }));
-            File file = new File(project.getLocation().toPortableString());
-            if (file.exists() && !project.isAccessible()) {
-                // .metadata missing, so need to reimport project to add it in the metadata.
-                progressMonitor.subTask("Reinitilializing project " + project.getName()); //$NON-NLS-1$
-                project.create(new SubProgressMonitor(progressMonitor, 1));
-                progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETCreatingProject_message", //$NON-NLS-1$
-                        new Object[] { project.getName() }));
-            } else if (!project.isAccessible()) {
-                // project was deleted manually on the disk. The delete here will remove infos from metadata
-                // then we'll be able to create a new clean project.
-                project.delete(true, progressMonitor);
-            }
-            if (!project.exists()) {
-                progressMonitor.subTask("JET creating project " + project.getName()); //$NON-NLS-1$
-                project.create(new SubProgressMonitor(progressMonitor, 1));
-                progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETCreatingProject_message", //$NON-NLS-1$
-                        new Object[] { project.getName() }));
-            }
-            if (!project.isOpen()) {
-                project.open(new SubProgressMonitor(progressMonitor, 5));
-                project.refreshLocal(IResource.DEPTH_INFINITE, new SubProgressMonitor(progressMonitor, 1));
-            }
-        }
-
     };
 
     public static Job initialize() {
@@ -353,6 +320,53 @@ public final class CodeGeneratorEmittersPoolFactory {
     // jetBean.setClassLoader(new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader());
     // return jetBean;
     // }
+    /**
+     * DOC nrousseau Comment method "initializeJetEmittersProject".
+     * 
+     * @throws CoreException
+     */
+    public static synchronized IProject initializeJetEmittersProject(IProgressMonitor progressMonitor) {
+        try {
+            final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+
+            IProject project = workspace.getRoot().getProject(TalendJetEmitter.JET_PROJECT_NAME);
+            progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETPreparingProject_message", //$NON-NLS-1$
+                    new Object[] { project.getName() }));
+            File jetFolder = new File(workspace.getRoot().getLocation().toFile(), TalendJetEmitter.JET_PROJECT_NAME);
+            if (!project.exists() && jetFolder.exists()) { // same folder but not project, need delete first?
+                jetFolder.delete();
+            }
+
+            if (!project.isAccessible()) {
+                if (project.exists()) {
+                    // project was deleted manually on the disk. The delete here will remove infos from metadata
+                    // then we'll be able to create a new clean project.
+                    project.delete(true, progressMonitor);
+                } else {
+                    // .metadata missing, so need to reimport project to add it in the metadata.
+                    progressMonitor.subTask("Reinitilializing project " + project.getName()); //$NON-NLS-1$
+                    project.create(new SubProgressMonitor(progressMonitor, 1));
+                    progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETCreatingProject_message", //$NON-NLS-1$
+                            new Object[] { project.getName() }));
+                }
+            }
+            if (!project.exists()) {
+                progressMonitor.subTask("JET creating project " + project.getName()); //$NON-NLS-1$
+                project.create(new SubProgressMonitor(progressMonitor, 1));
+                progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETCreatingProject_message", //$NON-NLS-1$
+                        new Object[] { project.getName() }));
+            }
+            if (!project.isOpen()) {
+                project.open(new SubProgressMonitor(progressMonitor, 5));
+                project.refreshLocal(IResource.DEPTH_INFINITE, new SubProgressMonitor(progressMonitor, 1));
+            }
+
+            return project;
+        } catch (CoreException e) {
+            ExceptionHandler.process(e);
+        }
+        return null;
+    }
 
     /**
      * initialization of the available components.
@@ -403,14 +417,16 @@ public final class CodeGeneratorEmittersPoolFactory {
 
             // Spark, M/R and Storm requires the plugin org.talend.designer.spark to be in the classpath in order to
             // generate the code.
+            final ClassLoader defaultClassLoader = new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader();// default
+            ClassLoader classLoader = defaultClassLoader;
+
             if (PluginChecker.isPluginLoaded("org.talend.designer.spark") && ("SPARK".equals(component.getPaletteType()) || "MR".equals(component.getPaletteType()) || "STORM".equals(component.getPaletteType()) || "SPARKSTREAMING".equals(component.getPaletteType()))) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
                 jetBean.addClassPath("SPARK_LIBRARIES", "org.talend.designer.spark"); //$NON-NLS-1$ //$NON-NLS-2$
                 try {
                     // We use a delegate classloader made of the org.talend.designer.codegen class loader as a parent
                     // and the org.talend.libraries.spark as a delegate.
-                    jetBean.setClassLoader(new DelegateClassLoader(new CodeGeneratorEmittersPoolFactory().getClass()
-                            .getClassLoader(), Platform.getBundle("org.talend.designer.spark") //$NON-NLS-1$
-                            .loadClass("org.talend.designer.spark.SparkPlugin").getClassLoader())); //$NON-NLS-1$
+                    classLoader = new DelegateClassLoader(defaultClassLoader, Platform.getBundle("org.talend.designer.spark") //$NON-NLS-1$
+                            .loadClass("org.talend.designer.spark.SparkPlugin").getClassLoader()); //$NON-NLS-1$
                 } catch (ClassNotFoundException e) {
                     ExceptionHandler.process(e);
                 }
@@ -421,21 +437,39 @@ public final class CodeGeneratorEmittersPoolFactory {
                     jetBean.addClassPath(
                             "EXTERNAL_COMPONENT_" + component.getPluginExtension().toUpperCase().replaceAll("\\.", "_"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                             component.getPluginExtension());
-                    jetBean.setClassLoader(new DelegateClassLoader(ExternalNodesFactory
-                            .getInstance(component.getPluginExtension()).getClass().getClassLoader(), jetBean.getClassLoader()));
+                    classLoader = new DelegateClassLoader(ExternalNodesFactory.getInstance(component.getPluginExtension())
+                            .getClass().getClassLoader(), classLoader);
                 }
 
             } else if (component.getPluginExtension() != null) {
-
                 jetBean.addClassPath("EXTERNAL_COMPONENT_" + component.getPluginExtension().toUpperCase().replaceAll("\\.", "_"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         component.getPluginExtension());
-                jetBean.setClassLoader(ExternalNodesFactory.getInstance(component.getPluginExtension()).getClass()
-                        .getClassLoader());
+                classLoader = ExternalNodesFactory.getInstance(component.getPluginExtension()).getClass().getClassLoader();
             } else {
+                ClassLoader jetLoader = jetBean.getClassLoader();
+                if (component instanceof EmfComponent) {
+                    AbstractComponentsProvider provider = ((EmfComponent) component).getProvider();
+                    if (provider != null) {
+                        jetLoader = provider.getClass().getClassLoader();
+                    }
+                }
+                if (jetLoader != null) {
+                    ProxyAdditionalClassLoader proxyLoader = null;
+                    if (jetLoader instanceof ProxyAdditionalClassLoader) {
+                        proxyLoader = (ProxyAdditionalClassLoader) jetLoader;
+                    } else {
+                        proxyLoader = new ProxyAdditionalClassLoader(jetLoader);
+                    }
+                    if (defaultClassLoader != jetLoader) {
+                        // add current class loader
+                        proxyLoader.addAdditionalClassLoader(defaultClassLoader);
+                    }
 
-                jetBean.setClassLoader(new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader());
+                    classLoader = proxyLoader;
+                }
 
             }
+            jetBean.setClassLoader(classLoader);
 
             jetBeans.add(jetBean);
         }
@@ -486,8 +520,8 @@ public final class CodeGeneratorEmittersPoolFactory {
 
         if (!isSkeletonChanged) {
             try {
-                alreadyCompiledEmitters = loadEmfPersistentData(EmfEmittersPersistenceFactory.getInstance(codeLanguage)
-                        .loadEmittersPool(), jetBeans, monitorWrap);
+                alreadyCompiledEmitters = loadEmfPersistentData(EmfEmittersPersistenceFactory.getInstance().loadEmittersPool(),
+                        jetBeans, monitorWrap);
                 for (JetBean jetBean : alreadyCompiledEmitters) {
                     try {
                         TalendJetEmitter emitter = new TalendJetEmitter(jetBean, dummyEmitter.getTalendEclipseHelper());
@@ -513,8 +547,7 @@ public final class CodeGeneratorEmittersPoolFactory {
 
         monitorWrap.worked(monitorBuffer);
         try {
-            EmfEmittersPersistenceFactory.getInstance(codeLanguage).saveEmittersPool(
-                    extractEmfPersistenData(alreadyCompiledEmitters));
+            EmfEmittersPersistenceFactory.getInstance().saveEmittersPool(extractEmfPersistenData(alreadyCompiledEmitters));
         } catch (BusinessException e) {
             log.error(Messages.getString("CodeGeneratorEmittersPoolFactory.PersitentData.Error") + e.getMessage(), e); //$NON-NLS-1$
         }
