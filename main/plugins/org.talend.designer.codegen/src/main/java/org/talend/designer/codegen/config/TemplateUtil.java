@@ -17,9 +17,7 @@ package org.talend.designer.codegen.config;
  * 
  * $Id$
  * 
- * @deprecated BundleJetTemplate instead
  */
-@Deprecated
 public class TemplateUtil {
 
     public static final String RESOURCES_DIRECTORY = "resources"; //$NON-NLS-1$
@@ -31,75 +29,4 @@ public class TemplateUtil {
 
     public static final String TEMPLATE_EXT = "jet"; //$NON-NLS-1$
 
-    private String resourceName = ""; //$NON-NLS-1$
-
-    private String version = ""; //$NON-NLS-1$
-
-    /**
-     * Constructor.
-     * 
-     * @param resourceName
-     */
-    public TemplateUtil(EInternalTemplate template) {
-        this.resourceName = template.getTemplateName();
-        this.version = template.getVersion();
-    }
-
-    public TemplateUtil(String resourceName, String version) {
-        this.resourceName = resourceName;
-        this.version = version;
-    }
-
-    /**
-     * Getter for resourceName.
-     * 
-     * @return the resourceName
-     */
-    public String getResourceName() {
-        return this.resourceName;
-    }
-
-    /**
-     * Sets the resourceName.
-     * 
-     * @param resourceName the resourceName to set
-     */
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
-    }
-
-    /**
-     * Getter for version.
-     * 
-     * @return the version
-     */
-    public String getVersion() {
-        return this.version;
-    }
-
-    /**
-     * Sets the version.
-     * 
-     * @param version the version to set
-     */
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    @Override
-    public boolean equals(Object arg0) {
-        if (arg0 != null) {
-            try {
-                TemplateUtil t = (TemplateUtil) arg0;
-                if (t.getResourceName() != null) {
-                    if ((t.getResourceName().equals(this.getResourceName())) & (t.getVersion().equals(this.getVersion()))) {
-                        return true;
-                    }
-                }
-            } catch (Exception e) {
-                return false;
-            }
-        }
-        return false;
-    }
 }

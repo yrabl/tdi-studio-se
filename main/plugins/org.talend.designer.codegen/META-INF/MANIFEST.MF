@@ -26,6 +26,7 @@ Export-Package: org.talend.designer.codegen,
  org.talend.designer.codegen.components.ui,
  org.talend.designer.codegen.config,
  org.talend.designer.codegen.exception,
+ org.talend.designer.codegen.generator,
  org.talend.designer.codegen.model,
  org.talend.designer.codegen.proxy
 Bundle-Vendor: .Talend SA.

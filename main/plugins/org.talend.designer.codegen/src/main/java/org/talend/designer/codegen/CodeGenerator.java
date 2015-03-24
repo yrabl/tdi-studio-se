@@ -18,33 +18,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.emf.codegen.jet.JETException;
 import org.talend.commons.exception.ExceptionHandler;
-import org.talend.commons.utils.PasswordEncryptUtil;
 import org.talend.commons.utils.VersionUtils;
 import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
-import org.talend.core.context.Context;
-import org.talend.core.context.RepositoryContext;
-import org.talend.core.language.ECodeLanguage;
-import org.talend.core.model.components.IComponentFileNaming;
-import org.talend.core.model.components.IComponentsFactory;
 import org.talend.core.model.process.EConnectionType;
 import org.talend.core.model.process.ElementParameterParser;
 import org.talend.core.model.process.IConnection;
 import org.talend.core.model.process.IConnectionCategory;
-import org.talend.core.model.process.IContext;
-import org.talend.core.model.process.IContextParameter;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.INode;
 import org.talend.core.model.process.IProcess;
 import org.talend.core.model.process.IProcess2;
 import org.talend.core.model.temp.ECodePart;
 import org.talend.core.model.temp.ETypeGen;
-import org.talend.core.ui.branding.IBrandingService;
-import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.designer.codegen.config.BundleTemplateJetBean;
 import org.talend.designer.codegen.config.CloseBlocksCodeArgument;
 import org.talend.designer.codegen.config.CodeGeneratorArgument;
@@ -53,12 +40,11 @@ import org.talend.designer.codegen.config.JetBean;
 import org.talend.designer.codegen.config.NodesSubTree;
 import org.talend.designer.codegen.config.NodesTree;
 import org.talend.designer.codegen.config.SubTreeArgument;
-import org.talend.designer.codegen.config.TemplateUtil;
 import org.talend.designer.codegen.exception.CodeGeneratorException;
+import org.talend.designer.codegen.generator.AbstractCodeGenerator;
 import org.talend.designer.codegen.i18n.Messages;
 import org.talend.designer.codegen.model.CodeGeneratorEmittersPoolFactory;
 import org.talend.designer.codegen.model.CodeGeneratorInternalTemplatesFactoryProvider;
-import org.talend.designer.codegen.proxy.JetProxy;
 import org.talend.designer.core.ICamelDesignerCoreService;
 
 /**
@@ -67,11 +53,7 @@ import org.talend.designer.core.ICamelDesignerCoreService;
  * $Id$
  * 
  */
-public class CodeGenerator implements ICodeGenerator {
-
-    private static Logger log = Logger.getLogger(CodeGenerator.class);
-
-    private IProcess process;
+public class CodeGenerator extends AbstractCodeGenerator {
 
     private boolean statistics;
 
@@ -83,17 +65,9 @@ public class CodeGenerator implements ICodeGenerator {
 
     private String runtimeFilePath;
 
-    private String currentProjectName;
-
-    private String jobName;
-
-    private String jobVersion;
-
     private boolean checkingSyntax = false;
 
     private String contextName;
-
-    private ECodeLanguage language;
 
     private List<? extends INode> nodes;
 
@@ -114,80 +88,63 @@ public class CodeGenerator implements ICodeGenerator {
      * @param language
      */
     public CodeGenerator(IProcess process, boolean statistics, boolean trace, String... options) {
-        IBrandingService service = (IBrandingService) GlobalServiceRegister.getDefault().getService(IBrandingService.class);
-        if (process == null) {
-            throw new NullPointerException();
+        super(process);
+        this.statistics = statistics;
+        this.trace = trace;
+
+        this.checkingSyntax = false;
+
+        if ((options != null) && (options.length == 5)) {
+            this.interpreterPath = options[0];
+            this.libPath = options[1];
+            this.runtimeFilePath = options[2];
+            this.currentProjectName = options[3];
+            this.exportAsOSGI = options[4];
+        } else if ((options != null) && (options.length == 4)) {
+            this.interpreterPath = options[0];
+            this.libPath = options[1];
+            this.runtimeFilePath = options[2];
+            this.currentProjectName = options[3];
         } else {
-            this.process = process;
-            this.statistics = statistics;
-            this.trace = trace;
-            this.jobName = process.getName();
-            this.jobVersion = ""; //$NON-NLS-1$
-            if (process.getVersion() != null) {
-                this.jobVersion = process.getVersion().replace(".", "_"); //$NON-NLS-1$ //$NON-NLS-2$
-            }
+            this.interpreterPath = ""; //$NON-NLS-1$
+            this.libPath = ""; //$NON-NLS-1$
+            this.runtimeFilePath = ""; //$NON-NLS-1$
+            this.currentProjectName = ""; //$NON-NLS-1$
+        }
 
-            this.contextName = process.getContextManager().getDefaultContext().getName();
-            this.checkingSyntax = false;
+        if (DEBUG) {
+            nodes = process.getGraphicalNodes();
+            System.out.println(Messages.getString("CodeGenerator.getGraphicalNode1")); //$NON-NLS-1$
+            printForDebug();
+        }
 
-            if ((options != null) && (options.length == 5)) {
-                this.interpreterPath = options[0];
-                this.libPath = options[1];
-                this.runtimeFilePath = options[2];
-                this.currentProjectName = options[3];
-                this.exportAsOSGI = options[4];
-            } else if ((options != null) && (options.length == 4)) {
-                this.interpreterPath = options[0];
-                this.libPath = options[1];
-                this.runtimeFilePath = options[2];
-                this.currentProjectName = options[3];
-            } else {
-                this.interpreterPath = ""; //$NON-NLS-1$
-                this.libPath = ""; //$NON-NLS-1$
-                this.runtimeFilePath = ""; //$NON-NLS-1$
-                this.currentProjectName = ""; //$NON-NLS-1$
-            }
+        nodes = process.getGeneratingNodes();
 
-            if (DEBUG) {
-                nodes = process.getGraphicalNodes();
-                System.out.println(Messages.getString("CodeGenerator.getGraphicalNode1")); //$NON-NLS-1$
-                printForDebug();
-            }
-
-            nodes = process.getGeneratingNodes();
-
-            if (DEBUG) {
-                System.out.println(Messages.getString("CodeGenerator.getGraphicalNode2")); //$NON-NLS-1$
-                printForDebug();
-            }
-            boolean isCamel = false;
-            if (GlobalServiceRegister.getDefault().isServiceRegistered(ICamelDesignerCoreService.class)) {
-                ICamelDesignerCoreService camelService = (ICamelDesignerCoreService) GlobalServiceRegister.getDefault()
-                        .getService(ICamelDesignerCoreService.class);
-                if (process != null && process instanceof IProcess2) {
-                    IProcess2 process2 = (IProcess2) process;
-                    if (camelService.isInstanceofCamelRoutes(process2.getProperty().getItem())) {
-                        isCamel = true;
-                    }
+        if (DEBUG) {
+            System.out.println(Messages.getString("CodeGenerator.getGraphicalNode2")); //$NON-NLS-1$
+            printForDebug();
+        }
+        boolean isCamel = false;
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(ICamelDesignerCoreService.class)) {
+            ICamelDesignerCoreService camelService = (ICamelDesignerCoreService) GlobalServiceRegister.getDefault().getService(
+                    ICamelDesignerCoreService.class);
+            if (process != null && process instanceof IProcess2) {
+                IProcess2 process2 = (IProcess2) process;
+                if (camelService.isInstanceofCamelRoutes(process2.getProperty().getItem())) {
+                    isCamel = true;
                 }
             }
-            if (isCamel) {
-                processTree = new NodesTree(process, nodes, true, ETypeGen.CAMEL);
-            } else {
-                processTree = new NodesTree(process, nodes, true);
-            }
-            RepositoryContext repositoryContext = (RepositoryContext) CorePlugin.getContext().getProperty(
-                    Context.REPOSITORY_CONTEXT_KEY);
-            language = repositoryContext.getProject().getLanguage();
-
         }
+        if (isCamel) {
+            processTree = new NodesTree(process, nodes, true, ETypeGen.CAMEL);
+        } else {
+            processTree = new NodesTree(process, nodes, true);
+        }
+
     }
 
     public CodeGenerator() {
-        RepositoryContext repositoryContext = (RepositoryContext) CorePlugin.getContext().getProperty(
-                Context.REPOSITORY_CONTEXT_KEY);
-        language = repositoryContext.getProject().getLanguage();
-
+        //
     }
 
     /**
@@ -287,14 +244,9 @@ public class CodeGenerator implements ICodeGenerator {
                             // TESB-2825 LiXP 20110823
                             // Do nothing.
                         } else {
+                            // And generate the component par of code
                             componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.MAIN, null,
-                                    ETypeGen.CAMEL)); // And
-                                                      // generate
-                                                      // the
-                                                      // component
-                                                      // par
-                                                      // of
-                                                      // code
+                                    ETypeGen.CAMEL));
                             componentsCode.append(";");
                         }
                     }
@@ -305,13 +257,8 @@ public class CodeGenerator implements ICodeGenerator {
                                 ETypeGen.CAMEL)); // And generate the component par of code
                         componentsCode.append(";");
                     }
-                    componentsCode.append(generateTypedComponentCode(EInternalTemplate.CAMEL_FOOTER, headerArgument)); // Close
-                                                                                                                       // the
-                                                                                                                       // last
-                                                                                                                       // route
-                                                                                                                       // in
-                                                                                                                       // the
-                                                                                                                       // CamelContext
+                    // Close the last route in the CamelContext
+                    componentsCode.append(generateTypedComponentCode(EInternalTemplate.CAMEL_FOOTER, headerArgument));
                     componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_FOOTER_ROUTE, lastSubtree));
                 }
             } else {
@@ -414,74 +361,6 @@ public class CodeGenerator implements ICodeGenerator {
         return null;
     }
 
-    /**
-     * Parse Process, and generate Code for Context Variables.
-     * 
-     * @param designerContext the context to generate code from
-     * @return the generated code
-     * @throws CodeGeneratorException if an error occurs during Code Generation
-     */
-    @Override
-    public String generateContextCode(IContext designerContext) throws CodeGeneratorException {
-        if (process != null) {
-            if (designerContext == null) {
-                designerContext = process.getContextManager().getDefaultContext();
-            }
-            List<IContextParameter> listParameters = designerContext.getContextParameterList();
-
-            if (listParameters != null) {
-                List<IContextParameter> listParametersCopy = new ArrayList<IContextParameter>(listParameters.size());
-                CodeGeneratorArgument codeGenArgument = new CodeGeneratorArgument();
-                // encrypt the password
-                for (IContextParameter iContextParameter : listParameters) {
-                    if (PasswordEncryptUtil.isPasswordType(iContextParameter.getType())) {
-                        IContextParameter icp = iContextParameter.clone();
-                        String pwd = icp.getValue();
-                        if (pwd != null && !pwd.isEmpty()) {
-                            try {
-                                icp.setValue(PasswordEncryptUtil.encryptPasswordHex(pwd));
-                            } catch (Exception e) {
-                                log.error(e.getMessage(), e);
-                            }
-                        }
-                        listParametersCopy.add(icp);
-                    } else {
-                        listParametersCopy.add(iContextParameter);
-                    }
-                }
-
-                codeGenArgument.setNode(listParametersCopy);
-                codeGenArgument.setContextName(designerContext.getName());
-                codeGenArgument.setCurrentProjectName(currentProjectName);
-                codeGenArgument.setJobName(jobName);
-
-                codeGenArgument.setJobVersion(jobVersion);
-
-                codeGenArgument.setIsRunInMultiThread(getRunInMultiThread());
-                codeGenArgument.setPauseTime(CorePlugin.getDefault().getRunProcessService().getPauseTime());
-
-                JetBean jetBean = initializeJetBean(codeGenArgument);
-
-                jetBean.setTemplateRelativeUri(TemplateUtil.RESOURCES_DIRECTORY + TemplateUtil.DIR_SEP
-                        + EInternalTemplate.CONTEXT + TemplateUtil.EXT_SEP + language.getExtension() + TemplateUtil.TEMPLATE_EXT);
-
-                JetProxy proxy = new JetProxy(jetBean);
-                String content;
-                try {
-                    content = proxy.generate();
-                } catch (JETException e) {
-                    log.error(e.getMessage(), e);
-                    throw new CodeGeneratorException(e);
-                } catch (CoreException e) {
-                    log.error(e.getMessage(), e);
-                    throw new CodeGeneratorException(e);
-                }
-                return content;
-            }
-        }
-        return ""; //$NON-NLS-1$
-    }
-
     /*
      * ADDED for TESB-7887 By GangLiu(non-Javadoc)
      * 
@@ -557,9 +436,8 @@ public class CodeGenerator implements ICodeGenerator {
 
         codeGenArgument.setCheckingSyntax(checkingSyntax);
         codeGenArgument.setIncomingName(incomingName);
-        codeGenArgument.setIsRunInMultiThread(getRunInMultiThread());
+        codeGenArgument.setIsRunInMultiThread(isRunInMultiThread());
         codeGenArgument.setPauseTime(CorePlugin.getDefault().getRunProcessService().getPauseTime());
-        JetBean jetBean = initializeJetBean(codeGenArgument);
 
         StringBuffer content = new StringBuffer();
         if (type == EInternalTemplate.HEADER_ADDITIONAL) {
@@ -578,41 +456,17 @@ public class CodeGenerator implements ICodeGenerator {
                 }
             }
         } else {
-            jetBean.setTemplateRelativeUri(TemplateUtil.RESOURCES_DIRECTORY + TemplateUtil.DIR_SEP + type + TemplateUtil.EXT_SEP
-                    + language.getExtension() + TemplateUtil.TEMPLATE_EXT);
-            content.append(instantiateJetProxy(jetBean));
-        }
-        return content;
-    }
-
-    private StringBuffer instantiateJetProxy(JetBean jetBean) throws CodeGeneratorException {
-        JetProxy proxy = new JetProxy(jetBean);
-        StringBuffer content = new StringBuffer();
-        try {
-            content.append(proxy.generate());
-        } catch (JETException e) {
-            log.error(e.getMessage(), e);
-            throw new CodeGeneratorException(e);
-        } catch (CoreException e) {
-            log.error(e.getMessage(), e);
-            throw new CodeGeneratorException(e);
-        }
-        return content;
-    }
-
-    private boolean getRunInMultiThread() {
-        boolean running = false;
-        // check the mutli-thread parameter in Job Settings.
-        if (process != null) {
-            IElementParameter parameter = process.getElementParameter("MULTI_THREAD_EXECATION"); //$NON-NLS-1$
-            if (parameter != null) {
-                Object obj = parameter.getValue();
-                if (obj instanceof Boolean && ((Boolean) obj).booleanValue()) {
-                    running = true;
-                }
+            // JetBean jetBean = initializeJetBean(codeGenArgument);
+            // jetBean.setTemplateRelativeUri(TemplateUtil.RESOURCES_DIRECTORY + TemplateUtil.DIR_SEP + type +
+            // TemplateUtil.EXT_SEP
+            // + language.getExtension() + TemplateUtil.TEMPLATE_EXT);
+            JetBean jetBean = getTemplateJetBean(type);
+            if (jetBean != null) {
+                jetBean.setArgument(codeGenArgument);
+                content.append(instantiateJetProxy(jetBean));
             }
         }
-        return running;
+        return content;
     }
 
     /**
@@ -786,19 +640,6 @@ public class CodeGenerator implements ICodeGenerator {
      * @return the generated code
      * @throws CodeGeneratorException if an error occurs during Code Generation
      */
-    private StringBuffer generatesTreeCode(NodesSubTree subProcess, INode node, ECodePart part) throws CodeGeneratorException {
-        return generatesTreeCode(subProcess, node, part, ETypeGen.ETL);
-    }
-
-    /**
-     * Generate this tree Code.
-     * 
-     * @param subProcess the tree
-     * @param node the tree root
-     * @param part the part of code to generate
-     * @return the generated code
-     * @throws CodeGeneratorException if an error occurs during Code Generation
-     */
     private StringBuffer generatesTreeCode(NodesSubTree subProcess, INode node, ECodePart part, ETypeGen typeGen)
             throws CodeGeneratorException {
         StringBuffer code = new StringBuffer();
@@ -906,40 +747,21 @@ public class CodeGenerator implements ICodeGenerator {
 
         argument.setCheckingSyntax(checkingSyntax);
         argument.setIncomingName(incomingName);
-        argument.setIsRunInMultiThread(getRunInMultiThread());
+        argument.setIsRunInMultiThread(isRunInMultiThread());
         argument.setPauseTime(CorePlugin.getDefault().getRunProcessService().getPauseTime());
 
-        JetBean jetBean = initializeJetBean(argument);
-
         StringBuffer content = new StringBuffer();
-        try {
-            if (typeGen == ETypeGen.ETL) {
-                content.append(generateTypedComponentCode(EInternalTemplate.PART_HEADER, node, part, incomingName, subProcess));
-            }
 
-            IComponentFileNaming componentFileNaming = ComponentsFactoryProvider.getFileNamingInstance();
-            String templateURI = node.getComponent().getPathSource() + TemplateUtil.DIR_SEP + node.getComponent().getName()
-                    + TemplateUtil.DIR_SEP
-                    + componentFileNaming.getJetFileName(node.getComponent(), language.getExtension(), part);
-
-            jetBean.setTemplateRelativeUri(templateURI);
-            JetProxy proxy = new JetProxy(jetBean);
-            content.append(proxy.generate());
-            if (jetBean.getGenerationError() != null) {
-                throw new CodeGeneratorException(jetBean.getGenerationError());
-            }
-            if (typeGen == ETypeGen.ETL) {
-                content.append(generateTypedComponentCode(EInternalTemplate.PART_FOOTER, node, part, incomingName, subProcess));
-            }
-
-        } catch (JETException jetException) {
-            log.error(jetException.getMessage(), jetException);
-            throw new CodeGeneratorException(jetException.toString() + " in " //$NON-NLS-1$
-                    + argument.getJobName() + " job", jetException); //$NON-NLS-1$
-        } catch (CoreException coreException) {
-            log.error(coreException.getMessage(), coreException);
-            throw new CodeGeneratorException(coreException);
+        if (typeGen == ETypeGen.ETL) {
+            content.append(generateTypedComponentCode(EInternalTemplate.PART_HEADER, node, part, incomingName, subProcess));
         }
+
+        content.append(instantiateJetProxy(getNodeJetBean(argument, part)));
+
+        if (typeGen == ETypeGen.ETL) {
+            content.append(generateTypedComponentCode(EInternalTemplate.PART_FOOTER, node, part, incomingName, subProcess));
+        }
+
         return content.toString();
     }
 
@@ -968,65 +790,18 @@ public class CodeGenerator implements ICodeGenerator {
         argument.setJobVersion(jobVersion);
 
         argument.setCheckingSyntax(checkingSyntax);
-        argument.setIsRunInMultiThread(getRunInMultiThread());
+        argument.setIsRunInMultiThread(isRunInMultiThread());
         argument.setPauseTime(CorePlugin.getDefault().getRunProcessService().getPauseTime());
-        JetBean jetBean = initializeJetBean(argument);
 
         StringBuffer content = new StringBuffer();
-        try {
-            content.append(generateTypedComponentCode(EInternalTemplate.PART_HEADER, node, part));
 
-            IComponentFileNaming componentFileNaming = ComponentsFactoryProvider.getFileNamingInstance();
-            String templateURI = node.getComponent().getPathSource() + TemplateUtil.DIR_SEP + node.getComponent().getName()
-                    + TemplateUtil.DIR_SEP
-                    + componentFileNaming.getJetFileName(node.getComponent(), language.getExtension(), part);
+        content.append(generateTypedComponentCode(EInternalTemplate.PART_HEADER, node, part));
 
-            jetBean.setTemplateRelativeUri(templateURI);
-            JetProxy proxy = new JetProxy(jetBean);
-            content.append(proxy.generate());
-            content.append(generateTypedComponentCode(EInternalTemplate.PART_FOOTER, node, part));
-        } catch (JETException jetException) {
-            log.error(jetException.getMessage(), jetException);
-            throw new CodeGeneratorException(jetException);
-        } catch (CoreException coreException) {
-            log.error(coreException.getMessage(), coreException);
-            throw new CodeGeneratorException(coreException);
-        }
+        content.append(instantiateJetProxy(getNodeJetBean(argument, part)));
+
+        content.append(generateTypedComponentCode(EInternalTemplate.PART_FOOTER, node, part));
+
         return content.toString();
-    }
-
-    /**
-     * Initialize Jet Bean to pass to the Jet Generator.
-     * 
-     * @param argument the node to convert
-     * @return the initialized JetBean
-     */
-    private JetBean initializeJetBean(Object argument) {
-        JetBean jetBean = new JetBean();
-
-        if (argument == null) {
-            jetBean.setJetPluginRepository(CodeGeneratorActivator.PLUGIN_ID);
-        } else {
-            if (argument instanceof CodeGeneratorArgument) {
-                CodeGeneratorArgument codeArgument = (CodeGeneratorArgument) argument;
-                if (codeArgument.getArgument() instanceof INode) {
-                    String componentsPath = IComponentsFactory.COMPONENTS_LOCATION;
-                    IBrandingService breaningService = (IBrandingService) GlobalServiceRegister.getDefault().getService(
-                            IBrandingService.class);
-                    if (breaningService.isPoweredOnlyCamel()) {
-                        componentsPath = IComponentsFactory.CAMEL_COMPONENTS_LOCATION;
-                    }
-                    jetBean.setJetPluginRepository(componentsPath);
-                } else {
-                    jetBean.setJetPluginRepository(CodeGeneratorActivator.PLUGIN_ID);
-                }
-            } else {
-                jetBean.setJetPluginRepository(CodeGeneratorActivator.PLUGIN_ID);
-            }
-        }
-
-        jetBean.setArgument(argument);
-        return jetBean;
     }
 
     /*
