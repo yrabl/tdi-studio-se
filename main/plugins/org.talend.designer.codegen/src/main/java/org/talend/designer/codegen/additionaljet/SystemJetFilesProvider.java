@@ -24,20 +24,17 @@ import org.talend.designer.codegen.config.TemplateUtil;
  */
 public class SystemJetFilesProvider extends AbstractResourcesJetFileProvider {
 
-    // @Override
-    // public String getBundleId() {
-    // return CodeGeneratorActivator.PLUGIN_ID;
-    // }
+    // .javajet
+    protected static final String EXT_JAVAJET = TemplateUtil.EXT_SEP + ECodeLanguage.JAVA.getExtension()
+            + TemplateUtil.TEMPLATE_EXT;
 
     @Override
     protected boolean validResource(File res) {
-        // only deal with the tempalte for internal??
+        // FIXME, only deal with the tempalte for internal??
         for (EInternalTemplate utilTemplate : EInternalTemplate.values()) {
-            // only process the javajet, and ignore the perljet.
-            // TODO, but need check the *.skeleton or not?
-            if (res.getName().equals(
-                    utilTemplate.getTemplateName() + TemplateUtil.EXT_SEP + ECodeLanguage.JAVA.getExtension()
-                            + TemplateUtil.TEMPLATE_EXT)) {
+            // only process the javajet.
+            // FIXME, but need check the *.skeleton or not?
+            if (res.getName().equals(utilTemplate.getTemplateName() + EXT_JAVAJET)) {
                 return true;
             }
         }

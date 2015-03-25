@@ -29,7 +29,6 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.talend.commons.CommonsPlugin;
 import org.talend.commons.exception.ExceptionHandler;
-import org.talend.commons.utils.io.FilesUtils;
 import org.talend.core.CorePlugin;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.runtime.CoreRuntimePlugin;
@@ -41,56 +40,6 @@ import org.talend.designer.codegen.config.TemplateUtil;
  * DOC wyang class global comment. Detailled comment
  */
 public abstract class AbstractJetFileProvider {
-
-    /**
-     * @deprecated won't overwrite it, will use from bundle directly.
-     */
-    @Deprecated
-    public void overwriteStubAdditionalFile() throws IOException {
-        File installationFolder = getInstallationFolder();
-
-        File externalFrameLocation = getExternalFrameLocation();
-        if (externalFrameLocation != null) {
-            if (externalFrameLocation.exists()) {
-                try {
-                    final FileFilter sourceFolderFilter = new FileFilter() {
-
-                        @Override
-                        public boolean accept(File pathname) {
-                            return false;
-                        }
-                    };
-                    FilesUtils.copyFolder(externalFrameLocation, installationFolder, false, sourceFolderFilter, null, true);
-                } catch (Throwable e) {
-                    ExceptionHandler.process(e);
-                }
-            }
-        }
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    protected File getExternalFrameLocation() {
-        return null;
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public File getInstallationFolder() throws IOException {
-
-        File installationFolder = null;
-        URL url = FileLocator.find(Platform.getBundle(CodeGeneratorActivator.PLUGIN_ID), new Path("resources"), null); //$NON-NLS-1$
-        URL fileUrl = FileLocator.toFileURL(url);
-        installationFolder = new File(fileUrl.getPath());
-
-        return installationFolder;
-    }
-
-    // --------------------------------------------------------------------------------------//
 
     private String id, bundleId;
 
