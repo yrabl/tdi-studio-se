@@ -17,7 +17,6 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,13 +32,20 @@ import org.talend.core.CorePlugin;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.designer.codegen.CodeGeneratorActivator;
-import org.talend.designer.codegen.config.BundleTemplateJetBean;
+import org.talend.designer.codegen.config.BundleExtJetBean;
+import org.talend.designer.codegen.config.BundleJetSkeletonBean;
+import org.talend.designer.codegen.config.JetBean;
 import org.talend.designer.codegen.config.TemplateUtil;
+import org.talend.designer.codegen.model.JetSkeletonManager;
 
 /**
  * DOC wyang class global comment. Detailled comment
  */
 public abstract class AbstractJetFileProvider {
+
+    // .javajet
+    protected static final String EXT_JAVAJET = TemplateUtil.EXT_SEP + ECodeLanguage.JAVA.getExtension()
+            + TemplateUtil.TEMPLATE_EXT;
 
     /* for extension point */
     private String id, bundleId;
@@ -48,6 +54,8 @@ public abstract class AbstractJetFileProvider {
     private final Map<String, String> overrideElementsMap = new HashMap<String, String>();
 
     private File resourcesRootFolder;
+
+    private List<JetBean> jetBeans;
 
     public String getId() {
         return id;
@@ -90,25 +98,56 @@ public abstract class AbstractJetFileProvider {
     }
 
     /**
-     * retrieve the jet from the base path.
+     * retrieve the javajet from the base path.
      */
-    public List<BundleTemplateJetBean> retrieveJetBeans() {
-        try {
-            List<BundleTemplateJetBean> jetBeans = new ArrayList<BundleTemplateJetBean>();
+    public List<BundleExtJetBean> retrieveExtJetBeans() {
+        retrieveJetBeans();
 
-            File resRootFolder = getResourcesRootFolder();
-            if (resRootFolder != null && resRootFolder.exists()) {
-                retrieveJetBeansFromFolder(resRootFolder, jetBeans);
+        List<BundleExtJetBean> extJetBeans = new ArrayList<BundleExtJetBean>();
+        for (JetBean bean : jetBeans) {
+            if (bean instanceof BundleExtJetBean) {
+                extJetBeans.add((BundleExtJetBean) bean);
             }
-
-            return jetBeans;
-        } catch (Exception e) {
-            ExceptionHandler.process(e);
         }
-        return Collections.emptyList();
+        return extJetBeans;
     }
 
-    protected void retrieveJetBeansFromFolder(File resourcesFolder, List<BundleTemplateJetBean> beans) {
+    /**
+     * 
+     * retrieve the .skeleton and inc.javajet
+     */
+    public List<BundleJetSkeletonBean> retrieveJetSkeletonBeans() {
+        retrieveJetBeans();
+
+        List<BundleJetSkeletonBean> jetSkeletonBeans = new ArrayList<BundleJetSkeletonBean>();
+        for (JetBean bean : jetBeans) {
+            if (bean instanceof BundleJetSkeletonBean) {
+                jetSkeletonBeans.add((BundleJetSkeletonBean) bean);
+            }
+        }
+        return jetSkeletonBeans;
+
+    }
+
+    /**
+     * 
+     * find all jet beans.
+     */
+    private void retrieveJetBeans() {
+        if (jetBeans == null) {
+            jetBeans = new ArrayList<JetBean>();
+            try {
+                File resRootFolder = getResourcesRootFolder();
+                if (resRootFolder != null && resRootFolder.exists()) {
+                    retrieveJetBeansFromFolder(resRootFolder, jetBeans);
+                }
+            } catch (Exception e) {
+                ExceptionHandler.process(e);
+            }
+        }
+    }
+
+    protected void retrieveJetBeansFromFolder(File resourcesFolder, List<JetBean> beans) {
         if (resourcesFolder.isDirectory()) {
             File[] childrenFiles = resourcesFolder.listFiles(new FileFilter() {
 
@@ -117,15 +156,22 @@ public abstract class AbstractJetFileProvider {
                     if (f.isDirectory()) {
                         return true;
                     }
-                    return validResource(f);
+                    return validJavaJetResource(f) || validJetSkeletonResource(f);
                 }
             });
             if (childrenFiles != null) {
                 for (File f : childrenFiles) {
                     if (f.isFile()) {
-                        BundleTemplateJetBean jetBean = createJetBean(f);
-                        if (jetBean != null) {
-                            beans.add(jetBean);
+                        if (validJetSkeletonResource(f)) {
+                            BundleJetSkeletonBean jetSkeletonBean = createJetSkeletonBean(f);
+                            if (jetSkeletonBean != null) {
+                                beans.add(jetSkeletonBean);
+                            }
+                        } else if (validJavaJetResource(f)) {
+                            BundleExtJetBean extJetBean = createJetBean(f);
+                            if (extJetBean != null) {
+                                beans.add(extJetBean);
+                            }
                         }
                     } else if (enableRetrievingSubFolders() && f.isDirectory()) {
                         retrieveJetBeansFromFolder(f, beans);
@@ -141,17 +187,35 @@ public abstract class AbstractJetFileProvider {
 
     /**
      * 
+     * valid the file is jet bean .javajet or not.
+     */
+    protected boolean validJavaJetResource(File res) {
+        if (res != null && res.isFile()) {
+            if (res.getName().endsWith(EXT_JAVAJET)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 
+     * valid the file is jet bean .javajet or not.
+     */
+    protected boolean validJetSkeletonResource(File res) {
+        return JetSkeletonManager.validJetSkeletonResource(res);
+    }
+
+    /**
+     * 
      * according to the jet file to create the jet bean bundle.
      */
-    protected BundleTemplateJetBean createJetBean(File file) {
-        File resRootFolder = getResourcesRootFolder();
-        Path basePath = new Path(resRootFolder.getAbsolutePath());
-
-        IPath relativePath = getBasePath().append(new Path(file.getAbsolutePath()).makeRelativeTo(basePath));
+    protected BundleExtJetBean createJetBean(File file) {
+        IPath relativePath = getFileRelativePath(file);
         // FIXME TUP-2233, the className is same file name?
         String className = relativePath.removeFileExtension().lastSegment();
 
-        BundleTemplateJetBean jetBean = new BundleTemplateJetBean(getBundleId(), relativePath.toString(), className);
+        BundleExtJetBean jetBean = new BundleExtJetBean(getBundleId(), relativePath.toString(), className);
 
         jetBean.setClassPath(new HashMap<String, String>(getJetBeanDependences(file)));
         jetBean.setClassLoader(getJetBeanClassLoader());
@@ -161,15 +225,20 @@ public abstract class AbstractJetFileProvider {
 
     /**
      * 
-     * valid the file is jet bean or not.
+     * create JetSkeletonBean.
      */
-    protected boolean validResource(File res) {
-        if (res != null && res.isFile()) {
-            if (res.getName().endsWith('.' + ECodeLanguage.JAVA.getExtension() + TemplateUtil.TEMPLATE_EXT)) {
-                return true;
-            }
-        }
-        return false;
+    protected BundleJetSkeletonBean createJetSkeletonBean(File file) {
+        IPath relativePath = getFileRelativePath(file);
+        BundleJetSkeletonBean jetSkeletonBean = new BundleJetSkeletonBean(getBundleId(), relativePath.toString());
+        return jetSkeletonBean;
+    }
+
+    protected IPath getFileRelativePath(File file) {
+        File resRootFolder = getResourcesRootFolder();
+        Path basePath = new Path(resRootFolder.getAbsolutePath());
+
+        IPath relativePath = getBasePath().append(new Path(file.getAbsolutePath()).makeRelativeTo(basePath));
+        return relativePath;
     }
 
     protected Map<String, String> getJetBeanDependences(File file) {

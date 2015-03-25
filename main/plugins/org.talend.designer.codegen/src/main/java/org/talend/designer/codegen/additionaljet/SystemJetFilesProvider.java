@@ -14,9 +14,7 @@ package org.talend.designer.codegen.additionaljet;
 
 import java.io.File;
 
-import org.talend.core.language.ECodeLanguage;
 import org.talend.designer.codegen.config.EInternalTemplate;
-import org.talend.designer.codegen.config.TemplateUtil;
 
 /**
  * created by ggu on Sep 22, 2014 Detailled comment
@@ -24,12 +22,8 @@ import org.talend.designer.codegen.config.TemplateUtil;
  */
 public class SystemJetFilesProvider extends AbstractResourcesJetFileProvider {
 
-    // .javajet
-    protected static final String EXT_JAVAJET = TemplateUtil.EXT_SEP + ECodeLanguage.JAVA.getExtension()
-            + TemplateUtil.TEMPLATE_EXT;
-
     @Override
-    protected boolean validResource(File res) {
+    protected boolean validJavaJetResource(File res) {
         // FIXME, only deal with the tempalte for internal??
         for (EInternalTemplate utilTemplate : EInternalTemplate.values()) {
             // only process the javajet.

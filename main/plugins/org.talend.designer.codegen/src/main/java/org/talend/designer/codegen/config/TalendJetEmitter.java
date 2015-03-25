@@ -118,7 +118,7 @@ public class TalendJetEmitter extends JETEmitter {
     }
 
     public TalendJetEmitter(JetBean jetbean, TalendEclipseHelper teh) throws JETException {
-        super(jetbean.getTemplateFullUri(), jetbean.getClassLoader());
+        super(jetbean.getFullUri(), jetbean.getClassLoader());
         this.jetbean = jetbean;
         this.templateName = jetbean.getClassName();
         this.componentFamily = jetbean.getFamily();

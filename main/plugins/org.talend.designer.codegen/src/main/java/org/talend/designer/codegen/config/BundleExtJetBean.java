@@ -13,27 +13,24 @@
 package org.talend.designer.codegen.config;
 
 import org.eclipse.core.runtime.Path;
-import org.talend.core.language.ECodeLanguage;
 
 /**
  * 
  * created by ggu on 2 Mar 2015 Detailled comment
  *
  */
-public class BundleTemplateJetBean extends JetBean implements Cloneable {
+public class BundleExtJetBean extends JetBean implements Cloneable {
 
     private static final long serialVersionUID = -668847534098310517L;
 
-    public static final String DEFAULT_VERSION = "0.0.1"; //$NON-NLS-1$
-
     private String name;
 
-    public BundleTemplateJetBean(String jetPluginRepository, String templateRelativeUri, String className, String version) {
-        super(jetPluginRepository, templateRelativeUri, className, version, ECodeLanguage.JAVA.getName(), EMPTY);
+    public BundleExtJetBean(String jetPluginRepository, String templateRelativeUri, String className, String version) {
+        super(jetPluginRepository, templateRelativeUri, className, version, EMPTY);
         this.name = new Path(templateRelativeUri).removeFileExtension().lastSegment();
     }
 
-    public BundleTemplateJetBean(String jetPluginRepository, String templateRelativeUri, String className) {
+    public BundleExtJetBean(String jetPluginRepository, String templateRelativeUri, String className) {
         this(jetPluginRepository, templateRelativeUri, className, DEFAULT_VERSION);
     }
 
@@ -46,8 +43,8 @@ public class BundleTemplateJetBean extends JetBean implements Cloneable {
     }
 
     @Override
-    public BundleTemplateJetBean clone() throws CloneNotSupportedException {
-        return (BundleTemplateJetBean) super.clone();
+    public BundleExtJetBean clone() throws CloneNotSupportedException {
+        return (BundleExtJetBean) super.clone();
     }
 
 }

@@ -38,7 +38,7 @@ import org.talend.core.ui.branding.IBrandingService;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.ICodeGenerator;
-import org.talend.designer.codegen.config.BundleTemplateJetBean;
+import org.talend.designer.codegen.config.BundleExtJetBean;
 import org.talend.designer.codegen.config.CodeGeneratorArgument;
 import org.talend.designer.codegen.config.EInternalTemplate;
 import org.talend.designer.codegen.config.JetBean;
@@ -88,9 +88,9 @@ public abstract class AbstractCodeGenerator implements ICodeGenerator {
     protected JetBean getTemplateJetBean(EInternalTemplate type) {
         JetBean jetBean = templateJetBeans.get(type);
         if (jetBean == null) {
-            List<BundleTemplateJetBean> bundleJetBeans = CodeGeneratorInternalTemplatesFactoryProvider.getInstance()
-                    .getBundleJetBeans();
-            for (BundleTemplateJetBean bundleBean : bundleJetBeans) {
+            List<BundleExtJetBean> bundleJetBeans = CodeGeneratorInternalTemplatesFactoryProvider.getInstance()
+                    .getBundleExtJetBeans();
+            for (BundleExtJetBean bundleBean : bundleJetBeans) {
                 if (bundleBean.getName().equals(type.getTemplateName())) {
                     try {
                         jetBean = bundleBean.clone();

@@ -12,10 +12,15 @@
 // ============================================================================
 package org.talend.designer.codegen.config;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.emf.common.CommonPlugin;
+import org.eclipse.emf.common.util.URI;
+import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.StringUtils;
 
 /**
@@ -58,9 +63,8 @@ public class JetBean extends LightJetBean {
      * @param classpathParameter
      * @param templateRelativeUri
      */
-    public JetBean(String jetPluginRepository, String templateRelativeUri, String className, String version, String language,
-            String codePart) {
-        super(jetPluginRepository, templateRelativeUri, EMPTY, EMPTY, version, language, 0);
+    public JetBean(String jetPluginRepository, String templateRelativeUri, String className, String version, String codePart) {
+        super(jetPluginRepository, templateRelativeUri, EMPTY, EMPTY, version, 0);
         this.classPath = new HashMap<String, String>();
 
         String tmpClassName = ""; //$NON-NLS-1$
@@ -70,7 +74,6 @@ public class JetBean extends LightJetBean {
             tmpClassName = className;
         }
         this.setClassName(StringUtils.capitalize(tmpClassName));
-        this.setLanguage(StringUtils.capitalize(language));
         if ((codePart != null) && (codePart.length() != 0)) {
             this.codePart = StringUtils.capitalize(codePart);
         } else {
@@ -129,8 +132,20 @@ public class JetBean extends LightJetBean {
      * 
      * @return
      */
-    public String getTemplateFullUri() {
+    public String getFullUri() {
         return getUri(getJetPluginRepository(), getTemplateRelativeUri());
+    }
+
+    public URL getResolvedURL() {
+        URI uri = URI.createURI(getFullUri());
+        uri = CommonPlugin.resolve(uri);
+        try {
+            URL url = new URL(uri.toString());
+            return url;
+        } catch (MalformedURLException e) {
+            ExceptionHandler.process(e);
+        }
+        return null;
     }
 
     /**
@@ -224,6 +239,6 @@ public class JetBean extends LightJetBean {
 
     public LightJetBean createLightJetBean() {
         return new LightJetBean(getJetPluginRepository(), getTemplateRelativeUri(), getClassName(), getMethodName(),
-                getVersion(), getLanguage(), getCrc());
+                getVersion(), getCrc());
     }
 }

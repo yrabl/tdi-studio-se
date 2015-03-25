@@ -20,7 +20,8 @@ import java.util.Map;
 
 import org.talend.designer.codegen.additionaljet.AbstractJetFileProvider;
 import org.talend.designer.codegen.additionaljet.CustomizeJetFilesProviderManager;
-import org.talend.designer.codegen.config.BundleTemplateJetBean;
+import org.talend.designer.codegen.config.BundleExtJetBean;
+import org.talend.designer.codegen.config.BundleJetSkeletonBean;
 
 /**
  * Create a list of Available templates in the application.
@@ -30,7 +31,9 @@ import org.talend.designer.codegen.config.BundleTemplateJetBean;
  */
 public class CodeGeneratorInternalTemplatesFactory {
 
-    private List<BundleTemplateJetBean> bundleJetBeans;
+    private List<BundleExtJetBean> extJetBeans;
+
+    private List<BundleJetSkeletonBean> jetSkeletonBeans;
 
     CodeGeneratorInternalTemplatesFactory() {
         init();
@@ -40,21 +43,26 @@ public class CodeGeneratorInternalTemplatesFactory {
      * init list of templates.
      */
     private void init() {
-        this.bundleJetBeans = new ArrayList<BundleTemplateJetBean>();
+        this.extJetBeans = new ArrayList<BundleExtJetBean>();
+        this.jetSkeletonBeans = new ArrayList<BundleJetSkeletonBean>();
 
         retrieveBundleJetBeansFromExtension();
     }
 
     private void retrieveBundleJetBeansFromExtension() {
-        CustomizeJetFilesProviderManager componentsProviderManager = CustomizeJetFilesProviderManager.getInstance();
-        final Map<String, AbstractJetFileProvider> providers = componentsProviderManager.getProviders();
+        CustomizeJetFilesProviderManager jetsProviderManager = CustomizeJetFilesProviderManager.getInstance();
+        final Map<String, AbstractJetFileProvider> providers = jetsProviderManager.getProviders();
 
-        final Map<AbstractJetFileProvider, List<BundleTemplateJetBean>> bundleJetBeansMap = new LinkedHashMap<AbstractJetFileProvider, List<BundleTemplateJetBean>>();
+        final Map<AbstractJetFileProvider, List<BundleExtJetBean>> bundleJetBeansMap = new LinkedHashMap<AbstractJetFileProvider, List<BundleExtJetBean>>();
         // retrieve jet beans
-        for (AbstractJetFileProvider componentsProvider : providers.values()) {
-            List<BundleTemplateJetBean> retrievedJetBeans = componentsProvider.retrieveJetBeans();
-            if (retrievedJetBeans != null) {
-                bundleJetBeansMap.put(componentsProvider, retrievedJetBeans);
+        for (AbstractJetFileProvider jetProvider : providers.values()) {
+            List<BundleExtJetBean> retrievedExtJetBeans = jetProvider.retrieveExtJetBeans();
+            if (retrievedExtJetBeans != null) {
+                bundleJetBeansMap.put(jetProvider, retrievedExtJetBeans);
+            }
+            List<BundleJetSkeletonBean> retrievedJetSkeletonBeans = jetProvider.retrieveJetSkeletonBeans();
+            if (retrievedJetSkeletonBeans != null) {
+                this.jetSkeletonBeans.addAll(retrievedJetSkeletonBeans);
             }
         }
 
@@ -71,14 +79,14 @@ public class CodeGeneratorInternalTemplatesFactory {
                     continue;
                 }
                 AbstractJetFileProvider overridedProvider = providers.get(providerId);
-                List<BundleTemplateJetBean> overridedProviderJetBeans = bundleJetBeansMap.get(overridedProvider);
+                List<BundleExtJetBean> overridedProviderJetBeans = bundleJetBeansMap.get(overridedProvider);
                 if (overridedProviderJetBeans == null) {
                     continue;
                 }
                 // find the overrided provider to remove the jet bean.
-                Iterator<BundleTemplateJetBean> iterator = overridedProviderJetBeans.iterator();
+                Iterator<BundleExtJetBean> iterator = overridedProviderJetBeans.iterator();
                 while (iterator.hasNext()) {
-                    BundleTemplateJetBean jetBean = iterator.next();
+                    BundleExtJetBean jetBean = iterator.next();
                     if (jetBean.getName().equals(overridedFileName)) {
                         iterator.remove();
                     }
@@ -88,15 +96,20 @@ public class CodeGeneratorInternalTemplatesFactory {
 
         // add all in list.
         for (AbstractJetFileProvider provider : bundleJetBeansMap.keySet()) {
-            List<BundleTemplateJetBean> list = bundleJetBeansMap.get(provider);
+            List<BundleExtJetBean> list = bundleJetBeansMap.get(provider);
             if (list != null) {
-                this.bundleJetBeans.addAll(list);
+                this.extJetBeans.addAll(list);
             }
         }
+
     }
 
-    public List<BundleTemplateJetBean> getBundleJetBeans() {
-        return this.bundleJetBeans;
+    public List<BundleExtJetBean> getBundleExtJetBeans() {
+        return this.extJetBeans;
+    }
+
+    public List<BundleJetSkeletonBean> getBundleJetSkeletonBeans() {
+        return this.jetSkeletonBeans;
     }
 
 }

@@ -72,6 +72,7 @@ import org.talend.core.utils.TalendCacheUtils;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.additionaljet.ComponentsFactoryProviderManager;
 import org.talend.designer.codegen.i18n.Messages;
+import org.talend.designer.codegen.model.JetSkeletonManager;
 import org.talend.designer.core.ITisLocalProviderService;
 import org.talend.designer.core.ITisLocalProviderService.ResClassLoader;
 import org.talend.designer.core.model.components.ComponentBundleToPath;
@@ -374,9 +375,7 @@ public class ComponentsFactory implements IComponentsFactory {
 
             @Override
             public boolean accept(final File file) {
-                String fileName = file.getName();
-                return file.isFile() && fileName.charAt(0) != '.'
-                        && (fileName.endsWith(SKELETON_SUFFIX) || fileName.endsWith(INCLUDEFILEINJET_SUFFIX));
+                return JetSkeletonManager.validJetSkeletonResource(file);
             }
 
         };

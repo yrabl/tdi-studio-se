@@ -15,7 +15,6 @@ package org.talend.designer.codegen.model;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -32,21 +31,17 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.osgi.framework.Bundle;
 import org.talend.commons.runtime.utils.io.IOUtils;
 import org.talend.commons.ui.runtime.exception.ExceptionHandler;
 import org.talend.core.model.components.ComponentCompilations;
 import org.talend.core.model.components.IComponentsFactory;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.designer.codegen.CodeGeneratorActivator;
+import org.talend.designer.codegen.config.BundleJetSkeletonBean;
 import org.talend.designer.codegen.config.TalendJetEmitter;
-import org.talend.designer.codegen.config.TemplateUtil;
 import org.talend.designer.codegen.i18n.Messages;
 
 /**
@@ -69,9 +64,9 @@ public final class JetSkeletonManager {
 
     private final boolean forceSkeletonAlreadyChecked = ComponentCompilations.getMarkers();
 
-    private static final String SKELETON_SUFFIX = ".skeleton"; //$NON-NLS-1$
+    public static final String SKELETON_SUFFIX = ".skeleton"; //$NON-NLS-1$
 
-    private static final String INCLUDEFILEINJET_SUFFIX = ".inc.javajet"; //$NON-NLS-1$
+    public static final String INCLUDEFILEINJET_SUFFIX = ".inc.javajet"; //$NON-NLS-1$
 
     private JetSkeletonManager() {
     }
@@ -241,40 +236,35 @@ public final class JetSkeletonManager {
      * @return
      */
     private static List<String> getSystemSkeletons() {
+        List<String> skeletons = new ArrayList<String>();
 
-        List<String> skeletonList = new ArrayList<String>();
-
-        // here add the skeleton file in org.talend.designer.codegen\resources
-        FileFilter skeletonFilter = new FileFilter() {
-
-            @Override
-            public boolean accept(final File file) {
-                String fileName = file.getName();
-                return file.isFile() && fileName.charAt(0) != '.'
-                        && (fileName.endsWith(SKELETON_SUFFIX) || fileName.endsWith(INCLUDEFILEINJET_SUFFIX));
-            }
-
-        };
-
-        Bundle b = Platform.getBundle(CodeGeneratorActivator.PLUGIN_ID);
-        URL resourcesUrl = null;
-        try {
-            resourcesUrl = FileLocator.toFileURL(FileLocator.find(b, new Path(TemplateUtil.RESOURCES_DIRECTORY), null));
-        } catch (IOException e) {
-            // e.printStackTrace();
-            ExceptionHandler.process(e);
-        }
-        if (resourcesUrl != null) {
-            File resourcesDir = new File(resourcesUrl.getFile());
-            File[] skeletonFiles = resourcesDir.listFiles(skeletonFilter);
-            if (skeletonFiles != null) {
-                for (File file : skeletonFiles) {
-                    skeletonList.add(file.getAbsolutePath()); // path
+        List<BundleJetSkeletonBean> bundleJetSkeletonBeans = CodeGeneratorInternalTemplatesFactoryProvider.getInstance()
+                .getBundleJetSkeletonBeans();
+        for (BundleJetSkeletonBean bean : bundleJetSkeletonBeans) {
+            URL url = bean.getResolvedURL();
+            if (url != null) {
+                File file = new File(url.getFile());
+                if (file.exists()) {
+                    skeletons.add(url.getFile());
                 }
             }
         }
+        return skeletons;
 
-        return skeletonList;
     }
 
+    /**
+     * 
+     * valid the file is jet bean .javajet or not.
+     */
+    public static boolean validJetSkeletonResource(File res) {
+        if (res != null //
+                && res.isFile() //
+                && res.getName().charAt(0) != '.' //
+                && (res.getName().endsWith(JetSkeletonManager.SKELETON_SUFFIX) //
+                || res.getName().endsWith(JetSkeletonManager.INCLUDEFILEINJET_SUFFIX))) {
+            return true;
+        }
+        return false;
+    }
 }

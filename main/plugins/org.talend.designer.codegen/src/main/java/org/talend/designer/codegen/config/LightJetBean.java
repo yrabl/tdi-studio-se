@@ -14,6 +14,9 @@ package org.talend.designer.codegen.config;
 
 import java.io.Serializable;
 
+import org.talend.commons.utils.StringUtils;
+import org.talend.core.language.ECodeLanguage;
+
 /**
  * DOC mhirt class global comment. Detailled comment <br/>
  * 
@@ -26,6 +29,8 @@ public class LightJetBean implements Serializable {
 
     protected static final String EMPTY = ""; //$NON-NLS-1$
 
+    protected static final String DEFAULT_VERSION = "0.0.1"; //$NON-NLS-1$
+
     private String jetPluginRepository;
 
     private String templateRelativeUri = EMPTY;
@@ -36,23 +41,23 @@ public class LightJetBean implements Serializable {
 
     private String version = EMPTY;
 
-    private String language = EMPTY;
+    private final String language;
 
     private long crc = 0;
 
     public LightJetBean(String jetPluginRepository, String templateRelativeUri, String className, String methodName,
-            String version, String language, long crc) {
+            String version, long crc) {
         this.jetPluginRepository = jetPluginRepository;
         this.templateRelativeUri = templateRelativeUri;
         this.className = className;
         this.methodName = methodName;
         this.version = version;
-        this.language = language;
         this.crc = crc;
+        this.language = StringUtils.capitalize(ECodeLanguage.JAVA.getName());
     }
 
-    public LightJetBean(String templateRelativeUri, String className, String methodName, String version, String language, long crc) {
-        this(null, templateRelativeUri, className, methodName, version, language, crc);
+    public LightJetBean(String templateRelativeUri, String className, String methodName, String version, long crc) {
+        this(null, templateRelativeUri, className, methodName, version, crc);
     }
 
     public LightJetBean() {
@@ -178,15 +183,6 @@ public class LightJetBean implements Serializable {
      */
     public String getLanguage() {
         return this.language;
-    }
-
-    /**
-     * Sets the language.
-     * 
-     * @param language the language to set
-     */
-    public void setLanguage(String language) {
-        this.language = language;
     }
 
     @Override

@@ -41,8 +41,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.emf.codegen.CodeGenPlugin;
 import org.eclipse.emf.codegen.jet.JETEmitter;
 import org.eclipse.emf.codegen.jet.JETException;
-import org.eclipse.emf.common.CommonPlugin;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.talend.commons.CommonsPlugin;
@@ -70,7 +68,7 @@ import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.ICodeGeneratorService;
 import org.talend.designer.codegen.additionaljet.ProxyAdditionalClassLoader;
-import org.talend.designer.codegen.config.BundleTemplateJetBean;
+import org.talend.designer.codegen.config.BundleExtJetBean;
 import org.talend.designer.codegen.config.EInternalTemplate;
 import org.talend.designer.codegen.config.JetBean;
 import org.talend.designer.codegen.config.LightJetBean;
@@ -155,7 +153,7 @@ public final class CodeGeneratorEmittersPoolFactory {
 
                 List<JetBean> jetBeans = new ArrayList<JetBean>();
 
-                List<BundleTemplateJetBean> bundleJetBeans = templatesFactory.getBundleJetBeans();
+                List<BundleExtJetBean> bundleJetBeans = templatesFactory.getBundleExtJetBeans();
                 Set<IComponent> components = componentsFactory.getComponents();
                 TimeMeasure.step("initialize Jet Emitters", "getComponents"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -390,7 +388,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                 componentsPath = ((EmfComponent) component).getSourceBundleName();
             }
             JetBean jetBean = new JetBean(componentsPath, templateURI, component.getName(), component.getVersion(),
-                    codeLanguage.getName(), codePart.getName());
+                    codePart.getName());
             jetBean.addClassPath("EMF_ECORE", "org.eclipse.emf.ecore"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("EMF_COMMON", "org.eclipse.emf.common"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -628,12 +626,11 @@ public final class CodeGeneratorEmittersPoolFactory {
     private static long extractTemplateHashCode(JetBean unit) {
         long unitCRC = 0;
 
-        URI uri = URI.createURI(unit.getTemplateFullUri());
-        uri = CommonPlugin.resolve(uri);
-        URL url;
         try {
-            url = new URL(uri.toString());
-            unitCRC = IOUtils.computeCRC(url.openStream());
+            URL url = unit.getResolvedURL();
+            if (url != null) {
+                unitCRC = IOUtils.computeCRC(url.openStream());
+            }
         } catch (Exception e) {
             // ignore me even if i'm null
         }
