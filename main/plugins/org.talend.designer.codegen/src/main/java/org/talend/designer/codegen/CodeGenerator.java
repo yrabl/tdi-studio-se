@@ -42,8 +42,8 @@ import org.talend.designer.codegen.config.NodesTree;
 import org.talend.designer.codegen.config.SubTreeArgument;
 import org.talend.designer.codegen.exception.CodeGeneratorException;
 import org.talend.designer.codegen.generator.AbstractCodeGenerator;
+import org.talend.designer.codegen.generator.JetGeneratorUtil;
 import org.talend.designer.codegen.i18n.Messages;
-import org.talend.designer.codegen.model.CodeGeneratorEmittersPoolFactory;
 import org.talend.designer.codegen.model.CodeGeneratorInternalTemplatesFactoryProvider;
 import org.talend.designer.core.ICamelDesignerCoreService;
 
@@ -170,163 +170,150 @@ public class CodeGenerator extends AbstractCodeGenerator {
     public String generateProcessCode() throws CodeGeneratorException {
         // Parse Process, generate Code for Individual Components
         // generate Assembly Code for individual Components
+
+        JetGeneratorUtil.checkEmittersPoolFactoryIsReady();
+
         StringBuffer componentsCode = new StringBuffer();
 
-        long startTimer = System.currentTimeMillis();
-        long endTimer = startTimer;
-        try {
-            while ((!CodeGeneratorEmittersPoolFactory.isInitialized()) && ((endTimer - startTimer) < INIT_TIMEOUT)) {
-                Thread.sleep(INIT_PAUSE);
-                endTimer = System.currentTimeMillis();
-            }
-        } catch (InterruptedException e) {
-            log.error(e.getMessage(), e);
-            throw new CodeGeneratorException(e);
-        }
-        if ((endTimer - startTimer) > INIT_TIMEOUT) {
-            throw new CodeGeneratorException(Messages.getString("CodeGenerator.JET.TimeOut")); //$NON-NLS-1$
-        } else {
-            // ####0005204: Cannot Call SubJob with RunJob Component
-            Vector headerArgument = new Vector(3);
-            headerArgument.add(process);
+        // ####0005204: Cannot Call SubJob with RunJob Component
+        Vector headerArgument = new Vector(3);
+        headerArgument.add(process);
 
-            headerArgument.add(VersionUtils.getVersion());
-            headerArgument.add(exportAsOSGI);
-            boolean isCamel = false;
-            if (GlobalServiceRegister.getDefault().isServiceRegistered(ICamelDesignerCoreService.class)) {
-                ICamelDesignerCoreService camelService = (ICamelDesignerCoreService) GlobalServiceRegister.getDefault()
-                        .getService(ICamelDesignerCoreService.class);
-                if (process != null && process instanceof IProcess2) {
-                    IProcess2 process2 = (IProcess2) process;
-                    if (camelService.isInstanceofCamelRoutes(process2.getProperty().getItem())) {
-                        isCamel = true;
-                    }
+        headerArgument.add(VersionUtils.getVersion());
+        headerArgument.add(exportAsOSGI);
+        boolean isCamel = false;
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(ICamelDesignerCoreService.class)) {
+            ICamelDesignerCoreService camelService = (ICamelDesignerCoreService) GlobalServiceRegister.getDefault().getService(
+                    ICamelDesignerCoreService.class);
+            if (process != null && process instanceof IProcess2) {
+                IProcess2 process2 = (IProcess2) process;
+                if (camelService.isInstanceofCamelRoutes(process2.getProperty().getItem())) {
+                    isCamel = true;
                 }
             }
-            if (isCamel) {
-                componentsCode.append(generateTypedComponentCode(EInternalTemplate.HEADER_ROUTE, headerArgument));
-            } else {
-                componentsCode.append(generateTypedComponentCode(EInternalTemplate.HEADER, headerArgument));
-            }
-            if (isCamel) {
-                if ((processTree.getSubTrees() != null) && (processTree.getSubTrees().size() > 0)) {
+        }
+        if (isCamel) {
+            componentsCode.append(generateTypedComponentCode(EInternalTemplate.HEADER_ROUTE, headerArgument));
+        } else {
+            componentsCode.append(generateTypedComponentCode(EInternalTemplate.HEADER, headerArgument));
+        }
+        if (isCamel) {
+            if ((processTree.getSubTrees() != null) && (processTree.getSubTrees().size() > 0)) {
 
-                    // sortSubTree(processTree.getSubTrees());
+                // sortSubTree(processTree.getSubTrees());
 
-                    boolean displayMethodSize = isMethodSizeNeeded();
-                    NodesSubTree lastSubtree = null;
-                    boolean generateHeaders = true;
-                    boolean isFirstRoute = true;
+                boolean displayMethodSize = isMethodSizeNeeded();
+                NodesSubTree lastSubtree = null;
+                boolean generateHeaders = true;
+                boolean isFirstRoute = true;
 
-                    List<NodesSubTree> nodeSubTreeList = new ArrayList<NodesSubTree>();
-                    List<INode> sortedNodeList = new ArrayList<INode>();
+                List<NodesSubTree> nodeSubTreeList = new ArrayList<NodesSubTree>();
+                List<INode> sortedNodeList = new ArrayList<INode>();
 
-                    for (NodesSubTree subTree : processTree.getSubTrees()) {
-                        lastSubtree = subTree;
+                for (NodesSubTree subTree : processTree.getSubTrees()) {
+                    lastSubtree = subTree;
 
-                        // Generate headers only one time, for each routes in the CamelContext.
-                        if (generateHeaders) {
-                            componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_HEADER_ROUTE, subTree));
-                            componentsCode.append(generateTypedComponentCode(EInternalTemplate.CAMEL_HEADER, headerArgument));
-                            generateHeaders = false;
-                        }
-
-                        // Fix bug TESB-2951 Generated Codes error when Route
-                        // starts with cFile/cFTP/cActiveMQ/cFTP/cJMS
-                        // LiXiaopeng 2011-09-05
-                        INode subProcessStartNode = subTree.getRootNode().getSubProcessStartNode(true);
-                        String startNodeName = subProcessStartNode.getComponent().getName();
-                        IElementParameter family = subProcessStartNode.getElementParameter("FAMILY");
-                        if (subProcessStartNode.isStart() && null != family && "Messaging".equals(family.getValue())) {
-                            nodeSubTreeList.add(subTree);
-                        } else if ("cConfig".equals(startNodeName)) {
-                            // Customized remove the cConfig routeId codes.
-                            // TESB-2825 LiXP 20110823
-                            // Do nothing.
-                        } else {
-                            // And generate the component par of code
-                            componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.MAIN, null,
-                                    ETypeGen.CAMEL));
-                            componentsCode.append(";");
-                        }
+                    // Generate headers only one time, for each routes in the CamelContext.
+                    if (generateHeaders) {
+                        componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_HEADER_ROUTE, subTree));
+                        componentsCode.append(generateTypedComponentCode(EInternalTemplate.CAMEL_HEADER, headerArgument));
+                        generateHeaders = false;
                     }
 
-                    for (NodesSubTree subTree : nodeSubTreeList) {
-                        lastSubtree = subTree;
+                    // Fix bug TESB-2951 Generated Codes error when Route
+                    // starts with cFile/cFTP/cActiveMQ/cFTP/cJMS
+                    // LiXiaopeng 2011-09-05
+                    INode subProcessStartNode = subTree.getRootNode().getSubProcessStartNode(true);
+                    String startNodeName = subProcessStartNode.getComponent().getName();
+                    IElementParameter family = subProcessStartNode.getElementParameter("FAMILY");
+                    if (subProcessStartNode.isStart() && null != family && "Messaging".equals(family.getValue())) {
+                        nodeSubTreeList.add(subTree);
+                    } else if ("cConfig".equals(startNodeName)) {
+                        // Customized remove the cConfig routeId codes.
+                        // TESB-2825 LiXP 20110823
+                        // Do nothing.
+                    } else {
+                        // And generate the component par of code
                         componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.MAIN, null,
-                                ETypeGen.CAMEL)); // And generate the component par of code
+                                ETypeGen.CAMEL));
                         componentsCode.append(";");
                     }
-                    // Close the last route in the CamelContext
-                    componentsCode.append(generateTypedComponentCode(EInternalTemplate.CAMEL_FOOTER, headerArgument));
-                    componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_FOOTER_ROUTE, lastSubtree));
                 }
-            } else {
-                // ####
-                componentsCode.append(generateTypedComponentCode(EInternalTemplate.HEADER_ADDITIONAL, headerArgument));
-                if ((processTree.getSubTrees() != null) && (processTree.getSubTrees().size() > 0)) {
 
-                    boolean displayMethodSize = isMethodSizeNeeded();
-                    for (NodesSubTree subTree : processTree.getSubTrees()) {
-                        subTree.setMethodSizeNeeded(displayMethodSize);
-                        if (!subTree.isMergeSubTree()) {
-                            componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_HEADER, subTree));
-                            componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.BEGIN, null));
-                            componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.MAIN, null));
+                for (NodesSubTree subTree : nodeSubTreeList) {
+                    lastSubtree = subTree;
+                    componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.MAIN, null,
+                            ETypeGen.CAMEL)); // And generate the component par of code
+                    componentsCode.append(";");
+                }
+                // Close the last route in the CamelContext
+                componentsCode.append(generateTypedComponentCode(EInternalTemplate.CAMEL_FOOTER, headerArgument));
+                componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_FOOTER_ROUTE, lastSubtree));
+            }
+        } else {
+            // ####
+            componentsCode.append(generateTypedComponentCode(EInternalTemplate.HEADER_ADDITIONAL, headerArgument));
+            if ((processTree.getSubTrees() != null) && (processTree.getSubTrees().size() > 0)) {
+
+                boolean displayMethodSize = isMethodSizeNeeded();
+                for (NodesSubTree subTree : processTree.getSubTrees()) {
+                    subTree.setMethodSizeNeeded(displayMethodSize);
+                    if (!subTree.isMergeSubTree()) {
+                        componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_HEADER, subTree));
+                        componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.BEGIN, null));
+                        componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.MAIN, null));
+                        componentsCode.append(generateTypedComponentCode(EInternalTemplate.PART_ENDMAIN, subTree.getRootNode()));
+                        componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.END, null));
+                        StringBuffer finallyPart = new StringBuffer();
+                        finallyPart.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.FINALLY, null));
+                        Vector subprocess_footerArgument = new Vector(2);
+                        subprocess_footerArgument.add(subTree);
+                        subprocess_footerArgument.add(finallyPart.toString());
+                        componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_FOOTER,
+                                subprocess_footerArgument));
+                    } else {
+                        StringBuffer finallyPart = new StringBuffer();
+                        componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_HEADER, subTree));
+                        for (INode mergeNode : subTree.getMergeNodes()) {
+                            componentsCode.append(generateComponentsCode(subTree, mergeNode, ECodePart.BEGIN, null));
+                        }
+                        List<INode> sortedMergeBranchStarts = subTree.getSortedMergeBranchStarts();
+                        for (INode startNode : sortedMergeBranchStarts) {
+                            componentsCode.append(generateComponentsCode(subTree, startNode, ECodePart.BEGIN, null));
+                            componentsCode.append(generateComponentsCode(subTree, startNode, ECodePart.MAIN, null));
+
                             componentsCode.append(generateTypedComponentCode(EInternalTemplate.PART_ENDMAIN,
                                     subTree.getRootNode()));
-                            componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.END, null));
-                            StringBuffer finallyPart = new StringBuffer();
-                            finallyPart.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.FINALLY, null));
-                            Vector subprocess_footerArgument = new Vector(2);
-                            subprocess_footerArgument.add(subTree);
-                            subprocess_footerArgument.add(finallyPart.toString());
-                            componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_FOOTER,
-                                    subprocess_footerArgument));
-                        } else {
-                            StringBuffer finallyPart = new StringBuffer();
-                            componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_HEADER, subTree));
-                            for (INode mergeNode : subTree.getMergeNodes()) {
-                                componentsCode.append(generateComponentsCode(subTree, mergeNode, ECodePart.BEGIN, null));
-                            }
-                            List<INode> sortedMergeBranchStarts = subTree.getSortedMergeBranchStarts();
-                            for (INode startNode : sortedMergeBranchStarts) {
-                                componentsCode.append(generateComponentsCode(subTree, startNode, ECodePart.BEGIN, null));
-                                componentsCode.append(generateComponentsCode(subTree, startNode, ECodePart.MAIN, null));
 
-                                componentsCode.append(generateTypedComponentCode(EInternalTemplate.PART_ENDMAIN,
-                                        subTree.getRootNode()));
-
-                                componentsCode.append(generateComponentsCode(subTree, startNode, ECodePart.END, null));
-                                finallyPart.append(generateComponentsCode(subTree, startNode, ECodePart.FINALLY, null));
-                            }
-
-                            for (INode mergeNode : subTree.getMergeNodes()) {
-                                componentsCode.append(generateComponentsCode(subTree, mergeNode, ECodePart.END, null));
-                                finallyPart.append(generateComponentsCode(subTree, mergeNode, ECodePart.FINALLY, null));
-                            }
-                            Vector subprocess_footerArgument = new Vector(2);
-                            subprocess_footerArgument.add(subTree);
-                            subprocess_footerArgument.add(finallyPart.toString());
-                            componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_FOOTER,
-                                    subprocess_footerArgument));
+                            componentsCode.append(generateComponentsCode(subTree, startNode, ECodePart.END, null));
+                            finallyPart.append(generateComponentsCode(subTree, startNode, ECodePart.FINALLY, null));
                         }
+
+                        for (INode mergeNode : subTree.getMergeNodes()) {
+                            componentsCode.append(generateComponentsCode(subTree, mergeNode, ECodePart.END, null));
+                            finallyPart.append(generateComponentsCode(subTree, mergeNode, ECodePart.FINALLY, null));
+                        }
+                        Vector subprocess_footerArgument = new Vector(2);
+                        subprocess_footerArgument.add(subTree);
+                        subprocess_footerArgument.add(finallyPart.toString());
+                        componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_FOOTER,
+                                subprocess_footerArgument));
                     }
                 }
             }
-            // ####0005204: Cannot Call SubJob with RunJob Component
-            Vector footerArgument = new Vector(2);
-            footerArgument.add(process);
-            footerArgument.add(processTree.getRootNodes());
-            if (isCamel) {
-                componentsCode.append(generateTypedComponentCode(EInternalTemplate.FOOTER_ROUTE, footerArgument));
-            } else {
-                componentsCode.append(generateTypedComponentCode(EInternalTemplate.FOOTER, footerArgument));
-            }
-            componentsCode.append(generateTypedComponentCode(EInternalTemplate.PROCESSINFO, componentsCode.length()));
-            // ####
-            return componentsCode.toString();
         }
+        // ####0005204: Cannot Call SubJob with RunJob Component
+        Vector footerArgument = new Vector(2);
+        footerArgument.add(process);
+        footerArgument.add(processTree.getRootNodes());
+        if (isCamel) {
+            componentsCode.append(generateTypedComponentCode(EInternalTemplate.FOOTER_ROUTE, footerArgument));
+        } else {
+            componentsCode.append(generateTypedComponentCode(EInternalTemplate.FOOTER, footerArgument));
+        }
+        componentsCode.append(generateTypedComponentCode(EInternalTemplate.PROCESSINFO, componentsCode.length()));
+        // ####
+        return componentsCode.toString();
     }
 
     /**
@@ -448,8 +435,7 @@ public class CodeGenerator extends AbstractCodeGenerator {
                 if (bean.getName().contains(EInternalTemplate.HEADER_ADDITIONAL.getTemplateName())) {
                     try {
                         BundleExtJetBean clonedBean = bean.clone();
-                        clonedBean.setArgument(codeGenArgument);
-                        content.append(instantiateJetProxy(clonedBean));
+                        content.append(JetGeneratorUtil.jetGenerate(clonedBean, codeGenArgument));
                     } catch (CloneNotSupportedException e) {
                         //
                     }
@@ -461,10 +447,7 @@ public class CodeGenerator extends AbstractCodeGenerator {
             // TemplateUtil.EXT_SEP
             // + language.getExtension() + TemplateUtil.TEMPLATE_EXT);
             JetBean jetBean = getTemplateJetBean(type);
-            if (jetBean != null) {
-                jetBean.setArgument(codeGenArgument);
-                content.append(instantiateJetProxy(jetBean));
-            }
+            content.append(JetGeneratorUtil.jetGenerate(jetBean, codeGenArgument));
         }
         return content;
     }
@@ -756,7 +739,7 @@ public class CodeGenerator extends AbstractCodeGenerator {
             content.append(generateTypedComponentCode(EInternalTemplate.PART_HEADER, node, part, incomingName, subProcess));
         }
 
-        content.append(instantiateJetProxy(getNodeJetBean(argument, part)));
+        content.append(JetGeneratorUtil.jetGenerate(argument, part));
 
         if (typeGen == ETypeGen.ETL) {
             content.append(generateTypedComponentCode(EInternalTemplate.PART_FOOTER, node, part, incomingName, subProcess));
@@ -797,7 +780,7 @@ public class CodeGenerator extends AbstractCodeGenerator {
 
         content.append(generateTypedComponentCode(EInternalTemplate.PART_HEADER, node, part));
 
-        content.append(instantiateJetProxy(getNodeJetBean(argument, part)));
+        content.append(JetGeneratorUtil.jetGenerate(argument, part));
 
         content.append(generateTypedComponentCode(EInternalTemplate.PART_FOOTER, node, part));
 

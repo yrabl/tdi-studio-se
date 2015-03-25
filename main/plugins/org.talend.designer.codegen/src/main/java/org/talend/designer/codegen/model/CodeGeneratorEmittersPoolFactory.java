@@ -242,9 +242,9 @@ public final class CodeGeneratorEmittersPoolFactory {
                 StringBuilder message = new StringBuilder();
                 for (JetBean tmpJetBean : jetFilesCompileFail) {
                     if (message.length() > 0) {
-                        message.append(",\r\n").append(tmpJetBean.getTemplateRelativeUri()); //$NON-NLS-1$
+                        message.append(",\r\n").append(tmpJetBean.getRelativeUri()); //$NON-NLS-1$
                     } else {
-                        message.append(tmpJetBean.getTemplateRelativeUri());
+                        message.append(tmpJetBean.getRelativeUri());
                     }
                 }
                 return new Status(IStatus.ERROR, CodeGeneratorActivator.PLUGIN_ID,
@@ -656,7 +656,7 @@ public final class CodeGeneratorEmittersPoolFactory {
             if (forceMethodLoad) {
                 // init specific map based on component name : mapOnName
                 for (LightJetBean ljb : datas) {
-                    mapOnName.put(ljb.getJetPluginRepository() + '/' + ljb.getTemplateRelativeUri(), ljb);
+                    mapOnName.put(ljb.getJetBundle() + '/' + ljb.getRelativeUri(), ljb);
                 }
             }
             int monitorBuffer = 0;
@@ -672,8 +672,8 @@ public final class CodeGeneratorEmittersPoolFactory {
                     if (!forceMethodLoad) {
                         lightBean = datas.get(lightBeanIndex);
                     } else {
-                        lightBean = mapOnName.get(myLightJetBean.getJetPluginRepository() + '/'
-                                + myLightJetBean.getTemplateRelativeUri());
+                        lightBean = mapOnName.get(myLightJetBean.getJetBundle() + '/'
+                                + myLightJetBean.getRelativeUri());
                     }
                     if (lightBean != null && lightBean.getCrc() == unit.getCrc()) {
                         unit.setClassName(lightBean.getClassName());
@@ -720,10 +720,10 @@ public final class CodeGeneratorEmittersPoolFactory {
 
         // only for components, not for /resources jet file, if it compile error, it will get the
         // default_template.javajet
-        if (jetBean.getTemplateRelativeUri() != null && !jetBean.getTemplateRelativeUri().startsWith("resources")) { //$NON-NLS-1$
+        if (jetBean.getRelativeUri() != null && !jetBean.getRelativeUri().startsWith("resources")) { //$NON-NLS-1$
             if (jetFilesCompileFail.contains(jetBean)) {
                 JetBean defaultJetBean = new JetBean();
-                defaultJetBean.setTemplateRelativeUri(defaultTemplate);
+                defaultJetBean.setRelativeUri(defaultTemplate);
                 return emitterPool.get(defaultJetBean);
             }
         }

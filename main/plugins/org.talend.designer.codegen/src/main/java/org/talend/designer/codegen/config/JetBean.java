@@ -61,10 +61,10 @@ public class JetBean extends LightJetBean {
      * @param jetPluginRepository
      * @param classpathVariable
      * @param classpathParameter
-     * @param templateRelativeUri
+     * @param relativeUri
      */
-    public JetBean(String jetPluginRepository, String templateRelativeUri, String className, String version, String codePart) {
-        super(jetPluginRepository, templateRelativeUri, EMPTY, EMPTY, version, 0);
+    public JetBean(String jetPluginRepository, String relativeUri, String className, String version, String codePart) {
+        super(jetPluginRepository, relativeUri, EMPTY, EMPTY, version, 0);
         this.classPath = new HashMap<String, String>();
 
         String tmpClassName = ""; //$NON-NLS-1$
@@ -133,7 +133,7 @@ public class JetBean extends LightJetBean {
      * @return
      */
     public String getFullUri() {
-        return getUri(getJetPluginRepository(), getTemplateRelativeUri());
+        return getUri(getJetBundle(), getRelativeUri());
     }
 
     public URL getResolvedURL() {
@@ -238,7 +238,7 @@ public class JetBean extends LightJetBean {
     }
 
     public LightJetBean createLightJetBean() {
-        return new LightJetBean(getJetPluginRepository(), getTemplateRelativeUri(), getClassName(), getMethodName(),
+        return new LightJetBean(getJetBundle(), getRelativeUri(), getClassName(), getMethodName(),
                 getVersion(), getCrc());
     }
 }

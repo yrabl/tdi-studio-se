@@ -18,35 +18,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.emf.codegen.jet.JETException;
 import org.osgi.framework.FrameworkUtil;
 import org.talend.commons.utils.PasswordEncryptUtil;
 import org.talend.core.CorePlugin;
-import org.talend.core.GlobalServiceRegister;
-import org.talend.core.language.ECodeLanguage;
-import org.talend.core.model.components.IComponent;
-import org.talend.core.model.components.IComponentFileNaming;
-import org.talend.core.model.components.IComponentsFactory;
 import org.talend.core.model.process.IContext;
 import org.talend.core.model.process.IContextParameter;
 import org.talend.core.model.process.IElementParameter;
-import org.talend.core.model.process.INode;
 import org.talend.core.model.process.IProcess;
-import org.talend.core.model.temp.ECodePart;
-import org.talend.core.ui.branding.IBrandingService;
-import org.talend.core.ui.component.ComponentsFactoryProvider;
-import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.ICodeGenerator;
 import org.talend.designer.codegen.config.BundleExtJetBean;
 import org.talend.designer.codegen.config.CodeGeneratorArgument;
 import org.talend.designer.codegen.config.EInternalTemplate;
 import org.talend.designer.codegen.config.JetBean;
-import org.talend.designer.codegen.config.TemplateUtil;
 import org.talend.designer.codegen.exception.CodeGeneratorException;
 import org.talend.designer.codegen.model.CodeGeneratorInternalTemplatesFactoryProvider;
-import org.talend.designer.codegen.proxy.JetProxy;
-import org.talend.designer.core.model.components.EmfComponent;
 
 /**
  * created by ggu on 24 Mar 2015 Detailled comment
@@ -54,7 +39,7 @@ import org.talend.designer.core.model.components.EmfComponent;
  */
 public abstract class AbstractCodeGenerator implements ICodeGenerator {
 
-    protected static Map<EInternalTemplate, JetBean> templateJetBeans = new HashMap<EInternalTemplate, JetBean>();
+    private static Map<EInternalTemplate, JetBean> templateJetBeans = new HashMap<EInternalTemplate, JetBean>();
 
     protected final Logger log = Logger.getLogger(getClass());
 
@@ -122,53 +107,6 @@ public abstract class AbstractCodeGenerator implements ICodeGenerator {
     }
 
     /**
-     * get the node jet bean via argument.
-     */
-    protected JetBean getNodeJetBean(Object argument) {
-        return getNodeJetBean(argument, null);
-    }
-
-    protected JetBean getNodeJetBean(Object argument, ECodePart part) {
-        JetBean jetBean = new JetBean();
-
-        // by default
-        String nodeBundleName = CodeGeneratorActivator.PLUGIN_ID;
-        if (argument != null) {
-            if (argument instanceof CodeGeneratorArgument) {
-                CodeGeneratorArgument codeArgument = (CodeGeneratorArgument) argument;
-                if (codeArgument.getArgument() instanceof INode) {
-                    final IComponent component = ((INode) codeArgument.getArgument()).getComponent();
-                    // set path for component
-                    if (component != null && part != null) {
-                        IComponentFileNaming componentFileNaming = ComponentsFactoryProvider.getFileNamingInstance();
-                        String templateURI = component.getPathSource() + TemplateUtil.DIR_SEP + component.getName()
-                                + TemplateUtil.DIR_SEP
-                                + componentFileNaming.getJetFileName(component, ECodeLanguage.JAVA.getExtension(), part);
-
-                        jetBean.setTemplateRelativeUri(templateURI);
-                    }
-                    // depend on the component.
-                    if (component != null && component instanceof EmfComponent
-                            && ((EmfComponent) component).getSourceBundleName() != null) {
-                        nodeBundleName = ((EmfComponent) component).getSourceBundleName();
-                    } else { // maybe for fake components.
-                        nodeBundleName = IComponentsFactory.COMPONENTS_LOCATION;
-                        IBrandingService breaningService = (IBrandingService) GlobalServiceRegister.getDefault().getService(
-                                IBrandingService.class);
-                        if (breaningService.isPoweredOnlyCamel()) {
-                            nodeBundleName = IComponentsFactory.CAMEL_COMPONENTS_LOCATION;
-                        }
-                    }
-                }
-            }
-        }
-        jetBean.setJetPluginRepository(nodeBundleName);
-
-        jetBean.setArgument(argument);
-        return jetBean;
-    }
-
-    /**
      * Parse Process, and generate Code for Context Variables.
      * 
      * @param designerContext the context to generate code from
@@ -215,21 +153,9 @@ public abstract class AbstractCodeGenerator implements ICodeGenerator {
                 codeGenArgument.setPauseTime(CorePlugin.getDefault().getRunProcessService().getPauseTime());
 
                 JetBean jetBean = getTemplateJetBean(EInternalTemplate.CONTEXT);
-                if (jetBean != null) {
-                    jetBean.setArgument(codeGenArgument);
-                    JetProxy proxy = new JetProxy(jetBean);
-                    String content;
-                    try {
-                        content = proxy.generate();
-                    } catch (JETException e) {
-                        log.error(e.getMessage(), e);
-                        throw new CodeGeneratorException(e);
-                    } catch (CoreException e) {
-                        log.error(e.getMessage(), e);
-                        throw new CodeGeneratorException(e);
-                    }
-                    return content;
-                }
+
+                return JetGeneratorUtil.jetGenerate(jetBean, codeGenArgument);
+
             }
         }
         return ""; //$NON-NLS-1$
@@ -248,21 +174,6 @@ public abstract class AbstractCodeGenerator implements ICodeGenerator {
             }
         }
         return running;
-    }
-
-    protected StringBuffer instantiateJetProxy(JetBean jetBean) throws CodeGeneratorException {
-        JetProxy proxy = new JetProxy(jetBean);
-        StringBuffer content = new StringBuffer();
-        try {
-            content.append(proxy.generate());
-        } catch (JETException e) {
-            log.error(e.getMessage(), e);
-            throw new CodeGeneratorException(e);
-        } catch (CoreException e) {
-            log.error(e.getMessage(), e);
-            throw new CodeGeneratorException(e);
-        }
-        return content;
     }
 
 }
