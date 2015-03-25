@@ -145,8 +145,6 @@ public final class CodeGeneratorEmittersPoolFactory {
                 TimeMeasure.step("initialize Jet Emitters", "initialize JET Project"); //$NON-NLS-1$ //$NON-NLS-2$
                 CodeGeneratorInternalTemplatesFactory templatesFactory = CodeGeneratorInternalTemplatesFactoryProvider
                         .getInstance();
-                // templatesFactory.setCurrentLanguage(codeLanguage);
-                templatesFactory.init();
 
                 IComponentsFactory componentsFactory = ComponentsFactoryProvider.getInstance();
 

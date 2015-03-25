@@ -49,6 +49,9 @@
 
    <element name="jetProvider">
       <complexType>
+         <sequence minOccurs="0" maxOccurs="1">
+            <element ref="overrides"/>
+         </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
@@ -64,6 +67,33 @@
                <appInfo>
                   <meta.attribute kind="java" basedOn="org.talend.designer.codegen.config.AbstractJetFileProvider:"/>
                </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="overrides">
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="overrideElement"/>
+         </sequence>
+      </complexType>
+   </element>
+
+   <element name="overrideElement">
+      <complexType>
+         <attribute name="providerId" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The id of jet provider to override.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="fileName" type="string" use="required">
+            <annotation>
+               <documentation>
+                  which file will be overrided for the provider id.
+               </documentation>
             </annotation>
          </attribute>
       </complexType>

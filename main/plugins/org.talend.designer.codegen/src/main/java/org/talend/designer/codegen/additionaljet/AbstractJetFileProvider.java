@@ -41,7 +41,11 @@ import org.talend.designer.codegen.config.TemplateUtil;
  */
 public abstract class AbstractJetFileProvider {
 
+    /* for extension point */
     private String id, bundleId;
+
+    /* for extension point */
+    private final Map<String, String> overrideElementsMap = new HashMap<String, String>();
 
     private File resourcesRootFolder;
 
@@ -59,6 +63,10 @@ public abstract class AbstractJetFileProvider {
 
     public String getBundleId() {
         return bundleId;
+    }
+
+    public Map<String, String> getOverrideElementsMap() {
+        return this.overrideElementsMap;
     }
 
     protected abstract IPath getBasePath();
@@ -183,6 +191,42 @@ public abstract class AbstractJetFileProvider {
         // add codegen class loader
         proxyClassLoader.addAdditionalClassLoader(CodeGeneratorActivator.class.getClassLoader());
         return proxyClassLoader;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof AbstractJetFileProvider)) {
+            return false;
+        }
+        AbstractJetFileProvider other = (AbstractJetFileProvider) obj;
+        if (this.id == null) {
+            if (other.id != null) {
+                return false;
+            }
+        } else if (!this.id.equals(other.id)) {
+            return false;
+        }
+        return true;
+    }
+
+    @SuppressWarnings("nls")
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + " [bundleId=" + this.bundleId + ", id=" + this.id + "]";
     }
 
 }

@@ -26,7 +26,7 @@ public final class CodeGeneratorInternalTemplatesFactoryProvider {
     private CodeGeneratorInternalTemplatesFactoryProvider() {
     }
 
-    private static CodeGeneratorInternalTemplatesFactory singleton = null;
+    private static CodeGeneratorInternalTemplatesFactory singleton = new CodeGeneratorInternalTemplatesFactory();
 
     /**
      * Return the instance of CodeGeneratorInternalTemplatesFactory to use.
@@ -34,9 +34,6 @@ public final class CodeGeneratorInternalTemplatesFactoryProvider {
      * @return
      */
     public static CodeGeneratorInternalTemplatesFactory getInstance() {
-        if (singleton == null) {
-            singleton = new CodeGeneratorInternalTemplatesFactory();
-        }
         return singleton;
     }
 

@@ -103,7 +103,11 @@ public abstract class AbstractCodeGenerator implements ICodeGenerator {
             }
         }
         if (jetBean == null) { // can't find, should be never null
-            throw new RuntimeException();
+            // 1?
+            // if the Internal Template is deleted but won't remove in the enum. so comment this.
+            // throw new RuntimeException();
+
+            // 2?
             // jetBean = new JetBean();
             // jetBean.setJetPluginRepository(getTemplateBundleName());
             // jetBean.setTemplateRelativeUri(TemplateUtil.RESOURCES_DIRECTORY + TemplateUtil.DIR_SEP + type +
