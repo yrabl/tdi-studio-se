@@ -252,11 +252,6 @@ public class JavaProcessUtil {
         if (searchItems == null) {
             searchItems = new HashSet<ProcessItem>();
         }
-        if (node.getProcess() instanceof IProcess2) {
-            if (!((IProcess2) node.getProcess()).isNeedLoadmodules()) {
-                return new HashSet<ModuleNeeded>();
-            }
-        }
         List<ModuleNeeded> modulesNeeded = new ArrayList<ModuleNeeded>();
         addNodeRelatedModules(node.getProcess(), modulesNeeded, node, forMR);
 
