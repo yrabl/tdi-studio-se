@@ -193,6 +193,11 @@ public class JavaProcessUtil {
                     hadoopItemId = propertyId;
                 }
             }
+
+            if (process instanceof IProcess2) {
+                ((IProcess2) node.getProcess()).setNeedLoadmodules(((IProcess2) process).isNeedLoadmodules());
+            }
+
             Set<ModuleNeeded> nodeNeededModules = getNeededModules(node, searchItems, withChildrens, forMR);
             if (nodeNeededModules != null) {
                 modulesNeeded.addAll(nodeNeededModules);
@@ -247,7 +252,11 @@ public class JavaProcessUtil {
         if (searchItems == null) {
             searchItems = new HashSet<ProcessItem>();
         }
-
+        if (node.getProcess() instanceof IProcess2) {
+            if (!((IProcess2) node.getProcess()).isNeedLoadmodules()) {
+                return new HashSet<ModuleNeeded>();
+            }
+        }
         List<ModuleNeeded> modulesNeeded = new ArrayList<ModuleNeeded>();
         addNodeRelatedModules(node.getProcess(), modulesNeeded, node, forMR);
 
