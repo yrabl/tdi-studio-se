@@ -35,6 +35,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.map.MultiKeyMap;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.dom4j.Comment;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -75,6 +76,8 @@ import org.talend.core.PluginChecker;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.model.general.ModuleNeeded;
 import org.talend.core.model.process.IContext;
+import org.talend.core.model.process.IElementParameter;
+import org.talend.core.model.process.INode;
 import org.talend.core.model.process.IProcess;
 import org.talend.core.model.process.JobInfo;
 import org.talend.core.model.properties.Item;
@@ -91,10 +94,10 @@ import org.talend.core.model.utils.JavaResourcesHelper;
 import org.talend.core.repository.constants.FileConstants;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.repository.model.ResourceModelUtils;
-import org.talend.core.service.IDesignerCoreUIService;
-import org.talend.core.service.IRulesProviderService;
 import org.talend.core.repository.utils.URIHelper;
 import org.talend.core.runtime.CoreRuntimePlugin;
+import org.talend.core.service.IDesignerCoreUIService;
+import org.talend.core.service.IRulesProviderService;
 import org.talend.core.ui.CoreUIPlugin;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.designer.core.ICamelDesignerCoreService;
@@ -714,6 +717,7 @@ public class JobJavaScriptsManager extends JobScriptsManager {
                             statisticPort != IProcessor.NO_STATISTICS || isOptionChoosed(ExportChoice.addStatistics),
                             tracePort != IProcessor.NO_TRACES, isOptionChoosed(ExportChoice.applyToChildren), progressMonitor);
                 }
+                addDependenceModules(jobProcess);
                 analysisModules(processItem.getProperty().getId(), selectedJobVersion);
             } else {
                 LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(processItem.getProperty().getId(),
@@ -789,6 +793,52 @@ public class JobJavaScriptsManager extends JobScriptsManager {
         }
         return list;
 
+    }
+
+    private void addDependenceModules(IProcess jobProcess) throws ProcessorException {
+        List<? extends INode> graphicalNodes = jobProcess.getGeneratingNodes();
+        for (INode node : graphicalNodes) {
+            String componentName = node.getComponent().getName();
+            if ((componentName.equals("tRunJob") || componentName.equals("cTalendJob"))) { //$NON-NLS-1$
+                IElementParameter processIdparam = node.getElementParameter("PROCESS_TYPE_PROCESS"); //$NON-NLS-1$
+                if (processIdparam == null) {
+                    continue;
+                }
+                String jobIds = (String) processIdparam.getValue();
+                if (jobIds == null) {
+                    continue;
+                }
+                IElementParameter contextPara = node.getElementParameter("PROCESS_TYPE_CONTEXT");
+                if (contextPara == null) {
+                    continue;
+                }
+                String context = (String) contextPara.getValue();
+                IElementParameter versionPara = node.getElementParameter("PROCESS_TYPE_VERSION");
+                if (versionPara == null) {
+                    continue;
+                }
+                String version = (String) versionPara.getValue();
+                String[] jobsArr = jobIds.split(";");
+                for (String jobId : jobsArr) {
+                    if (StringUtils.isNotEmpty(jobId)) {
+                        ProcessItem processItem = ItemCacheManager.getProcessItem(jobId, version);
+                        if (processItem == null) {
+                            continue;
+                        }
+                        LastGenerationInfo
+                                .getInstance()
+                                .getModulesNeededWithSubjobPerJob(jobProcess.getId(), jobProcess.getVersion())
+                                .addAll(LastGenerationInfo.getInstance().getModulesNeededPerJob(
+                                        processItem.getProperty().getId(), processItem.getProperty().getVersion()));
+
+                        IProcess subProcess = generateJobFiles(processItem, context, processItem.getProperty().getVersion(),
+                                statisticPort != IProcessor.NO_STATISTICS || isOptionChoosed(ExportChoice.addStatistics),
+                                tracePort != IProcessor.NO_TRACES, isOptionChoosed(ExportChoice.applyToChildren), progressMonitor);
+                        addDependenceModules(subProcess);
+                    }
+                }
+            }
+        }
     }
 
     protected ExportFileResource getCompiledLibExportFileResource(ExportFileResource[] processes) {
