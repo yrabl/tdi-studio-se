@@ -1,0 +1,47 @@
+<%@ jet
+    imports="
+        org.talend.core.model.process.INode
+    	org.talend.designer.codegen.config.CodeGeneratorArgument
+    	org.talend.core.model.process.ElementParameterParser
+    	org.talend.core.model.metadata.IMetadataTable
+    	org.talend.core.model.metadata.IMetadataColumn
+    	org.talend.core.model.process.IConnection
+    	org.talend.core.model.process.IConnectionCategory
+    	java.util.List
+"
+%>
+
+<%
+CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+INode node = (INode)codeGenArgument.getArgument();
+String cid = node.getUniqueName();
+List<? extends IConnection> incomingConnections = node.getIncomingConnections();
+
+if((incomingConnections==null)&&(incomingConnections.isEmpty())) {
+	return stringBuffer.toString();
+}
+
+IConnection inputConn = null;
+for(IConnection incomingConnection : incomingConnections) {
+	if(incomingConnection.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+		inputConn = incomingConnection;
+	}
+}
+
+if(inputConn==null) {
+	return stringBuffer.toString();
+}
+
+List<IMetadataTable> metadatas = node.getMetadataList();
+if ((metadatas==null)||(metadatas.isEmpty())) {
+	return stringBuffer.toString();
+}
+
+IMetadataTable metadata = metadatas.get(0);
+
+if(metadata == null) {
+	return stringBuffer.toString();
+}
+%>
+
+us.monoid.json.JSONObject listJson_<%=cid %> = new us.monoid.json.JSONObject();
