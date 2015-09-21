@@ -15,7 +15,7 @@ package org.talend.repository.view.di.metadata.tester;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.hadoop.IHadoopClusterService;
 import org.talend.core.model.repository.ERepositoryObjectType;
-import org.talend.repository.model.IRepositoryNode;
+import org.talend.repository.model.RepositoryNode;
 
 /**
  * 
@@ -89,7 +89,7 @@ public class DIMetadatasNodeTester extends CoMetadataNodeTester {
      * org.talend.core.model.repository.ERepositoryObjectType)
      */
     @Override
-    public boolean isTypeNode(IRepositoryNode repositoryNode, ERepositoryObjectType type) {
+    public boolean isTypeNode(RepositoryNode repositoryNode, ERepositoryObjectType type) {
         if (ERepositoryObjectType.METADATA_CONNECTIONS.equals(type)) {
             if (GlobalServiceRegister.getDefault().isServiceRegistered(IHadoopClusterService.class)) {
                 IHadoopClusterService hadoopClusterService = (IHadoopClusterService) GlobalServiceRegister.getDefault()
