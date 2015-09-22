@@ -11,7 +11,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.ui.intro,
  org.talend.rcp,
- org.talend.core,
- org.talend.presentation.onboarding
+ org.talend.core
 Eclipse-LazyStart: true
 Eclipse-BundleShape: dir
