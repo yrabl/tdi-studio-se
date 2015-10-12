@@ -3420,9 +3420,9 @@
         <PARAMETER
            NAME="USE_HTTP_CHUNKED"
            FIELD="CHECK"
-           SHOW="false"
+           SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
            NUM_ROW="55">
-           <DEFAULT>false</DEFAULT>
+           <DEFAULT>true</DEFAULT>
         </PARAMETER>
 
         <PARAMETER

@@ -244,7 +244,7 @@
            FIELD="CHECK"
            SHOW_IF="BULK_CONNECTION=='false'"
            NUM_ROW="5">
-           <DEFAULT>false</DEFAULT>
+           <DEFAULT>true</DEFAULT>
         </PARAMETER>
     </ADVANCED_PARAMETERS>
 
