@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.repository.ui.wizards.exportjob.handler;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -33,14 +34,20 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.talend.commons.CommonsPlugin;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.generation.JavaUtils;
+import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ITDQItemService;
 import org.talend.core.PluginChecker;
@@ -48,14 +55,21 @@ import org.talend.core.model.process.ProcessUtils;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.ProcessItem;
 import org.talend.core.model.properties.Project;
+import org.talend.core.model.properties.RoutineItem;
+import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
+import org.talend.core.model.routines.RoutinesUtil;
 import org.talend.core.model.runprocess.LastGenerationInfo;
 import org.talend.core.model.utils.JavaResourcesHelper;
+import org.talend.core.model.utils.RepositoryManagerHelper;
 import org.talend.core.repository.constants.FileConstants;
+import org.talend.core.repository.ui.editor.RepositoryEditorInput;
 import org.talend.core.runtime.process.TalendProcessArgumentConstant;
 import org.talend.core.runtime.repository.build.BuildExportManager;
 import org.talend.core.service.ITransformService;
 import org.talend.core.ui.ITestContainerProviderService;
+import org.talend.designer.codegen.ICodeGeneratorService;
+import org.talend.designer.codegen.ITalendSynchronizer;
 import org.talend.designer.maven.model.TalendMavenConstants;
 import org.talend.designer.runprocess.ProcessorUtilities;
 import org.talend.model.bridge.ReponsitoryContextBridge;
@@ -91,6 +105,10 @@ public class BuildJobHandler extends AbstractBuildJobHandler {
     public void generateJobFiles(IProgressMonitor monitor) throws Exception {
         LastGenerationInfo.getInstance().getUseDynamicMap().clear();
         LastGenerationInfo.getInstance().getUseRulesMap().clear();
+
+        // before codegen, need build the .Java project, and make sure enable to get the compile markers for routines
+        // later.
+        talendProcessJavaProject.getProject().build(IncrementalProjectBuilder.FULL_BUILD, monitor);
 
         final Map<String, Object> argumentsMap = new HashMap<String, Object>();
 
@@ -344,7 +362,13 @@ public class BuildJobHandler extends AbstractBuildJobHandler {
             @Override
             public void run(IProgressMonitor monitor) throws CoreException {
                 try {
+                    beforeBuild(monitor); // don't block the build. so catch singly.
+                } catch (Exception e) {
+                    ExceptionHandler.process(e);
+                }
+                try {
                     buildDelegate(monitor);
+                    afterBuild(monitor);
                 } catch (Exception e) {
                     ExceptionHandler.process(e);
                 }
@@ -368,5 +392,84 @@ public class BuildJobHandler extends AbstractBuildJobHandler {
         // isOptionChoosed(ExportChoice.addStatistics));
 
         talendProcessJavaProject.buildModules(monitor, null, argumentsMap);
+    }
+
+    protected void beforeBuild(IProgressMonitor monitor) throws Exception {
+        // clean some compile error routines.
+        checkCodesCompileErrors(monitor);
+
+    }
+
+    private List<RoutineItem> processedCodesItems = new ArrayList<RoutineItem>();
+
+    protected void checkCodesCompileErrors(IProgressMonitor monitor) throws Exception {
+        List<IFile> openedFiles = new ArrayList<IFile>(10);
+        // need take care the opened routines in editor.
+        if (!CommonsPlugin.isHeadless()) {
+            try {
+                IEditorReference[] openedEditors = RepositoryManagerHelper.getOpenedEditors();
+                if (openedEditors != null) {
+                    for (IEditorReference ref : openedEditors) {
+                        final IEditorPart editor = ref.getEditor(false);
+                        final IEditorInput editorInput = editor.getEditorInput();
+                        if (editorInput instanceof RepositoryEditorInput) {
+                            final IFile file = ((RepositoryEditorInput) editorInput).getFile();
+                            openedFiles.add(file);
+                        }
+                    }
+                }
+            } catch (Throwable e) {
+                // nothing to do
+            }
+        }
+        ICodeGeneratorService codegenService = null;
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(ICodeGeneratorService.class)) {
+            codegenService = (ICodeGeneratorService) GlobalServiceRegister.getDefault().getService(ICodeGeneratorService.class);
+        }
+        if (codegenService == null) {
+            return;
+        }
+        final ITalendSynchronizer synchronizer = codegenService.createRoutineSynchronizer();
+
+        checkCodesCompileErrors(monitor, ERepositoryObjectType.ROUTINES, synchronizer, openedFiles);
+        checkCodesCompileErrors(monitor, ERepositoryObjectType.PIG_UDF, synchronizer, openedFiles);
+        checkCodesCompileErrors(monitor, ERepositoryObjectType.getType("BEANS"), synchronizer, openedFiles);
+
+    }
+
+    protected void checkCodesCompileErrors(IProgressMonitor monitor, ERepositoryObjectType type,
+            ITalendSynchronizer synchronizer, List<IFile> opendedFiles) throws Exception {
+        if (type == null || synchronizer == null) {
+            return;
+        }
+        final List<RoutineItem> errorItems = RoutinesUtil.getCompileErrorCodeItems(type);
+        for (RoutineItem item : errorItems) {
+            IFile file = synchronizer.getFile(item);
+            processedCodesItems.add(item);
+            // remove or empty it.
+            if (opendedFiles.contains(file)) {
+                // save first?
+                ByteArrayInputStream in = new ByteArrayInputStream(new byte[0]); // empty contents.
+                file.setContents(in, true, false, monitor);
+                file.refreshLocal(IResource.DEPTH_ONE, monitor);
+            } else {
+                file.delete(true, monitor);
+            }
+        }
+
+    }
+
+    protected void afterBuild(IProgressMonitor monitor) throws Exception {
+        // re-sync the routines.
+        final ITalendSynchronizer synchronizer = CorePlugin.getDefault().getCodeGeneratorService().createRoutineSynchronizer();
+        for (RoutineItem item : processedCodesItems) {
+            final IFile file = synchronizer.getFile(item);
+            String routineContent = new String(item.getContent().getInnerContent());
+            if (!file.exists()) {
+                file.create(new ByteArrayInputStream(routineContent.getBytes()), true, monitor);
+            } else {
+                file.setContents(new ByteArrayInputStream(routineContent.getBytes()), true, false, monitor);
+            }
+        }
     }
 }
