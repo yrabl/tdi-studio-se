@@ -86,7 +86,7 @@
           REPOSITORY_VALUE="ENDPOINT"
           SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
         >
-          <DEFAULT>"https://login.salesforce.com/services/Soap/u/32.0"</DEFAULT>
+          <DEFAULT>"https://login.salesforce.com/services/Soap/u/34.0"</DEFAULT>
         </PARAMETER>
 
         <PARAMETER
@@ -338,10 +338,33 @@
 
     <CODEGENERATION>
       <IMPORTS>
-        <IMPORT NAME="force-wsc-33.0.0.jar" MODULE="force-wsc-33.0.0.jar" MVN="mvn:org.talend.libraries/force-wsc-33.0.0/6.0.0"  UrlPath="platform:/plugin/org.talend.libraries.salesforce/lib/force-wsc-33.0.0.jar" REQUIRED="true" />
-        <IMPORT NAME="partner-33.jar" MODULE="partner-33.jar" MVN="mvn:org.talend.libraries/partner-33/6.0.0"  UrlPath="platform:/plugin/org.talend.libraries.salesforce/lib/partner-33.jar" REQUIRED="true" />
-        <IMPORT NAME="commons-io-2.4.jar" MODULE="commons-io-2.4.jar" MVN="mvn:org.talend.libraries/commons-io-2.4/6.0.0"  UrlPath="platform:/plugin/org.talend.libraries.apache.common/lib/commons-io-2.4.jar" REQUIRED="true" />
-        <IMPORT NAME="talend-salesforce-0.1.jar" MODULE="talend-salesforce-0.1.jar" MVN="mvn:org.talend.libraries/talend-salesforce-0.1/6.0.0"  UrlPath="platform:/plugin/org.talend.libraries.salesforce/lib/talend-salesforce-0.1.jar" REQUIRED="true" />
+        <IMPORT
+            NAME="force-wsc-33.0.0.jar"
+            MODULE="force-wsc-33.0.0.jar"
+            MVN="mvn:org.talend.libraries/force-wsc-33.0.0/6.0.0"
+            UrlPath="platform:/plugin/org.talend.libraries.salesforce/lib/force-wsc-33.0.0.jar"
+            REQUIRED_IF="USE_EXISTING_CONNECTION == 'false'"
+        />
+        <IMPORT
+            NAME="partner"
+            MODULE="partnerBulk-34.jar"
+            MVN="mvn:org.talend.libraries/partnerBulk-34/6.1.0"
+            REQUIRED_IF="USE_EXISTING_CONNECTION == 'false'"
+        />
+        <IMPORT
+            NAME="commons-io-2.4.jar"
+            MODULE="commons-io-2.4.jar"
+            MVN="mvn:org.talend.libraries/commons-io-2.4/6.0.0"
+            UrlPath="platform:/plugin/org.talend.libraries.apache.common/lib/commons-io-2.4.jar"
+            REQUIRED="true"
+        />
+        <IMPORT
+            NAME="talend-salesforce-0.1.jar"
+            MODULE="talend-salesforce-0.1.jar"
+            MVN="mvn:org.talend.libraries/talend-salesforce-0.1/6.0.0"
+            UrlPath="platform:/plugin/org.talend.libraries.salesforce/lib/talend-salesforce-0.1.jar"
+            REQUIRED="true"
+        />
       </IMPORTS>
     </CODEGENERATION>
     <RETURNS/>
