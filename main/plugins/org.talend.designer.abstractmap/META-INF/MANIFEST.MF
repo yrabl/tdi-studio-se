@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.workbench,
  org.eclipse.jface,
  org.apache.log4j,
- org.talend.libraries.apache
+ org.talend.libraries.apache,
+ org.talend.components.api
 Eclipse-LazyStart: true
 Export-Package: org.talend.designer.abstractmap,
  org.talend.designer.abstractmap.managers,
