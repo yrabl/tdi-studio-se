@@ -1636,7 +1636,9 @@ public class Process extends Element implements IProcess2, IGEFProcess, ILastVer
             }
             listParamType = cType.getElementParameter();
             paramList = connec.getElementParameters();
-            saveElementParameters(fileFact, paramList, listParamType, process);
+            if (connec.isTraceConnection() == true) {
+                saveElementParameters(fileFact, paramList, listParamType, process);
+            }
             cList.add(cType);
         }
 
