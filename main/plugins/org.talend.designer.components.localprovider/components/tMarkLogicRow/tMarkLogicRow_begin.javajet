@@ -45,7 +45,7 @@ imports="
  %>
 <%@ include file="@{org.talend.designer.components.localprovider}/components/templates/password.javajet"%>
 
-
+      long nb_line_<%= cid %> = 0;
       com.marklogic.client.DatabaseClient client_<%= cid %> = null;
 <%
     if(reuseConn){
@@ -124,5 +124,11 @@ com.marklogic.client.query.StringQueryDefinition strQryDef_<%= cid %> = qryMgr_<
                                                                                                              );
 strQryDef_<%= cid %>.setCriteria(<%= queryCriteria %>);
 com.marklogic.client.io.SearchHandle searchHdl_<%= cid %> = new com.marklogic.client.io.SearchHandle();
+qryMgr_<%= cid %>.search(strQryDef_<%= cid %>, searchHdl_<%= cid %>);
+//long pageSize_<%= cid %> = qryMgr_<%= cid %>.getPageLength();
+long matchedDocNumber_<%= cid %> = searchHdl_<%= cid %>.getTotalResults();
+     nb_line_<%= cid %> = matchedDocNumber_<%= cid %>;
+//long pageNumber_<%= cid %> = Math.ceil(matchedDocNumber_<%= cid %>/pageSize_<%= cid %>);
+qryMgr_<%= cid %>.setPageLength(matchedDocNumber_<%= cid %>);
 qryMgr_<%= cid %>.search(strQryDef_<%= cid %>, searchHdl_<%= cid %>);
 com.marklogic.client.query.MatchDocumentSummary[] matchDocSummary_<%= cid %> = searchHdl_<%= cid %>.getMatchResults();
