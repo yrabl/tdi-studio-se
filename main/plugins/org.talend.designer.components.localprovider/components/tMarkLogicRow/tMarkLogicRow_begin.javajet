@@ -24,20 +24,27 @@ imports="
 
     boolean reuseConn = "true".equals(ElementParameterParser.getValue(node,"__USE_EXISTING_CONNECTION__"));
     boolean useQueryOption = "true".equals(ElementParameterParser.getValue(node,"__USE_QUERY_OPTION__"));
-    String queryOptionName = ElementParameterParser.getValue(node,"__QUERY_OPTION_NAME__");
+    String queryOptionName = ElementParameterParser.getValue(node, "__QUERY_OPTION_NAME__");
     boolean isValidQueryOptionName = false;
     if(queryOptionName != null && !"".equals(queryOptionName) && !"\"\"".equals(queryOptionName)){
         isValidQueryOptionName = true;
     }
+    if(useQueryOption && !isValidQueryOptionName){
+    %>
+    Compile Err: QUERY OPTION NAME CAN'T BE NULL OR EMPTY STRING.
+    <%
+    }
     String queryOptionType = ElementParameterParser.getValue(node,"__QUERY_OPTION_TYPE__");
     String queryOptionLiterals = ElementParameterParser.getValue(node,"__QUERY_OPTION_LITERALS__");
-    if(useQueryOption){
-        if(queryOptionLiterals != null){
+    boolean isQueryOptionLiteralsEmpty = true;
+    if(queryOptionLiterals != null && !"".equals(queryOptionLiterals) && !"\"\"".equals(queryOptionLiterals)){
+        isQueryOptionLiteralsEmpty = false;
+    }
+    if(useQueryOption && !isQueryOptionLiteralsEmpty){
             if(queryOptionLiterals.startsWith("\"") && queryOptionLiterals.endsWith("\"")){
                queryOptionLiterals = queryOptionLiterals.substring(1, queryOptionLiterals.length()-1);
             }
                queryOptionLiterals = queryOptionLiterals.replace("\r","").replace("\n","").replace("\\\"", "\"").replace("\\", "\\\\").replace("\"", "\\\"");
-        }
     }
     String queryCriteria = ElementParameterParser.getValue(node,"__QUERY_CRITERIA__");
     String passwordFieldName = "__PASSWORD__";
@@ -81,18 +88,10 @@ imports="
 <%
 if(useQueryOption && isValidQueryOptionName){
 %>
-       boolean qryOptsExistsOnServerSide_<%= cid %> = false;
-
        com.marklogic.client.admin.QueryOptionsManager qryOptMgr_<%= cid %> = client_<%= cid %>.newServerConfigManager().newQueryOptionsManager();
-       com.marklogic.client.io.marker.QueryOptionsReadHandle qryOptsReadHdl_<%= cid %> = new com.marklogic.client.io.StringHandle();
-       try{
-           qryOptMgr_<%= cid %>.readOptions(<%= queryOptionName %>, qryOptsReadHdl_<%= cid %>);
-           qryOptsExistsOnServerSide_<%= cid %> = true;
-       }catch(Exception e){
-
-       }
-
-       if(!qryOptsExistsOnServerSide_<%= cid %>){
+       <%
+       if(!isQueryOptionLiteralsEmpty){
+       %>
            com.marklogic.client.io.StringHandle strHandle = new com.marklogic.client.io.StringHandle();
            strHandle.withFormat(
                                                 <%
@@ -112,7 +111,9 @@ if(useQueryOption && isValidQueryOptionName){
                                                 %>
                                                 ).set("<%= queryOptionLiterals %>");
            qryOptMgr_<%= cid %>.writeOptions(<%= queryOptionName %>, strHandle);
+       <%
        }
+        %>
     <%
 }
  %>
