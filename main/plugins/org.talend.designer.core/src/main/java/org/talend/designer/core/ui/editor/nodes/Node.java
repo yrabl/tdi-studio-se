@@ -3049,6 +3049,17 @@ public class Node extends Element implements IGraphicalNode {
         }
     }
 
+    private void checkDataprepRun(IElementParameter param) {
+        if (EParameterName.PREPARATION_ID.getName().equals(param.getName())) {
+            final IElementParameter prepIdParam = getElementParameter(EParameterName.PREPARATION_ID.getName());
+            if (prepIdParam == null || prepIdParam.getValue() == null
+                    || "".equals(TalendTextUtils.removeQuotes(String.valueOf(prepIdParam.getValue())).trim())) {
+                Problems.add(ProblemStatus.ERROR, this, "Must set the preparation id");
+
+            }
+        }
+    }
+
     public int getCurrentActiveLinksNbInput(EConnectionType type) {
         int nb = 0;
         for (IConnection connection : inputs) {
