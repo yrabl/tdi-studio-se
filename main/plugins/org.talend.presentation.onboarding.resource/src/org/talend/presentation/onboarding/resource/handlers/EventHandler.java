@@ -137,7 +137,7 @@ public class EventHandler extends AbstractHandler {
         new Thread(new Runnable() {
 
             @Override
-            public void run() {
+            public synchronized void run() {
 
                 try {
                     boolean alreadyImportDemoJob = OnBoardingResourceUtil.getPreferenceStore().getBoolean(
