@@ -220,6 +220,14 @@ imports="
 				// BEGIN IF03
 				if(configureFromClassPath){
 %>
+					// Add HADOOP_CONF_DIR to the classpath if it's present
+					String hadoopConfDir_<%=cid%> = System.getenv("HADOOP_CONF_DIR");
+					if(hadoopConfDir_<%=cid%> != null){
+						java.net.URLClassLoader sysloader = (java.net.URLClassLoader) ClassLoader.getSystemClassLoader();
+						java.lang.reflect.Method method = java.net.URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { java.net.URL.class });
+						method.setAccessible(true);
+						method.invoke(sysloader,new Object[] { new java.io.File(hadoopConfDir_<%=cid%>).toURI().toURL() });
+					}
 					String url_<%=cid%> = "jdbc:<%=hiveServer%>://" + <%=dbhost%> + ":" + <%=dbport%> + "/" + <%=dbname%> + ";";
 					String secureSSLMode = ";sasl.qop=auth-conf";
 
