@@ -220,11 +220,19 @@ try{
                 for (int m<%=cid %> = 0; m<%=cid %> < listings<%=cid %>.length; m<%=cid %>++){
                             java.io.File file_in_localDir = listings<%=cid %>[m<%=cid %>];
                             String uploadingFileName_<%= cid %> = file_in_localDir.getName();
+                    String newFileName_<%= cid %> = map<%=cid %>.get(key<%=cid %>);
+                    String newName_<%=cid%> = ("".equals(newFileName_<%= cid %>)) ? uploadingFileName_<%= cid %> : newFileName_<%= cid %>;
+                    boolean targetFileExistsOnRemoteServer_<%= cid %> = false;
                     try{
-                        if (listings<%=cid %>[m<%=cid %>].getName().matches(mask<%=cid %>)){
-                            boolean targetFileExistsOnRemoteServer_<%= cid %> = ftp_<%= cid %>.existsFile(uploadingFileName_<%= cid %>);
-                            globalMap.put("<%=cid %>_CURRENT_FILE_EXISTS", targetFileExistsOnRemoteServer_<%= cid %>);
-                            String newName_<%=cid%> = ("".equals(map<%=cid %>.get(key<%=cid %>)))? uploadingFileName_<%= cid %> : map<%=cid %>.get(key<%=cid %>);
+                        if (uploadingFileName_<%= cid %>.matches(mask<%=cid %>)){
+                            <%
+                            if(("never".equals(overwrite) || "size_differ".equals(overwrite)) && !append){
+                            %>
+                               targetFileExistsOnRemoteServer_<%= cid %> = ftp_<%= cid %>.existsFile(newName_<%= cid %>);
+                               globalMap.put("<%=cid %>_CURRENT_FILE_EXISTS", targetFileExistsOnRemoteServer_<%= cid %>);
+                            <%
+                            }
+                             %>
                             <%if(append){%>
                                 ftp_<%=cid %>.put(tempdir<%=cid %> + "/" + uploadingFileName_<%= cid %>, newName_<%= cid %>, true);
                             <%}else if(("never").equals(overwrite)){%>
@@ -257,11 +265,10 @@ try{
                         }
                     }catch(com.enterprisedt.net.ftp.FTPException e_<%=cid%>){
 
-                        msg_<%=cid%>.add("file " + listings<%=cid %>[m<%=cid %>].getAbsolutePath() + " not found?");
+                        msg_<%=cid%>.add("file " + file_in_localDir.getAbsolutePath() + " not found?");
 
                         currentStatus_<%=cid %> = "File rename fail.";
-                        globalMap.put("<%=cid %>_CURRENT_FILE_EXISTS", ftp_<%= cid %>.existsFile(uploadingFileName_<%= cid %>));
-
+                        globalMap.put("<%=cid %>_CURRENT_FILE_EXISTS", targetFileExistsOnRemoteServer_<%= cid %>);
                         throw e_<%=cid%>;
                     }
                 }
