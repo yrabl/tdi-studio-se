@@ -400,72 +400,71 @@ public abstract class AbstractMultiPageTalendEditor extends MultiPageEditorPart 
         // Lock the process :
         IRepositoryService service = CorePlugin.getDefault().getRepositoryService();
         final IProxyRepositoryFactory repFactory = service.getProxyRepositoryFactory();
-        if (editorInput instanceof JobEditorInput) {
-            processEditorInput = (JobEditorInput) editorInput;
-            final IProcess2 currentProcess = processEditorInput.getLoadedProcess();
-            if (!currentProcess.isReadOnly()) {
-                try {
-                    Property property = processEditorInput.getItem().getProperty();
-                    propertyInformation = new ArrayList(property.getInformations());
-                    property.eAdapters().add(dirtyListener);
-                    repFactory.lock(currentProcess);
-                    boolean locked = repFactory.getStatus(currentProcess) == ERepositoryStatus.LOCK_BY_USER;
-                    if (!locked) {
-                        setReadOnly(true);
-                    }
-                    revisionChanged = true;
-                } catch (PersistenceException e) {
-                    // e.printStackTrace();
-                    ExceptionHandler.process(e);
-                } catch (BusinessException e) {
-                    // Nothing to do
-                    ExceptionHandler.process(e);
+        processEditorInput = (JobEditorInput) editorInput;
+        final IProcess2 currentProcess = processEditorInput.getLoadedProcess();
+        if (!currentProcess.isReadOnly()) {
+            try {
+                Property property = processEditorInput.getItem().getProperty();
+                propertyInformation = new ArrayList(property.getInformations());
+                property.eAdapters().add(dirtyListener);
+                repFactory.lock(currentProcess);
+                boolean locked = repFactory.getStatus(currentProcess) == ERepositoryStatus.LOCK_BY_USER;
+                if (!locked) {
+                    setReadOnly(true);
                 }
-            } else {
-                setReadOnly(true);
-                Bundle bundle = FrameworkUtil.getBundle(AbstractMultiPageTalendEditor.class);
-                final Display display = getSite().getShell().getDisplay();
-                this.lockService = bundle.getBundleContext().registerService(
-                        EventHandler.class.getName(),
-                        new EventHandler() {
+                revisionChanged = true;
+            } catch (PersistenceException e) {
+                // e.printStackTrace();
+                ExceptionHandler.process(e);
+            } catch (BusinessException e) {
+                // Nothing to do
+                ExceptionHandler.process(e);
+            }
+        } else {
+            setReadOnly(true);
+            Bundle bundle = FrameworkUtil.getBundle(AbstractMultiPageTalendEditor.class);
+            final Display display = getSite().getShell().getDisplay();
+            this.lockService = bundle.getBundleContext().registerService(
+                    EventHandler.class.getName(),
+                    new EventHandler() {
 
-                            @Override
-                            public void handleEvent(Event event) {
-                                String lockTopic = Constant.REPOSITORY_ITEM_EVENT_PREFIX + Constant.ITEM_LOCK_EVENT_SUFFIX;
-                                if (lockTopic.equals(event.getTopic())) {
-                                    Object o = event.getProperty(Constant.ITEM_EVENT_PROPERTY_KEY);
-                                    if (o != null && o instanceof Item) {
-                                        String itemId = ((Item) o).getProperty().getId();
-                                        if (itemId.equals(currentProcess.getId())) {
-                                            if (currentProcess.isReadOnly()) {
-                                                boolean readOnly = currentProcess.checkReadOnly();
-                                                setReadOnly(readOnly);
-                                                if (!readOnly) {
-                                                    display.asyncExec(new Runnable() {
+                        @Override
+                        public void handleEvent(Event event) {
+                            String lockTopic = Constant.REPOSITORY_ITEM_EVENT_PREFIX + Constant.ITEM_LOCK_EVENT_SUFFIX;
+                            if (lockTopic.equals(event.getTopic())) {
+                                Object o = event.getProperty(Constant.ITEM_EVENT_PROPERTY_KEY);
+                                if (o != null && o instanceof Item) {
+                                    String itemId = ((Item) o).getProperty().getId();
+                                    if (itemId.equals(currentProcess.getId())) {
+                                        if (currentProcess.isReadOnly()) {
+                                            boolean readOnly = currentProcess.checkReadOnly();
+                                            setReadOnly(readOnly);
+                                            if (!readOnly) {
+                                                display.asyncExec(new Runnable() {
 
-                                                        @Override
-                                                        public void run() {
-                                                            setFocus();
-                                                        }
-                                                    });
-                                                    Property property = processEditorInput.getItem().getProperty();
-                                                    propertyInformation = new ArrayList(property.getInformations());
-                                                    property.eAdapters().add(dirtyListener);
-                                                }
+                                                    @Override
+                                                    public void run() {
+                                                        setFocus();
+                                                    }
+                                                });
+                                                Property property = processEditorInput.getItem().getProperty();
+                                                propertyInformation = new ArrayList(property.getInformations());
+                                                property.eAdapters().add(dirtyListener);
                                             }
                                         }
                                     }
                                 }
                             }
-                        },
-                        new Hashtable<String, String>(Collections.singletonMap(EventConstants.EVENT_TOPIC,
-                                Constant.REPOSITORY_ITEM_EVENT_PREFIX + "*"))); //$NON-NLS-1$
-                revisionChanged = true;
-            }
-            // setTitleImage(ImageProvider.getImage(getEditorTitleImage()));
-            updateTitleImage(processEditorInput.getItem().getProperty());
-            getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
+                        }
+                    },
+                    new Hashtable<String, String>(Collections.singletonMap(EventConstants.EVENT_TOPIC,
+                            Constant.REPOSITORY_ITEM_EVENT_PREFIX + "*"))); //$NON-NLS-1$
+            revisionChanged = true;
         }
+        // setTitleImage(ImageProvider.getImage(getEditorTitleImage()));
+        updateTitleImage(processEditorInput.getItem().getProperty());
+        getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
+
     }
 
     /*
