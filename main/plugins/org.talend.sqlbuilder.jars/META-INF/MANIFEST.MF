@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: Jars
-Bundle-SymbolicName: org.talend.sqlbuilder.jars
-Bundle-Version: 6.1.1.qualifier
-Fragment-Host: org.talend.sqlbuilder
-Eclipse-BundleShape: dir
