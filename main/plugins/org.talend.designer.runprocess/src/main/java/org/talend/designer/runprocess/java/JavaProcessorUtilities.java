@@ -62,7 +62,6 @@ import org.talend.designer.maven.tools.MavenPomSynchronizer;
 import org.talend.designer.maven.utils.PomUtil;
 import org.talend.designer.maven.utils.TalendCodeProjectUtil;
 import org.talend.designer.runprocess.IRunProcessService;
-import org.talend.designer.runprocess.JobErrorsChecker;
 import org.talend.designer.runprocess.i18n.Messages;
 import org.talend.librariesmanager.model.ModulesNeededProvider;
 
@@ -436,7 +435,6 @@ public class JavaProcessorUtilities {
                     });
                 }
             }
-            JobErrorsChecker.setCheckDependencyError(sb.toString());
             throw new BusinessException(missingJars);
 
         } else {
@@ -446,8 +444,6 @@ public class JavaProcessorUtilities {
                     sb.append(missingJar);
                     sb.append(", "); //$NON-NLS-1$
                 }
-                
-                JobErrorsChecker.setCheckDependencyError(sb.toString());
                 CommonExceptionHandler.warn(subForMsg(sb.toString()));
             }
         }
