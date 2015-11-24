@@ -48,15 +48,6 @@
       <DEFAULT>false</DEFAULT>
     </PARAMETER>
 
-     <PARAMETER
-        NAME="DIE_ON_ERROR"
-        FIELD="CHECK"
-        NUM_ROW="4"
-        SHOW_IF="INTEGRITY == 'true'"
-     >
-      <DEFAULT>false</DEFAULT>
-    </PARAMETER>
-
     <PARAMETER NAME="EXTRACTPATH" FIELD="CHECK" REQUIRED="true" NUM_ROW="5">
       <DEFAULT>true</DEFAULT>
     </PARAMETER>
