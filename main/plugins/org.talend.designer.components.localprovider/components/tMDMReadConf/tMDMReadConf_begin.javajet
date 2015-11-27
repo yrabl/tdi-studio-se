@@ -75,7 +75,7 @@ if ((metadatas != null) && (metadatas.size() > 0)) {//1
 				int nb_line_<%=cid %> = 0;
 				<%if(!useExistingConn){%>
 				    
-				    <% logUtil.info("\"Attempt to get a service from: \"", mdmUrl,"\".\"");%>
+				    <% logUtil.debug("\"Initializing web service from URL: \"", mdmUrl,"\".\"");%>
 
                     String murl = <%=mdmUrl %>;
                     if(murl.endsWith("?wsdl")) {
@@ -100,7 +100,7 @@ if ((metadatas != null) && (metadatas.size() > 0)) {//1
                     
                     context_<%=cid %>.put(javax.xml.ws.BindingProvider.PASSWORD_PROPERTY, decryptedPassword_<%=cid%>);
                     
-				    <% logUtil.info("\"Got service successfully.\"");%>
+				    <% logUtil.debug("\"Web service initialized successfully.\"");%>
 				<%}else{%>
 					org.talend.mdm.webservice.TMDMService service_<%=cid %> = (org.talend.mdm.webservice.TMDMService)globalMap.get("<%=conn%>");
 				<%}%>
@@ -119,8 +119,7 @@ if ((metadatas != null) && (metadatas.size() > 0)) {//1
 						Map<String, String> map = ids.get(i);
 						String idValue = map.get("IDVALUE");
 					%>
-					ids_<%=cid %>.add(<%=idValue %>);
-					<% logUtil.debug("\"To get item :\"+"+idValue);%>
+					ids_<%=cid %>.add(<%=idValue %>);					
 					<%
 					}//for
 					%>
@@ -128,17 +127,14 @@ if ((metadatas != null) && (metadatas.size() > 0)) {//1
 					org.talend.mdm.webservice.WSGetItem wsitem_<%=cid %> = 
 					new org.talend.mdm.webservice.WSGetItem(new org.talend.mdm.webservice.WSItemPK(<%=concept %>,ids_<%=cid %>, dataCluster_<%=cid %>));
 					String <%=outgoingConn.getName() %>_xml = "";
-					try {
-					   <% logUtil.info("\"Attempt to get item .\"");%>
+					try {					   
 					   
-						org.talend.mdm.webservice.WSItem item_<%=cid %>=service_<%=cid %>.getItem(wsitem_<%=cid %>);
-						
-						<% logUtil.info("\"Get item successfully.\"");%>
+						org.talend.mdm.webservice.WSItem item_<%=cid %>=service_<%=cid %>.getItem(wsitem_<%=cid %>);												
 						
 						<%=outgoingConn.getName() %>_xml = item_<%=cid %>.getContent();
 					} catch(java.lang.Exception e) {
-						<%if(dieOnError) {%>
-						  <% logUtil.error("\"Die on error:\"+e.getMessage()");%>
+					<% logUtil.error("\"Unexpected error:\"+e.getMessage()");%>
+						<%if(dieOnError) {%>						  
 						  throw e;
 						<% } else { %>
 						  System.err.println(e.getMessage());
@@ -229,17 +225,16 @@ if ((metadatas != null) && (metadatas.size() > 0)) {//1
 
 						String[] items_<%=cid%> = {};
 						try {
-						    <% logUtil.info("\"Attempt to get items .\"");%>
-							items_<%=cid%> = service_<%=cid %>.getItems(getitems_<%=cid%>).getStrings().toArray(new String[0]);
-							<% logUtil.info("\"Get items successfully.\"");%>
+						    <% logUtil.debug("\"Attempt to get items .\"");%>
+							items_<%=cid%> = service_<%=cid %>.getItems(getitems_<%=cid%>).getStrings().toArray(new String[0]);							
 							
 							if(totalCount_<%=cid%> < 0){ 
 								totalCount_<%=cid%> = Integer.valueOf(items_<%=cid%>[0].replaceAll("<totalCount>", "").replaceAll("</totalCount>", ""));
-								<% logUtil.debug("\"Get item count:\"+totalCount_"+cid);%>
+								<% logUtil.info("\"Total items retrieved:\"+totalCount_"+cid);%>
 							}
 						} catch(java.lang.Exception e) {
-							<%if(dieOnError) {%>
-							     <% logUtil.error("\"Die on error:\"+e.getMessage()");%>
+						<% logUtil.error("\"Unexpected error:\"+e.getMessage()");%>
+							<%if(dieOnError) {%>							     
 							     throw e;
 							<% } else { %>
 							     System.err.println(e.getMessage());

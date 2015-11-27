@@ -37,8 +37,7 @@ imports="
 %>       
 int nb_line_<%=cid %> = 0;
 int nb_line_rejected_<%=cid%> = 0;
-<%if(!usePartialUpdate){%>
-    <% logUtil.debug("\"Try to use full update.\"");%>
+<%if(!usePartialUpdate){%>    
     
 	<%if(addTaskID){%>
 		class Util_<%=cid%>{
@@ -62,7 +61,7 @@ int nb_line_rejected_<%=cid%> = 0;
 	<%}%>
 	<%if(isMassInsert){
 		if(!isStaging && withReport){%>
-		    <% logUtil.debug("\"Put item with report to master data.\"");%>
+		    <% logUtil.debug("\"Put item with report to master storage.\"");%>
 			java.util.List <org.talend.mdm.webservice.WSPutItemWithReport> miList_<%=cid %> = new java.util.ArrayList<org.talend.mdm.webservice.WSPutItemWithReport>();
 	<%	}else{%>
 		    <% logUtil.debug("\"Put item to staging data.\"");%>
@@ -79,7 +78,7 @@ int nb_line_rejected_<%=cid%> = 0;
 
 <%if(!useExistingConn){%>
 
-    <% logUtil.info("\"Attempt to get a service from: \"", mdmUrl,"\".\"");%>
+    <% logUtil.debug("\"Initializing web service from URL: \"", mdmUrl,"\".\"");%>
     
     String murl = <%=mdmUrl %>;
     if(murl.endsWith("?wsdl")) {
@@ -102,7 +101,7 @@ int nb_line_rejected_<%=cid%> = 0;
 
     context_<%=cid %>.put(javax.xml.ws.BindingProvider.PASSWORD_PROPERTY, decryptedPassword_<%=cid%>);
     
-    <% logUtil.info("\"Got service successfully.\"");%>
+    <% logUtil.debug("\"Web service initialized successfully.\"");%>
 <%}else{%>
 	org.talend.mdm.webservice.TMDMService service_<%=cid %> = (org.talend.mdm.webservice.TMDMService)globalMap.get("<%=conn%>");
 <%}%>

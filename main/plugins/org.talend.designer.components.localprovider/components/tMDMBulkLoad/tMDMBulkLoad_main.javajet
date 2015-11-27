@@ -29,17 +29,16 @@ if ((metadatas!=null)&&(metadatas.size()>0)) {//1
 %>
 if (count_<%=cid%> % <%=arraySize%> == 0) {
 	if(inputStreamMerger_<%=cid%> != null) {
-	   <% logUtil.info("\"Close input stream.\"");%>
+	   <% logUtil.debug("\"Closing input stream.\"");%>
 	   inputStreamMerger_<%=cid%>.close();
 	}
 	
-	<% logUtil.info("\"Load bulk load.\"");%>
 	inputStreamMerger_<%=cid%> = bulkloadClient_<%=cid %>.load();
         resourceMap.put("mdmBulkStream<%=cid %>", inputStreamMerger_<%=cid%>);
 }
 
 if(<%=conn.getName()%>.<%=xmlField %>!=null){
-    <% logUtil.info("\"Input stream push.\"");%>
+    <% logUtil.debug("\"Pushing input stream.\"");%>
 	inputStreamMerger_<%=cid%>.push(new java.io.ByteArrayInputStream(<%=conn.getName()%>.<%=xmlField %>.toString().getBytes("UTF-8")));
 }else{
 	inputStreamMerger_<%=cid%>.push(null);

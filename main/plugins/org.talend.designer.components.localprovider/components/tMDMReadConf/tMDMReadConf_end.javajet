@@ -49,19 +49,17 @@ if ((metadatas != null) && (metadatas.size() > 0)) {
 
 				<%if(!useExistingConn){%>
 					try {
-					   <% logUtil.info("\"To Close service.\"");%>
-						service_<%=cid %>.logout(new org.talend.mdm.webservice.WSLogout());
-					   <% logUtil.info("\"Close service successfully.\"");%>
+					   <% logUtil.debug("\"Closing connection to MDM server.\"");%>
+						service_<%=cid %>.logout(new org.talend.mdm.webservice.WSLogout());					   
 					} catch(java.lang.Exception e) {
-						<%if(dieOnError) {%>
-						      <% logUtil.error("\"Die on error:\"+e.getMessage()");%>
+					<% logUtil.error("\"Unexpected error:\"+e.getMessage()");%>
+						<%if(dieOnError) {%>						      
 						      throw e;
 						<% } else { %>
 						      System.err.println(e.getMessage());
 						<% } %>
 					}
-				<%}%>
-				<% logUtil.info("\"Read item count: \"+nb_line_"+cid);%>
+				<%}%>				
 				globalMap.put("<%=cid %>_NB_LINE",nb_line_<%=cid %>);   
 			<%
 			}

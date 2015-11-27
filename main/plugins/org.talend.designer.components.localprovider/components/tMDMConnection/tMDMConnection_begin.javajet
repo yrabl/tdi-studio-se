@@ -24,7 +24,7 @@ boolean useTransaction = "false".equals(ElementParameterParser.getValue(node, "_
 boolean useClientTranId = "true".equals(ElementParameterParser.getValue(node, "__GEN_TRANSACTION_ID__"));
     
 %>
-    <% logUtil.info("\"Attempt to get a service from: \"", mdmUrl,"\".\"");%>
+    <% logUtil.debug("\"Initializing web service from URL: \"", mdmUrl,"\".\"");%>
 
     String murl = <%=mdmUrl %>;
     if(murl.endsWith("?wsdl")) {
@@ -48,7 +48,7 @@ String passwordFieldName = "__PASSWORD__";
 
 context_<%=cid %>.put(javax.xml.ws.BindingProvider.PASSWORD_PROPERTY, decryptedPassword_<%=cid%>);
 
-<% logUtil.info("\"Got service successfully.\"");%>
+<% logUtil.debug("\"Web service initialized successfully.\"");%>
 
 <%if(useTransaction) {%>
 
@@ -57,7 +57,7 @@ com.talend.mdm.transaction.client.MDMTransaction mdmTransaction_<%=cid%> = null;
 <%
 if(useClientTranId){
 %>
-<% logUtil.info("\"Attempt to get a client transaction from url: \"", mdmUrl,"\".\"");%>
+<% logUtil.debug("\"Generating a transaction id from client side.\"");%>
     mdmTransaction_<%=cid%> = new com.talend.mdm.transaction.client.MDMTransaction();
     mdmTransaction_<%=cid%>.setUrl(turl_<%=cid%>);
     String clientTranId_<%=cid%> = "<%=cid%>"+java.util.UUID.randomUUID()+Thread.currentThread().getId();
@@ -67,7 +67,7 @@ if(useClientTranId){
 <%
 }else{
 %>
-<% logUtil.info("\"Attempt to get a remote transaction from url: \"", mdmUrl,"\".\"");%>
+<% logUtil.debug("\"Obtaining a transaction from MDM Server.\"");%>
     mdmTransaction_<%=cid%> = com.talend.mdm.transaction.client.MDMTransactionClient.newTransaction(turl_<%=cid%>,<%=username %>,decryptedPassword_<%=cid%>);
 <%
 }
@@ -78,8 +78,6 @@ org.apache.cxf.databinding.DataBinding dataBinding = new org.apache.cxf.jaxb.JAX
 org.apache.cxf.headers.Header dummyHeader = new org.apache.cxf.headers.Header(new javax.xml.namespace.QName("http://www.talend.com/mdm", "transaction-id"), mdmTransaction_<%=cid%>.getId(), dataBinding);
 headers.add(dummyHeader);
 context_<%=cid %>.put(org.apache.cxf.headers.Header.HEADER_LIST, headers);
-
-<% logUtil.info("\"Got transaction successfully.\"");%>
 
 globalMap.put("mdmTransaction_<%=cid %>", mdmTransaction_<%=cid%>);
 <%}%>

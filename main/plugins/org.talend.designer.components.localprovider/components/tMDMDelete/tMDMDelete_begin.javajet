@@ -28,7 +28,7 @@ imports="
 int nb_line_<%=cid %> = 0;
 <%if(!useExistingConn){%>
     
-    <% logUtil.info("\"Attempt to get a service from: \"", mdmUrl,"\".\"");%>
+    <% logUtil.debug("\"Initializing web service from URL: \"", mdmUrl,"\".\"");%>
     
 	String murl = <%=mdmUrl %>;
     if(murl.endsWith("?wsdl")) {
@@ -52,7 +52,7 @@ int nb_line_<%=cid %> = 0;
     
 	context_<%=cid %>.put(javax.xml.ws.BindingProvider.PASSWORD_PROPERTY, decryptedPassword_<%=cid%>);
 	
-	<% logUtil.info("\"Got service successfully.\"");%>
+	<% logUtil.debug("\"Web service initialized successfully.\"");%>
 <%}else{%>
 	org.talend.mdm.webservice.TMDMService service_<%=cid %> = (org.talend.mdm.webservice.TMDMService)globalMap.get("<%=conn%>");
 <%}%>

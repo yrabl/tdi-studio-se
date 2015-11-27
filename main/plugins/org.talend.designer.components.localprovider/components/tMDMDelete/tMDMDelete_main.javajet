@@ -85,15 +85,13 @@ try{
 	}
 	if(isDropItem){
 	%>
-		<% logUtil.info("\"Attempt to drop item: \"", logUtil.var("item"),"\".\"");%>
-		service_<%=cid %> .dropItem(item_<%=cid %>);
-		<% logUtil.info("\"Drop item \"", logUtil.var("item"),"\" successfully.\"");%>
+		<% logUtil.debug("\"Dropping item: \"", logUtil.var("item"),"\".\"");%>
+		service_<%=cid %> .dropItem(item_<%=cid %>);		
 	<%
 	}else{
 	%>
-		<% logUtil.info("\"Attempt to delete item: \"", logUtil.var("item"),"\".\"");%>
-		service_<%=cid %> .deleteItem(item_<%=cid %>);
-		<% logUtil.info("\"Delete item \"", logUtil.var("item"),"\" successfully.\"");%>
+		<% logUtil.debug("\"Deleting item: \"", logUtil.var("item"),"\".\"");%>
+		service_<%=cid %> .deleteItem(item_<%=cid %>);		
     <%
     }
     %>
@@ -124,7 +122,7 @@ nb_line_<%=cid %>++;
 <%
 	if(useMultConditions){
 %>
-	<% logUtil.info("\"Use multi condition to delete.\"");%>
+	<% logUtil.debug("\"Use multi condition to delete records.\"");%>
 	org.talend.mdm.webservice.WSWhereCondition wc_<%=cid %> = null;
 	java.util.List<org.talend.mdm.webservice.WSWhereItem> conditions_<%=cid %> = new java.util.ArrayList<org.talend.mdm.webservice.WSWhereItem>();
 <%
@@ -163,19 +161,18 @@ nb_line_<%=cid %>++;
 	   }
 	
 	try{
-		<% logUtil.info("\"Attempt to delete items .\"");%>
+		<% logUtil.debug("\"Deleting records.\"");%>
 		org.talend.mdm.webservice.WSDeleteItems items_<%=cid %> = new org.talend.mdm.webservice.WSDeleteItems(<%=dataModel %>, false, <%=spellThrehold%>, dataCluster_<%=cid %>, wsItem_<%=cid %>);
-		service_<%=cid %>.deleteItems(items_<%=cid %>);
-		<% logUtil.info("\"Delete items Successfully.\"");%>
+		service_<%=cid %>.deleteItems(items_<%=cid %>);		
 	}catch(java.lang.Exception e){
+	<% logUtil.error("\"Unexpected error:\"+e.getMessage()");%>
 <%
 		if(dieOnError){
-%>
-		<% logUtil.error("\"Die on error:\"+e.getMessage()");%>
+%>		
 		throw(e);
 <%
 		}else{
-%>
+%>		
 		System.err.println(e.getMessage());
 <%
 		}

@@ -12,7 +12,7 @@ imports="
 %>
 Object o<%=cid %> = resourceMap.get("mdmBulkStream<%=cid %>");
 if(o<%=cid %> != null){
-    <% logUtil.info("\"Attempt to clean input stream.\"");%>
+    <% logUtil.info("\"Cleaning input stream.\"");%>
     
 	org.talend.mdm.bulkload.client.InputStreamMerger stream = (org.talend.mdm.bulkload.client.InputStreamMerger)o<%=cid %>;
 	stream.clean();

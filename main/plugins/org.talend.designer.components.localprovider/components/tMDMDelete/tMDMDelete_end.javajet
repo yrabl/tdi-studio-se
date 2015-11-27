@@ -14,11 +14,10 @@ imports="
 	boolean useExistingConn = ("true").equals(ElementParameterParser.getValue(node,"__USE_EXISTING_CONNECTION__"));
 %>
 	<%if(!useExistingConn){%>
-	    <% logUtil.info("\"To Close service.\"");%>
- 		service_<%=cid %>.logout(new org.talend.mdm.webservice.WSLogout());
-        <% logUtil.info("\"Close service successfully.\"");%>
+	    <% logUtil.debug("\"Closing connection to MDM server.\"");%>
+ 		service_<%=cid %>.logout(new org.talend.mdm.webservice.WSLogout());        
  	<%}%>
  	
- 	<% logUtil.debug("\"Delete records number: \"+ nb_line_"+cid);%>
+ 	<% logUtil.info("\"Total records deleted: \"+ nb_line_"+cid);%>
  	globalMap.put("<%=cid %>_NB_LINE",nb_line_<%=cid %>);             
             
