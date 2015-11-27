@@ -46,7 +46,7 @@ public class TalendGridLayer extends GridLayer {
         FreeformFigure ff = (FreeformFigure) this.getParent();
         Rectangle clientArea = getClientArea();
         Rectangle bounds = ff.getFreeformExtent().getCopy();
-        bounds.union(clientArea.x, clientArea.y, clientArea.width, clientArea.height);
+        bounds.union(0, 0, clientArea.width, clientArea.height);
         ff.setFreeformBounds(bounds);
 
         Rectangle original = g.getClip(Rectangle.SINGLETON);
