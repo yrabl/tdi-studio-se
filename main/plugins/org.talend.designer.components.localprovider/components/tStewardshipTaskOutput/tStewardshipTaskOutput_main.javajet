@@ -122,12 +122,12 @@
 						boolean loadResult_<%=cid%> = taskLoadClient_<%=cid%>.doLoad(content);
 						if(!loadResult_<%=cid%>){
 						    
-						    <% logUtil.info("\"An error occured while uploading tasks.\"");%>
+						    <% logUtil.error("\"An error occured while uploading tasks.\"");%>
 							
 							System.err.println("An error occured while uploading tasks.");
 						}
 						else{
-						    <% logUtil.info("\"Uploaded tasks successfully.\"");%>
+						    <% logUtil.info("\"Tasks uploaded successfully.\"");%>
 						}
 					}
 					nb_line_<%=cid%> ++;

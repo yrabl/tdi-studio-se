@@ -32,7 +32,7 @@ imports="
 		  	}
 			%>
 			MDMOutputMessage = <%=incomingName %>.MDM_Message;
-	        <% logUtil.debug("\"Die on error:\"+MDMOutputMessage");%>
+	        <% logUtil.debug("\"MDM output message:\"+MDMOutputMessage");%>
 		<%
   		}
  	}	

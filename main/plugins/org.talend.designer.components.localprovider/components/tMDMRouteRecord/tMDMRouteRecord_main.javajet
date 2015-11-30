@@ -32,7 +32,7 @@ imports="
 int nb_line_<%=cid %> = 0;
 <%if(!useExistingConn){%>
     
-    <% logUtil.info("\"Attempt to get a service from: \"", mdmUrl,"\".\"");%>
+    <% logUtil.debug("\"Initializing web service from URL: \"", mdmUrl,"\".\"");%>
 
 	String murl = <%=mdmUrl %>;
 	if(murl.endsWith("?wsdl")) {
@@ -55,8 +55,7 @@ int nb_line_<%=cid %> = 0;
     <%@ include file="@{org.talend.designer.components.localprovider}/components/templates/password.javajet"%>
 	
 	context_<%=cid %>.put(javax.xml.ws.BindingProvider.PASSWORD_PROPERTY, decryptedPassword_<%=cid%>);
-    
-    <% logUtil.info("\"Got service successfully.\"");%>
+        
 <%}else{%>
 	org.talend.mdm.webservice.TMDMService service_<%=cid %> = (org.talend.mdm.webservice.TMDMService)globalMap.get("<%=conn%>");
 <%}%>
@@ -79,7 +78,6 @@ org.talend.mdm.webservice.WSItemPK wsItemPK_<%=cid %> = new org.talend.mdm.webse
 wsRouteItem_<%=cid %>.setWsItemPK(wsItemPK_<%=cid %>);
 
 //
-<% logUtil.info("\"Attempt to route item .\"");%>
 service_<%=cid %>.routeItemV2(wsRouteItem_<%=cid %>);
-<% logUtil.info("\"Route item successfully.\"");%>
+<% logUtil.debug("\"Route item successfully.\"");%>
 

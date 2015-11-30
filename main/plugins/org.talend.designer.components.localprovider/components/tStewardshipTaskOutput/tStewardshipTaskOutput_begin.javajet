@@ -45,12 +45,10 @@
 
 					<%@ include file="@{org.talend.designer.components.localprovider}/components/templates/password.javajet"%>
 					
-					<% logUtil.info("\"Attempt to get a task load client from: \"+"+url);%>
+					<% logUtil.debug("\"Initializing task load client from: \"+"+url);%>
 					
 					org.talend.datastewardship.server.task.creation.TaskLoadClient taskLoadClient_<%=cid%> = new org.talend.datastewardship.server.task.creation.TaskLoadClient(url_<%=cid%>,<%=username%>,decryptedPassword_<%=cid%>);
-					taskLoadClient_<%=cid%>.validate();
-					
-					<% logUtil.info("\"Got task load client successfully.\"");%>
+					taskLoadClient_<%=cid%>.validate();										
 					
 					org.talend.stewardship.Record record_<%=cid%> = null;
 					boolean targetRecordExisted_<%=cid%> = false;
@@ -67,7 +65,7 @@
 					}
 					%>
 					
-					<% logUtil.info("\"Start to upload task records to server.\"");%>
+					<% logUtil.debug("\"Start uploading tasks.\"");%>
 					
 					<%
 				}

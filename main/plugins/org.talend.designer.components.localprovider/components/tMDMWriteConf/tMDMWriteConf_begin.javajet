@@ -80,7 +80,7 @@ int nb_line_rejected_<%=cid%> = 0;
 }%>
 
 <%if(!useExistingConn){%>
-    <% logUtil.info("\"Attempt to get a service from: \"", mdmUrl,"\".\"");%>
+	<% logUtil.debug("\"Initializing web service from URL: \"", mdmUrl,"\".\"");%>    
     
     String murl = <%=mdmUrl %>;
     if(murl.endsWith("?wsdl")) {
@@ -102,8 +102,7 @@ int nb_line_rejected_<%=cid%> = 0;
     <%@ include file="@{org.talend.designer.components.localprovider}/components/templates/password.javajet"%>
 	
 	context_<%=cid %>.put(javax.xml.ws.BindingProvider.PASSWORD_PROPERTY, decryptedPassword_<%=cid%>);
-	
-    <% logUtil.info("\"Got service successfully.\"");%>
+	    
 <%}else{%>
 	org.talend.mdm.webservice.TMDMService service_<%=cid %> = (org.talend.mdm.webservice.TMDMService)globalMap.get("<%=conn%>");
 <%}%>

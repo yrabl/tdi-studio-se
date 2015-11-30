@@ -63,14 +63,12 @@ if ((metadatas != null) && (metadatas.size() > 0)) {
                     	return new java.net.PasswordAuthentication(<%=username%>, decryptedPassword_<%=cid%>.toCharArray());
                 }});
 				
-				<% logUtil.info("\"Attempt to get a task retrieve service from: \"", url,"\".\"");%>
+				<% logUtil.debug("\"Initializing DSC web service from URL: \"", url,"\".\"");%>
 				
 				java.net.URL wsdlUrl_<%=cid%> = new java.net.URL(<%=url %>);
 				
 				org.talend.datastewardship.server.ws.TDSCWS_Service service_<%=cid%> = new org.talend.datastewardship.server.ws.TDSCWS_Service(wsdlUrl_<%=cid%>);
-				org.talend.datastewardship.server.ws.TDSCWS TDSCWS_<%=cid%> = service_<%=cid%>.getTDSCWSImplPort();
-				
-				<% logUtil.info("\"Got service successfully.\"");%>
+				org.talend.datastewardship.server.ws.TDSCWS TDSCWS_<%=cid%> = service_<%=cid%>.getTDSCWSImplPort();								
 								
 				String startDateString_<%=cid%> = <%=startDate.equals("")?null:startDate%>;
 				String endDateString_<%=cid%> = <%=endDate.equals("")?null:endDate%>;
@@ -92,7 +90,7 @@ if ((metadatas != null) && (metadatas.size() > 0)) {
 					endXMLGregorianCalendar_<%=cid%> = factory_<%=cid%>.newXMLGregorianCalendar(endDate_<%=cid%>);
 				}
 				
-				<% logUtil.info("\"Start to retrieve tasks from server.\"");%>
+				<% logUtil.info("\"Start retrieving tasks.\"");%>
 				
 				java.util.List<net.java.dev.jaxb.array.StringArray> tasksResult_<%=cid%> = TDSCWS_<%=cid%>.searchTasks(<%=taskType%>,<%=owner.equals("")?null:owner%>,<%=tag.equals("")?null:tag%>,startXMLGregorianCalendar_<%=cid%>,endXMLGregorianCalendar_<%=cid%>,<%=starRanking%>,<%=limit%>,<%=status.equals("null")?null:"\""+status+"\""%>);
 				for(net.java.dev.jaxb.array.StringArray taskResult_<%=cid%>:tasksResult_<%=cid%>){
@@ -133,7 +131,7 @@ if ((metadatas != null) && (metadatas.size() > 0)) {
 		            <%}%>
 		            for(java.util.Map<String,String> record_<%=cid%> : records_<%=cid%>){
 		            
-		                <% logUtil.debug("\"Retrieving the task \"+ nb_line_"+cid);%>
+		                <% logUtil.info("\"Total tasks retrieved \"+ nb_line_"+cid);%>
 		            	
 		            	<%=outgoingConn.getName()%>.TASK_ID = taskCols_<%=cid%>.get(0);
 						<%=outgoingConn.getName()%>.TASK_TYPE = taskCols_<%=cid%>.get(1);

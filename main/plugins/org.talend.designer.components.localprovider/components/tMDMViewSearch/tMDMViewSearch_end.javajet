@@ -37,12 +37,9 @@ if ((metadatas != null) && (metadatas.size() > 0)) {
 					}
 				}
 				<%if(!useExistingConn){%>
-				    <% logUtil.info("\"To Close service.\"");%>
-					service_<%=cid %>.logout(new org.talend.mdm.webservice.WSLogout());
-				    <% logUtil.info("\"Close service successfully.\"");%>
-				<%}%>
-				
-				<% logUtil.info("\"Write record count: \"+nb_line_"+cid);%>
+				    <% logUtil.debug("\"Closing connection to MDM server.\"");%>
+					service_<%=cid %>.logout(new org.talend.mdm.webservice.WSLogout());				    
+				<%}%>								
 				
 				globalMap.put("<%=cid %>_NB_LINE",nb_line_<%=cid %>);   
 			<%

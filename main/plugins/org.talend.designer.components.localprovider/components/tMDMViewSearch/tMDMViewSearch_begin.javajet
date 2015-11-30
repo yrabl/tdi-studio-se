@@ -67,7 +67,7 @@ if ((metadatas != null) && (metadatas.size() > 0)) {
 				%>       
 				int nb_line_<%=cid %> = 0;
 				<%if(!useExistingConn){%>
-				    <% logUtil.info("\"Attempt to get a service from: \"", mdmUrl,"\".\"");%>
+				    <% logUtil.debug("\"Initializing web service from URL: \"", mdmUrl,"\".\"");%>
 
 					String murl = <%=mdmUrl %>;
 					if(murl.endsWith("?wsdl")) {
@@ -91,8 +91,7 @@ if ((metadatas != null) && (metadatas.size() > 0)) {
                     <%@ include file="@{org.talend.designer.components.localprovider}/components/templates/password.javajet"%>					
 					
 					context_<%=cid %>.put(javax.xml.ws.BindingProvider.PASSWORD_PROPERTY, decryptedPassword_<%=cid%>);
-					
-				    <% logUtil.info("\"Got service successfully.\"");%>
+									    
 				<%}else{%>
 					org.talend.mdm.webservice.TMDMService service_<%=cid %> = (org.talend.mdm.webservice.TMDMService)globalMap.get("<%=conn%>");
 				<%}%>
@@ -176,17 +175,15 @@ if ((metadatas != null) && (metadatas.size() > 0)) {
 						break;
 					}
 					%>
-					wsViewSearch_<%=cid%>.setWhereItem(wsItem_<%=cid%>); // OPTIONAL
-					
-					<% logUtil.info("\"Attempt to do view search .\"");%>
+					wsViewSearch_<%=cid%>.setWhereItem(wsItem_<%=cid%>); // OPTIONAL										
 					
 					String[] items_<%=cid%> = service_<%=cid %>.viewSearch(wsViewSearch_<%=cid%>).getStrings().toArray(new String[0]);
 					
-					<% logUtil.info("\"Do view search successfully.\"");%>
+					<% logUtil.debug("\"View search executed successfully.\"");%>
 					
 					if(totalCount_<%=cid%> < 0){
 						totalCount_<%=cid%> = Integer.valueOf(items_<%=cid%>[0].replaceAll("<totalCount>", "").replaceAll("</totalCount>", ""));
-						<% logUtil.debug("\"Get item count :\"+totalCount_" + cid);%>
+						<% logUtil.info("\"Get item count :\"+totalCount_" + cid);%>
 					}
 					
 					retrievedCount_<%=cid%> += items_<%=cid%>.length - 1; // for header

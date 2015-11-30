@@ -15,9 +15,8 @@ imports="
 	
 	if(!useExistingConn){
 %>
-        <% logUtil.info("\"To Close service.\"");%>
-		service_<%=cid %>.logout(new org.talend.mdm.webservice.WSLogout());
-		<% logUtil.info("\"Close service successfully.\"");%>
+        <% logUtil.debug("\"Closing connection to MDM server.\"");%>
+		service_<%=cid %>.logout(new org.talend.mdm.webservice.WSLogout());		
 <%
 	}
 %>

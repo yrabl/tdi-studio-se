@@ -31,17 +31,16 @@ imports="
     	com.talend.mdm.transaction.client.MDMTransaction mdmTransaction_<%=cid%> = (com.talend.mdm.transaction.client.MDMTransaction)globalMap.get("<%=mdmTransaction%>");
     	if(mdmTransaction_<%=cid%>!=null) {
     	
-    	   <% logUtil.info("\"Attempt to roll back transaction .\"");%>
+    	   <% logUtil.info("\"Attempt to rollback transaction .\"");%>
     	   
     		mdmTransaction_<%=cid%>.rollback();
     		
-    	   <% logUtil.info("\"Roll back transaction successfully.\"");%>
+    	   <% logUtil.info("\"Transaction rollback successfully.\"");%>
     	}
     <%  if(close){%>
-        <% logUtil.info("\"To Close service.\"");%>
+        <% logUtil.debug("\"Closing connection to MDM server.\"");%>
         
         service_<%=cid %>.logout(new org.talend.mdm.webservice.WSLogout());
         
-        <% logUtil.info("\"Close service successfully.\"");%>
     <% }%>
     }

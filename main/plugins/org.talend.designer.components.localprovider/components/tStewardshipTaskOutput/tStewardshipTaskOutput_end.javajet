@@ -65,5 +65,5 @@
 	}
 	%>
 	
-	<% logUtil.info("\"Has been uploaded \"+ nb_line_"+cid+"+\" tasks.\"");%>
+	<% logUtil.debug("\"Has been uploaded \"+ nb_line_"+cid+"+\" tasks.\"");%>
 	globalMap.put("<%=cid %>_NB_LINE",nb_line_<%=cid %>);

@@ -33,7 +33,7 @@
     		
     				if (conn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
     				%>
-    				    <% logUtil.debug("\"Die on error:\"+MDMInputMessage");%>
+    				    <% logUtil.debug("\"MDM input message:\"+MDMInputMessage");%>
     					<%=connName%>.MDM_Message = MDMInputMessage;
     				<%
     				}		

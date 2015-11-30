@@ -66,27 +66,24 @@ org.talend.mdm.webservice.WSExecuteStoredProcedure wsExeProc_<%=cid %> = new org
 		IConnection outgoingConn = outgoingConns.get(0);
 		String outputCol = null;
 		if(outgoingConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) { // start 1
-%>
-        <% logUtil.info("\"Attempt to execute stored procedure: \"");%>
+%>        
 		List<String> xmlFields = service_<%=cid %>.executeStoredProcedure(wsExeProc_<%=cid %>).getStrings();
-		<% logUtil.info("\"Execute stored procedure successfully.\"");%>
+		<% logUtil.info("\"Stored procedure executed successfully.\"");%>
 		
 			for(String xmlField_<%=cid %> : xmlFields){
 				<%=outgoingConn.getName()%>.xmlField = xmlField_<%=cid %>;
 <%
 			} else {
-%>
-                <% logUtil.info("\"Attempt to execute stored procedure: \"");%>
+%>                
 				service_<%=cid %>.executeStoredProcedure(wsExeProc_<%=cid %>);
-				<% logUtil.info("\"Execute stored procedure successfully.\"");%>
+				<% logUtil.info("\"Stored procedure executed successfully.\"");%>
 <%
 			}
 			
 	} else {
-%>
-        <% logUtil.info("\"Attempt to execute stored procedure: \"");%>
+%>        
 		service_<%=cid %>.executeStoredProcedure(wsExeProc_<%=cid %>);
-        <% logUtil.info("\"Execute stored procedure successfully.\"");%>
+        <% logUtil.info("\"Stored procedure executed successfully.\"");%>
 <%
 	}
 %>

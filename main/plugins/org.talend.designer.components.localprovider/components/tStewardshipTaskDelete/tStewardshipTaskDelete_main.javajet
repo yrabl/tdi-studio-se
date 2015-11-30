@@ -32,12 +32,9 @@
 			    
 			<%
 			if(isSpecifyTaskID){
-		    %>
-		        <% logUtil.info("\"Attempt to delete task by specify task id: \"+"+taskID);%>
+		    %>		        
 		        
-				TDSCWS_<%=cid%>.deleteTask(<%=taskID%>);
-				
-		        <% logUtil.info("\"Delete task by specify task id successfully.\"");%>
+				TDSCWS_<%=cid%>.deleteTask(<%=taskID%>);						      
 		        
 				deleted_task_<%=cid%>++;
 			<%
@@ -48,12 +45,9 @@
 			    	String idColumn = ElementParameterParser.getValue(node,"__ID_FIELD__");
 			    	for (IConnection conn : conns) {//3
 			    		if (conn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {//4
-						%>
-						    <% logUtil.info("\"Attempt to delete task, do not specify task id.\"");%>
+						%>						    
 						    
-							TDSCWS_<%=cid%>.deleteTask(<%=conn.getName()%>.<%=idColumn%>);
-							
-						    <% logUtil.info("\"Delete task by specify task id successfully.\"");%>
+							TDSCWS_<%=cid%>.deleteTask(<%=conn.getName()%>.<%=idColumn%>);													    
 						    
 							deleted_task_<%=cid%>++;
 						<%
