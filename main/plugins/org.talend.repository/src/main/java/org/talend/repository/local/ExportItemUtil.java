@@ -290,9 +290,10 @@ public class ExportItemUtil {
 
                 // tdm .settings/com.oaklandsw.base.projectProps
                 String technicalLabel = project.getTechnicalLabel();
+
                 if (tdmService != null && !projectHasTdm.contains(technicalLabel) && tdmService.isTransformItem(item)) {
                     projectHasTdm.add(technicalLabel);
-                    IPath propsSourcePath = getProjectLocationPath().append(FileConstants.TDM_PROPS_PATH);
+                    IPath propsSourcePath = getProjectLocationPath(technicalLabel).append(FileConstants.TDM_PROPS_PATH);
                     IPath tdmPropsPath = getProjectOutputPath().append(FileConstants.TDM_PROPS_PATH);
                     IPath propsTargetPath = new Path(destinationDirectory.getAbsolutePath()).append(tdmPropsPath);
                     File source = new File(propsSourcePath.toPortableString());
@@ -305,7 +306,7 @@ public class ExportItemUtil {
                 if (item.getProperty() instanceof FakePropertyImpl) {
                     FakePropertyImpl fakeProperty = (FakePropertyImpl) item.getProperty();
                     IPath itemResPath = fakeProperty.getItemPath().makeRelative();
-                    IPath itemSourcePath = getProjectLocationPath().removeLastSegments(1).append(itemResPath);
+                    IPath itemSourcePath = getProjectLocationPath(technicalLabel).removeLastSegments(1).append(itemResPath);
                     // replace the project segment
                     IPath outputRelativeItemPath = getProjectOutputPath().append(itemResPath.removeFirstSegments(1));
                     IPath itemTargetPath = new Path(destinationDirectory.getAbsolutePath()).append(outputRelativeItemPath);
@@ -320,7 +321,9 @@ public class ExportItemUtil {
                 for (Resource curResource : localRepositoryManager.getAffectedResources(item.getProperty())) {
                     URI uri = curResource.getURI();
                     IPath relativeItemPath = URIHelper.convert(uri).makeRelative();
-                    IPath sourcePath = getProjectLocationPath().removeLastSegments(1).append(relativeItemPath);
+                    Project project = ProjectManager.getInstance().getProject(item);
+                    IPath sourcePath = getProjectLocationPath(project.getTechnicalLabel()).removeLastSegments(1).append(
+                            relativeItemPath);
                     // replace the project segment
                     IPath outputRelativeItemPath = getProjectOutputPath().append(relativeItemPath.removeFirstSegments(1));
                     IPath targetPath = new Path(destinationDirectory.getAbsolutePath()).append(outputRelativeItemPath);
@@ -337,7 +340,8 @@ public class ExportItemUtil {
                         List<IResource> dataFileList = testContainerService.getDataFiles(item);
                         for (IResource dataFile : dataFileList) {
                             IPath relativeItemPath = dataFile.getFullPath();
-                            IPath sourcePath = getProjectLocationPath().removeLastSegments(1).append(relativeItemPath);
+                            IPath sourcePath = getProjectLocationPath(project.getTechnicalLabel()).removeLastSegments(1).append(
+                                    relativeItemPath);
                             // replace the project segment
                             IPath outputRelativeItemPath = getProjectOutputPath().append(relativeItemPath.removeFirstSegments(1));
                             IPath targetPath = new Path(destinationDirectory.getAbsolutePath()).append(outputRelativeItemPath);
@@ -419,7 +423,7 @@ public class ExportItemUtil {
     }
 
     private void addTalendProjectFile(Map<File, IPath> toExport, File destinationDirectory) throws IOException {
-        IPath proSourcePath = getProjectLocationPath().append(FileConstants.LOCAL_PROJECT_FILENAME);
+        IPath proSourcePath = getProjectLocationPath(project.getTechnicalLabel()).append(FileConstants.LOCAL_PROJECT_FILENAME);
         IPath proRelativePath = getProjectOutputPath().append(FileConstants.LOCAL_PROJECT_FILENAME);
         IPath proTargetPath = new Path(destinationDirectory.getAbsolutePath()).append(proRelativePath);
 
@@ -474,14 +478,14 @@ public class ExportItemUtil {
         return new Path(project.getTechnicalLabel());
     }
 
-    private IPath getProjectLocationPath() {
-        return getEclipseProject(pManager.getCurrentProject()).getLocation();
+    private IPath getProjectLocationPath(String technicalLabel) {
+        return getEclipseProject(technicalLabel).getLocation();
     }
 
     // For fix TDI-34281
-    protected IProject getEclipseProject(org.talend.core.model.general.Project project) {
+    protected IProject getEclipseProject(String technicalLabel) {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        IProject eclipseProject = workspace.getRoot().getProject(project.getTechnicalLabel());
+        IProject eclipseProject = workspace.getRoot().getProject(technicalLabel);
         return eclipseProject;
     }
 
