@@ -46,6 +46,7 @@ import org.talend.core.model.process.IProcess;
 import org.talend.core.model.utils.ContextParameterUtils;
 import org.talend.core.model.utils.TalendTextUtils;
 import org.talend.core.prefs.ITalendCorePrefConstants;
+import org.talend.core.repository.ui.view.RepositoryLabelProvider;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.core.utils.TalendQuoteUtils;
 import org.talend.designer.core.DesignerPlugin;
@@ -278,7 +279,7 @@ public class JobSettingsManager {
             // zywang added to fix feature 5545
             param = new ElementParameter(process);
             param.setName(EParameterName.ICONSELECTION.getName());
-            param.setValue(""); //$NON-NLS-1$
+            param.setValue(RepositoryLabelProvider.getDefaultJobletImage()); //$NON-NLS-1$
             param.setDisplayName(EParameterName.ICONSELECTION.getDisplayName());
             param.setFieldType(EParameterFieldType.ICON_SELECTION);
             param.setCategory(EComponentCategory.EXTRA);
