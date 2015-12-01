@@ -12,15 +12,9 @@
   
   <properties>
     <bulkload.dir>${project.basedir}/components/tMDMBulkLoad</bulkload.dir>
+    <marketo.dir>${project.basedir}/components/tMarketoInput</marketo.dir>
   </properties>
-  <dependencies>
-    <dependency>
-    <groupId>org.talend.mdm</groupId>
-    <artifactId>org.talend.mdm.bulkload.client</artifactId>
-    <version>6.1-SNAPSHOT</version>
-    <type>zip</type>
-    </dependency>
-  </dependencies>
+  
   <build>
     <plugins>
         <plugin>
@@ -33,6 +27,12 @@
                         <includes>
                             <include>bulkloadclient.jar</include>
                             <include>org.talend.mdm.bulkload.client*.jar</include>
+                        </includes>
+                    </fileset>
+                    <fileset>
+                        <directory>${marketo.dir}</directory>
+                        <includes>
+                            <include>talend-marketo-rest*.jar</include>
                         </includes>
                     </fileset>
                 </filesets>
@@ -60,6 +60,25 @@
                                 <overWrite>true</overWrite>
                                 <outputDirectory>${bulkload.dir}</outputDirectory>
                                 <includes>org.talend.mdm.bulkload.client*.jar</includes>
+                            </artifactItem>
+                        </artifactItems>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>copy-marketo-jar</id>
+                    <phase>generate-sources</phase>
+                    <goals>
+                        <goal>copy</goal>
+                    </goals>
+                    <configuration>
+                        <artifactItems>
+                            <artifactItem>
+                                <groupId>org.talend.libraries</groupId>
+                                <artifactId>talend-marketo-rest</artifactId>
+                                <version>1.0-20150911</version>
+                                <type>jar</type>
+                                <overWrite>true</overWrite>
+                                <outputDirectory>${marketo.dir}</outputDirectory>
                             </artifactItem>
                         </artifactItems>
                     </configuration>
