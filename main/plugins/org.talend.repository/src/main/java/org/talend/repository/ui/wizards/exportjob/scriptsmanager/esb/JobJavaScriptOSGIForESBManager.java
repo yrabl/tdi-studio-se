@@ -170,6 +170,8 @@ public class JobJavaScriptOSGIForESBManager extends JobJavaScriptsManager {
             if (providedLibResources != null) {
                 list.add(providedLibResources);
             }
+        } catch (ProcessorException e) {
+            throw e;
         } catch (Exception e) {
             throw new ProcessorException(e);
         }
