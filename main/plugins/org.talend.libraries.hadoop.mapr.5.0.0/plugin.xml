@@ -9,7 +9,7 @@
             id="maprfs-5.0.X-lastest"       
             name="maprfs-5.0.0-mapr.jar" mvn_uri="mvn:org.talend.libraries/maprfs-5.0.0-mapr/6.1.0" >
         </libraryNeeded>
-
+        
         <libraryNeeded
             context="plugin:org.talend.libraries.hadoop.mapr.5.0.0"
             id="hadoop-auth-mapr-5.0.X-lastest"       
@@ -22,6 +22,11 @@
             name="hadoop-common-2.7.0-mapr-1506.jar" mvn_uri="mvn:org.talend.libraries/hadoop-common-2.7.0-mapr-1506/6.1.0">
         </libraryNeeded>
         
+        <libraryNeeded
+            context="plugin:org.talend.libraries.hadoop.mapr.5.0.0"
+            id="hadoop-yarn-server-web-proxy-mapr-5.0.X-lastest"       
+            name="hadoop-yarn-server-web-proxy-2.7.0-mapr-1506.jar" mvn_uri="mvn:org.talend.libraries/hadoop-yarn-server-web-proxy-2.7.0-mapr-1506/6.1.0">
+        </libraryNeeded>
         <libraryNeeded
             context="plugin:org.talend.libraries.hadoop.mapr.5.0.0"
             id="hadoop-mapreduce-client-app-mapr-5.0.X-lastest"       
@@ -242,6 +247,9 @@
             <group
                   id="HDFS-LIB-MAPR50X_LASTEST">
             </group>
+            <library
+                  id="hadoop-yarn-server-web-proxy-mapr-5.0.X-lastest">
+            </library>
             <library
                   id="hadoop-mapreduce-client-app-mapr-5.0.X-lastest">
             </library>
