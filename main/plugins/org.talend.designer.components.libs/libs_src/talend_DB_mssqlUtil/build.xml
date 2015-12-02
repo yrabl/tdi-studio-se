@@ -13,7 +13,7 @@
 	
 	<!-- modification 2: compile classpath -->
 	<path id="compile.classpath">
-		<pathelement location="${jdbc.dir}/jtds-1.3.1.jar" />
+		<pathelement location="${jdbc.dir}/jtds-1.3.1-patch.jar" />
 	</path>
 
 	<!-- #################################################### -->	
