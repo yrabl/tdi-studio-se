@@ -525,12 +525,6 @@
     	</libraryNeeded>
 
     	<!-- HDP_2_3 libraries -->
-        <libraryNeeded
-            context="plugin:org.talend.libraries.asm"
-            id="asm-3.2.jar"
-            name="asm-3.2.jar" mvn_uri="mvn:org.talend.libraries/asm-3.2/6.1.0"
-            uripath="platform:/plugin/org.talend.libraries.asm/lib/asm-3.2.jar">
-        </libraryNeeded>
 
         <libraryNeeded
             context="plugin:org.talend.libraries.hadoop.hdp.2.3"
