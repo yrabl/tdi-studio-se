@@ -22,6 +22,8 @@ public class TemplateUtil {
 
     public static final String RESOURCES_DIRECTORY = "resources"; //$NON-NLS-1$
 
+    public static final String JET_STUB_DIRECTORY = "jet_stub"; //$NON-NLS-1$
+
     // TODO SML Replace by File.separator
     public static final String DIR_SEP = "/"; //$NON-NLS-1$
 
@@ -33,6 +35,8 @@ public class TemplateUtil {
 
     private String version = ""; //$NON-NLS-1$
 
+    public static final String RESOURCES_DIRECTORY_GENERIC = "generic"; //$NON-NLS-1$
+
     /**
      * Constructor.
      * 
@@ -42,7 +46,7 @@ public class TemplateUtil {
         this.resourceName = template.getTemplateName();
         this.version = template.getVersion();
     }
-    
+
     public TemplateUtil(String resourceName, String version) {
         this.resourceName = resourceName;
         this.version = version;
@@ -83,14 +87,14 @@ public class TemplateUtil {
     public void setVersion(String version) {
         this.version = version;
     }
-    
+
     @Override
     public boolean equals(Object arg0) {
-        if (arg0!=null) {
+        if (arg0 != null) {
             try {
                 TemplateUtil t = (TemplateUtil) arg0;
-                if (t.getResourceName() !=null) {
-                    if ( (t.getResourceName().equals(this.getResourceName())) & (t.getVersion().equals(this.getVersion())) ) {
+                if (t.getResourceName() != null) {
+                    if ((t.getResourceName().equals(this.getResourceName())) & (t.getVersion().equals(this.getVersion()))) {
                         return true;
                     }
                 }

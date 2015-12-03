@@ -60,6 +60,7 @@ import org.talend.core.PluginChecker;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.language.LanguageManager;
 import org.talend.core.model.components.ComponentCompilations;
+import org.talend.core.model.components.EComponentType;
 import org.talend.core.model.components.IComponent;
 import org.talend.core.model.components.IComponentFileNaming;
 import org.talend.core.model.components.IComponentsFactory;
@@ -157,9 +158,9 @@ public final class CodeGeneratorEmittersPoolFactory {
                         + TemplateUtil.EXT_SEP + codeLanguage.getExtension() + TemplateUtil.TEMPLATE_EXT;
 
                 List<JetBean> jetBeans = new ArrayList<JetBean>();
-
                 List<TemplateUtil> templates = templatesFactory.getTemplates();
                 Set<IComponent> components = componentsFactory.getComponents();
+                List<IComponent> genericComponents = new ArrayList<IComponent>();// generic components
                 TimeMeasure.step("initialize Jet Emitters", "getComponents"); //$NON-NLS-1$ //$NON-NLS-2$
 
                 monitorWrap.beginTask(Messages.getString("CodeGeneratorEmittersPoolFactory.initMessage"), //$NON-NLS-1$
@@ -180,6 +181,11 @@ public final class CodeGeneratorEmittersPoolFactory {
                 if (components != null) {
                     ECodePart codePart = ECodePart.MAIN;
                     for (IComponent component : new ArrayList<IComponent>(components)) {
+                        // don't do anything for generic component?
+                        if (EComponentType.GENERIC.equals(component.getComponentType())) {
+                            genericComponents.add(component);
+                            continue;
+                        }
                         if (component.getAvailableCodeParts().size() > 0) {
                             initComponent(codeLanguage, jetBeans, codePart, component);
                         }
@@ -190,6 +196,15 @@ public final class CodeGeneratorEmittersPoolFactory {
                         }
                     }
                 }
+
+                // initialize generic component begin/main/end
+                for (IComponent genericComponent : genericComponents) {
+                    initGenericComponent(codeLanguage, jetBeans, ECodePart.BEGIN, genericComponent);
+                    initGenericComponent(codeLanguage, jetBeans, ECodePart.END, genericComponent);
+                    // TODO
+                    break;
+                }
+
                 TimeMeasure.step("initialize Jet Emitters", "initialize jet beans from components"); //$NON-NLS-1$ //$NON-NLS-2$
                 monitorWrap.worked(monitorBuffer);
 
@@ -396,6 +411,9 @@ public final class CodeGeneratorEmittersPoolFactory {
             jetBean.addClassPath("CORE_LIBRARIES", CorePlugin.PLUGIN_ID); //$NON-NLS-1$
             jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
             jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
+            jetBean.addClassPath("COMPONENT_FRAMEWORK", "org.talend.components.api"); //$NON-NLS-1$
+            jetBean.addClassPath("COMPONENT_CORE", "org.talend.component.core"); //$NON-NLS-1$
+            jetBean.addClassPath("DESIGNER_CORE", "org.talend.designer.core"); //$NON-NLS-1$
             jetBean.addClassPath("HADOOP_DISTRIBUTIONS", "org.talend.hadoop.distribution"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("HADOOP_CUSTOM_DISTRIBUTIONS", "org.talend.hadoop.distribution.custom"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -466,6 +484,57 @@ public final class CodeGeneratorEmittersPoolFactory {
                     initComponent(codeLanguage, jetBeans, otherPart, component);
                 }
             }
+        }
+    }
+
+    /**
+     * 
+     * Initialization of the generic components.
+     * 
+     * @param codeLanguage
+     * @param jetBeans
+     * @param codePart
+     * @param component
+     */
+    private static void initGenericComponent(ECodeLanguage codeLanguage, List<JetBean> jetBeans, ECodePart codePart,
+            IComponent component) {
+        if (component.getAvailableCodeParts().contains(codePart)) {
+            String templateURI = TemplateUtil.JET_STUB_DIRECTORY + TemplateUtil.DIR_SEP
+                    + TemplateUtil.RESOURCES_DIRECTORY_GENERIC + TemplateUtil.DIR_SEP + "component_" + codePart.getName()//$NON-NLS-1$ 
+                    + TemplateUtil.EXT_SEP + codeLanguage.getExtension() + TemplateUtil.TEMPLATE_EXT;
+            String componentsPath = "org.talend.designer.codegen";//$NON-NLS-1$ 
+            // TODO
+            JetBean jetBean = new JetBean(componentsPath, templateURI, "component", component.getVersion(),//$NON-NLS-1$
+                    "", codePart.getName());//$NON-NLS-1$ 
+            jetBean.addClassPath("EMF_ECORE", "org.eclipse.emf.ecore"); //$NON-NLS-1$ //$NON-NLS-2$
+            jetBean.addClassPath("EMF_COMMON", "org.eclipse.emf.common"); //$NON-NLS-1$ //$NON-NLS-2$
+            jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
+            jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
+            jetBean.addClassPath("CORE_LIBRARIES", CorePlugin.PLUGIN_ID); //$NON-NLS-1$
+            jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
+            jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
+
+            for (String pluginDependency : component.getPluginDependencies()) {
+                jetBean.addClassPath(pluginDependency.toUpperCase().replaceAll("\\.", "_") + "_LIBRARIES", pluginDependency); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            }
+
+            String familyName = component.getOriginalFamilyName();
+            // TODO
+            familyName = "generic/component";//$NON-NLS-1$
+            if (familyName.contains("|")) { //$NON-NLS-1$
+                familyName = component.getOriginalFamilyName().substring(0, component.getOriginalFamilyName().indexOf("|")); //$NON-NLS-1$
+            }
+            jetBean.setFamily(StringUtils.removeSpecialCharsForPackage(familyName.toLowerCase()));
+
+            if (component.getPluginExtension() != null) {
+                jetBean.addClassPath("EXTERNAL_COMPONENT_" + component.getPluginExtension().toUpperCase().replaceAll("\\.", "_"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        component.getPluginExtension());
+                jetBean.setClassLoader(ExternalNodesFactory.getInstance(component.getPluginExtension()).getClass()
+                        .getClassLoader());
+            } else {
+                jetBean.setClassLoader(new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader());
+            }
+            jetBeans.add(jetBean);
         }
     }
 
