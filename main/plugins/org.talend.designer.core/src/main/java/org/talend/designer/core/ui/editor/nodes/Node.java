@@ -2776,7 +2776,7 @@ public class Node extends Element implements IGraphicalNode {
                         } else {
                             errorMessage = Messages.getString("Node.parameterNotExist", param.getDisplayName(), param.getValue()); //$NON-NLS-1$
                         }
-                        if (isUseExistedConnetion(this)) {
+                        if ((!hasUseExistingConnection(this)) || (isUseExistedConnetion(this))) {
                             List<INode> list = (List<INode>) this.getProcess().getNodesOfType(param.getFilter());
                             if (list == null || list.size() == 0 || list.isEmpty()) {
                                 Problems.add(ProblemStatus.ERROR, this, errorMessage);
@@ -5048,6 +5048,10 @@ public class Node extends Element implements IGraphicalNode {
             }
         }
 
+    }
+
+    public boolean hasUseExistingConnection(IElement currentElem) {
+        return currentElem.getElementParameter("USE_EXISTING_CONNECTION") != null;
     }
 
     public boolean isUseExistedConnetion(IElement currentElem) {
