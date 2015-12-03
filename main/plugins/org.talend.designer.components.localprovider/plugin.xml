@@ -8006,13 +8006,13 @@
 	         </library>
 	    </libraryNeededGroup>
 
-        <!-- Spark Hive libraries for HDP_2_3 -->
+        <!-- Spark Hive libraries for HDP_2_3 -
         <libraryNeededGroup
                 description="Spark Hive libraries for HDP 2.3"
                 id="SPARK-HIVE-LIB-HDP_2_3"
                 name="SPARK-HIVE-LIB-HDP_2_3">
-            <!-- No extra libraries are needed.  HDP packages them in the spark-assembly. -->
         </libraryNeededGroup>
+        No extra libraries are needed.  HDP packages them in the spark-assembly. -->
 
         <!-- Spark Streaming Kafka libraries for HDP_2_3 -->
         <libraryNeededGroup
