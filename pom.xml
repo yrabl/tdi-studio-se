@@ -75,6 +75,8 @@
 		<module>main/features/org.talend.tos.libraries.feature</module>
 		<module>main/plugins/org.talend.componentdesigner</module>
 		<module>main/plugins/org.talend.componentdesigner.rcp</module>
+		<module>main/plugins/org.talend.component.core</module>
+		<module>main/plugins/org.talend.component.ui.wizard</module>
 		<module>main/plugins/org.talend.designer.abstractmap</module>
 		<module>main/plugins/org.talend.designer.alfrescooutput</module>
 		<module>main/plugins/org.talend.designer.business.diagram</module>
