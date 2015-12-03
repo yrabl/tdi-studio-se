@@ -23,11 +23,11 @@ import org.talend.repository.tester.SubNodeTester;
  */
 public abstract class CoMetadataNodeTester extends AbstractNodeTester {
 
-    private SchemaNodeTester schemaTester = new SchemaNodeTester();
+    protected SchemaNodeTester schemaTester = new SchemaNodeTester();
 
-    private SchemaColumnNodeTester schemaColTester = new SchemaColumnNodeTester();
+    protected SchemaColumnNodeTester schemaColTester = new SchemaColumnNodeTester();
 
-    private QueryNodeTester queryTester = new QueryNodeTester();
+    protected QueryNodeTester queryTester = new QueryNodeTester();
 
     /*
      * (non-Javadoc)
