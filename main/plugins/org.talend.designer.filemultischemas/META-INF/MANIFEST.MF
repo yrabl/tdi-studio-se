@@ -18,7 +18,8 @@ Require-Bundle: org.eclipse.ui.workbench,
  org.eclipse.jface,
  org.talend.libraries.custom,
  org.talend.libraries.csv,
- org.eclipse.gef
+ org.eclipse.gef,
+ org.talend.components.api
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: .Talend SA.
 Import-Package: org.eclipse.gef.commands

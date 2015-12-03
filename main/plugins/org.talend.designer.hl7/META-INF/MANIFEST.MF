@@ -17,7 +17,8 @@ Require-Bundle: org.eclipse.ui.workbench,
  org.talend.designer.codegen,
  org.eclipse.jface,
  org.eclipse.gef,
- org.talend.libraries.hl7
+ org.talend.libraries.hl7,
+ org.talend.components.api
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: .Talend SA.
 Bundle-ClassPath: .

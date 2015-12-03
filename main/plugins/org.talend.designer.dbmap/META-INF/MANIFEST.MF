@@ -23,7 +23,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.gef,
  org.eclipse.ui.workbench,
  org.talend.libraries.apache,
- org.eclipse.emf.ecore.xmi
+ org.eclipse.emf.ecore.xmi,
+ org.talend.components.api
 Eclipse-LazyStart: true
 Export-Package: org.talend.designer.dbmap,
  org.talend.designer.dbmap.external.connection,
