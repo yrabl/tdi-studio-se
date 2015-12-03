@@ -13,7 +13,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.talend.metadata.managment,
  org.talend.metadata.managment.ui,
  org.talend.model,
- org.apache.log4j
+ org.apache.log4j,
+ org.talend.components.api
 Bundle-ClassPath: JSPSS.jar,
  .
 Bundle-Vendor: .Talend SA.

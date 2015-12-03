@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.talend.designer.core.process_provider">
+      <ProcessProvider
+            class="org.talend.component.core.model.ComponentsProvider"
+            pluginId="org.talend.component.core">
+      </ProcessProvider>
+   </extension>
+   <extension
+         point="org.talend.core.migrationTask">
+      <!-- need to put the old Salesforce Component back in because our new components are not complete enough to make it into this 6.1.1 release. disabled first 
+        <projecttask
+            beforeLogon="false"
+            breaks="6.1.0"
+            class="org.talend.component.core.model.migration.UpdateComponentParametersMigrationTask"
+            description="convert element parameters to serialized"
+            id="org.talend.component.core.model.migration.UpdateComponentParametersMigrationTask"
+            name="UpdateComponentParametersMigrationTask"
+            version="6.1.0">
+        </projecttask>       
+        <projecttask
+            beforeLogon="false"
+            breaks="6.1.0"
+            class="org.talend.component.core.model.migration.ChangeSalesforceComponentsParametersToSerializedMigrationTask"
+            description="convert element parameters to serialized"
+            id="org.talend.component.core.model.migration.ChangeComponentParametersToSerializedMigrationTask"
+            name="ChangeSalesforceComponentsParametersToSerializedMigrationTask"
+            version="6.1.0">
+        </projecttask>
+       -->
+   </extension>
+
+</plugin>
