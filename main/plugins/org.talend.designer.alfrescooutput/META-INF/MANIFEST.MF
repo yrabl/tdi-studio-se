@@ -12,5 +12,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.talend.designer.codegen,
  org.talend.core.runtime,
  org.talend.model,
- org.eclipse.jface
+ org.eclipse.jface,
+ org.talend.components.api
 Eclipse-LazyStart: true
