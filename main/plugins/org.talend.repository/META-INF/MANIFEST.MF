@@ -46,7 +46,8 @@ Require-Bundle: javax.xml.rpc,
  org.talend.repository.items.importexport,
  org.talend.repository.items.importexport.ui;bundle-version="6.0.0",
  org.talend.commons.runtime,
- org.talend.designer.maven
+ org.talend.designer.maven,
+ org.talend.components.api
 Export-Package: org.talend.repository,
  org.talend.repository.constants,
  org.talend.repository.i18n,

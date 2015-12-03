@@ -29,6 +29,7 @@ import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.model.repository.RepositoryContentManager;
 import org.talend.core.repository.model.repositoryObject.MetadataTableRepositoryObject;
 import org.talend.core.repository.model.repositoryObject.SAPFunctionRepositoryObject;
+import org.talend.core.runtime.services.IGenericWizardService;
 import org.talend.core.ui.ICDCProviderService;
 import org.talend.repository.model.RepositoryNode;
 
@@ -86,6 +87,23 @@ public class SchemaTypeProcessor extends MultiTypesProcessor {
                     list.add(handler.getHandleType());
                 }
             }
+
+            // Add generic nodes.
+            IGenericWizardService wizardService = null;
+            if (GlobalServiceRegister.getDefault().isServiceRegistered(IGenericWizardService.class)) {
+                wizardService = (IGenericWizardService) GlobalServiceRegister.getDefault()
+                        .getService(IGenericWizardService.class);
+            }
+            if (wizardService != null) {
+                List<String> genericTypeNames = wizardService.getGenericTypeNames();
+                for (String genericType : genericTypeNames) {
+                    ERepositoryObjectType repObjType = ERepositoryObjectType.valueOf(genericType);
+                    if (repObjType != null) {
+                        list.add(repObjType);
+                    }
+                }
+            }
+
         }
         return list;
     }
