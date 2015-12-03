@@ -74,7 +74,7 @@
 			REQUIRED="true" 
             SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
             GROUP="LOGIN">
-            <DEFAULT IF="LOGIN_TYPE=='BASIC'">"https://login.salesforce.com/services/Soap/u/34.0"</DEFAULT>
+            <DEFAULT IF="LOGIN_TYPE=='BASIC'">"https://login.salesforce.com/services/Soap/u/25.0"</DEFAULT>
             <DEFAULT IF="LOGIN_TYPE=='OAUTH'">"https://login.salesforce.com/services/oauth2"</DEFAULT>
 		</PARAMETER>
 
@@ -105,7 +105,7 @@
             REQUIRED_IF="(USE_EXISTING_CONNECTION == 'false')"  
             SHOW_IF="(USE_EXISTING_CONNECTION == 'false')"
             GROUP="LOGIN">
-			<DEFAULT>"34.0"</DEFAULT>
+			<DEFAULT>"25.0"</DEFAULT>
 		</PARAMETER>
         
         <PARAMETER 
@@ -3409,9 +3409,10 @@
 	<CODEGENERATION>
 		<IMPORTS>
 			<IMPORT NAME="salesforceBulkAPI"
-				MODULE="salesforceBulkAPI.jar" MVN="mvn:org.talend.libraries/salesforceBulkAPI/6.1.0"  UrlPath="platform:/plugin/org.talend.libraries.salesforce/lib/salesforceBulkAPI.jar" REQUIRED="true" />
-			<IMPORT NAME="partner" MODULE="partnerBulk-34.jar" MVN="mvn:org.talend.libraries/partnerBulk-34/6.1.0"  REQUIRED="true" />
-			<IMPORT NAME="force-wsc-33.0.0.jar" MODULE="force-wsc-33.0.0.jar" MVN="mvn:org.talend.libraries/force-wsc-33.0.0/6.0.0"  UrlPath="platform:/plugin/org.talend.libraries.salesforce/lib/force-wsc-33.0.0.jar" REQUIRED="true" />
+				MODULE="salesforceBulkAPI.jar" MVN="mvn:org.talend.libraries/salesforceBulkAPI/6.0.0"  UrlPath="platform:/plugin/org.talend.libraries.salesforce/lib/salesforceBulkAPI.jar" REQUIRED="true" />
+			<IMPORT NAME="partner" MODULE="partnerBulk.jar" MVN="mvn:org.talend.libraries/partnerBulk/6.0.0"  REQUIRED="true" />
+			<IMPORT NAME="wsc" MODULE="wsc.jar" MVN="mvn:org.talend.libraries/wsc/6.0.0" 
+				REQUIRED="true" />
 			<IMPORT NAME="Talend_CSV" MODULE="talendcsv.jar" MVN="mvn:org.talend.libraries/talendcsv/6.0.0"  UrlPath="platform:/plugin/org.talend.libraries.csv/lib/talendcsv.jar" REQUIRED="true" />
             <!-- OAuth2 -->
             <IMPORT NAME="salesforceOAuth"
