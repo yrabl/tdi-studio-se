@@ -55,7 +55,7 @@
                             <artifactItem>
                                 <groupId>org.talend.mdm</groupId>
                                 <artifactId>org.talend.mdm.bulkload.client</artifactId>
-                                <version>6.1-SNAPSHOT</version>
+                                <version>6.1.1-SNAPSHOT</version>
                                 <type>zip</type>
                                 <overWrite>true</overWrite>
                                 <outputDirectory>${bulkload.dir}</outputDirectory>
