@@ -81,7 +81,7 @@ public class spssComponent extends AbstractExternalNode {
 
     public int open(Display display) {
         try {
-            getComponentProperties();
+            getCompProperties();
             if (MessageDialog.openQuestion(display.getActiveShell(), "SPSS - Sync Schema", "Retrive schema from the File? \n"
                     + strFileName)) {
                 getSchemaFromSPSSFile();
@@ -95,7 +95,7 @@ public class spssComponent extends AbstractExternalNode {
         }
     }
 
-    private void getComponentProperties() {
+    private void getCompProperties() {
         try {
             strFileName = (String.valueOf(this.getElementParameter(IspssParameterNames.FILENAME).getValue()))
                     .replaceAll("\"", "");
