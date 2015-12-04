@@ -72,6 +72,7 @@ import org.talend.core.PluginChecker;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.language.LanguageManager;
 import org.talend.core.model.components.ComponentCategory;
+import org.talend.core.model.components.EComponentType;
 import org.talend.core.model.components.IComponent;
 import org.talend.core.model.context.ContextUtils;
 import org.talend.core.model.context.JobContextManager;
@@ -122,6 +123,7 @@ import org.talend.core.utils.KeywordsValidator;
 import org.talend.designer.core.DesignerPlugin;
 import org.talend.designer.core.ITestContainerGEFService;
 import org.talend.designer.core.i18n.Messages;
+import org.talend.designer.core.model.components.AbstractComponent;
 import org.talend.designer.core.model.components.DummyComponent;
 import org.talend.designer.core.model.components.EOozieParameterName;
 import org.talend.designer.core.model.components.EParameterName;
@@ -252,6 +254,8 @@ public class Process extends Element implements IProcess2, IGEFProcess, ILastVer
     private String componentsType;
 
     private boolean isNeedLoadmodules = true;
+
+    protected boolean generic = false;
 
     public Process(Property property) {
         this.property = property;
@@ -955,13 +959,40 @@ public class Process extends Element implements IProcess2, IGEFProcess, ILastVer
     protected void saveElementParameters(TalendFileFactory fileFact, List<? extends IElementParameter> paramList,
             EList listParamType, ProcessType process) {
         IElementParameter param;
+        // if it's a generic component,try to serialize the component to json,then save all in a new ElementParameter,
+        // that name: PROPERTIES".Then later when load the job, if the component loaded is a generic component... if
+        // yes,then deserialize the json to get back the properties / set each element parameter.
+        String serializedProperties = null;
         for (int j = 0; j < paramList.size(); j++) {
             param = paramList.get(j);
-            saveElementParameter(param, process, fileFact, paramList, listParamType);
-            for (String key : param.getChildParameters().keySet()) {
-                saveElementParameter(param.getChildParameters().get(key), process, fileFact, paramList, listParamType);
+            if (!param.isSerialized()) {
+                saveElementParameter(param, process, fileFact, paramList, listParamType);
+                for (String key : param.getChildParameters().keySet()) {
+                    saveElementParameter(param.getChildParameters().get(key), process, fileFact, paramList, listParamType);
+                }
+            } else {
+                if (serializedProperties == null) {
+                    if (param.getElement() != null && param.getElement() instanceof INode) {
+                        IComponent iComponent = ((INode) param.getElement()).getComponent();
+                        if (iComponent instanceof AbstractComponent) {
+                            AbstractComponent component = (AbstractComponent) iComponent;
+                            serializedProperties = component.genericToSerialized(param);
+                        }
+                    }
+                }
+                // save the schema type
+                if (EParameterFieldType.SCHEMA_TYPE.equals(param.getFieldType())) {
+                    for (String key : param.getChildParameters().keySet()) {
+                        saveElementParameter(param.getChildParameters().get(key), process, fileFact, paramList, listParamType);
+                    }
+                }
             }
-            // accept only one level of child parameters.
+        }
+        if (serializedProperties != null) {
+            ElementParameterType pType = fileFact.createElementParameterType();
+            pType.setName("PROPERTIES"); //$NON-NLS-1$
+            pType.setValue(serializedProperties);
+            listParamType.add(pType);
         }
     }
 
@@ -1143,191 +1174,255 @@ public class Process extends Element implements IProcess2, IGEFProcess, ILastVer
 
     protected void loadElementParameters(Element elemParam, EList listParamType, boolean isJunitLoad) {
         ElementParameterType pType;
-
-        for (int j = 0; j < listParamType.size(); j++) {
-            pType = (ElementParameterType) listParamType.get(j);
-            if (pType != null) {
-                IElementParameter param = null;
-                if (EParameterFieldType.SURVIVOR_RELATION.name().equals(pType.getField())) {
-                    param = new ElementParameter(elemParam);
-                    param.setValue(pType.getValue());
-                    param.setName(pType.getName());
-                    param.setCategory(EComponentCategory.TECHNICAL);
-                    param.setFieldType(EParameterFieldType.SURVIVOR_RELATION);
-                    param.setNumRow(99);
-                    param.setShow(false);
-                    param.setReadOnly(false);
-                    elemParam.addElementParameter(param);
-                    param = null;
-                    continue;
-                }
-
-                param = elemParam.getElementParameter(pType.getName());
-                if (param != null) {
-                    if (pType.isSetContextMode()) {
-                        param.setContextMode(pType.isContextMode());
-                    } else {
-                        param.setContextMode(false);
-                    }
-                    if ((param.isReadOnly() && !isJunitLoad)
-                            && !(param.getName().equals(EParameterName.UNIQUE_NAME.getName()) || param.getName().equals(
-                                    EParameterName.VERSION.getName()))) {
-                        continue;
-                        // if the parameter is read only, don't load
-                        // it (this will prevent to overwrite the
-                        // value)
-                    }
-                    String value = pType.getValue();
-                    if (param.getFieldType().equals(EParameterFieldType.CHECK)
-                            || param.getFieldType().equals(EParameterFieldType.RADIO)) {
-                        if ("false".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value) || !pType.isContextMode()) { //$NON-NLS-1$ //$NON-NLS-2$
-                            Boolean boolean1 = new Boolean(value);
-                            elemParam.setPropertyValue(pType.getName(), boolean1);
-                        } else {
-                            elemParam.setPropertyValue(pType.getName(), value);
-                        }
-                        // if (EParameterName.ACTIVATE.getName().equals(param.getName())) {
-                        // if ((elemParam instanceof Node) && !boolean1) {
-                        // ((Node) elemParam).setDummy(!boolean1);
-                        // }
-                        // }
-                    } else if (param.getFieldType().equals(EParameterFieldType.CLOSED_LIST)) {
-                        boolean valueSet = false;
-                        if (!ArrayUtils.contains(param.getListItemsValue(), value)) {
-                            if (ArrayUtils.contains(param.getListItemsDisplayName(), value)) {
-                                valueSet = true;
-                                int index = ArrayUtils.indexOf(param.getListItemsDisplayName(), value);
-                                elemParam.setPropertyValue(pType.getName(), param.getListItemsValue()[index]);
-                            }
-                        }
-                        if (!valueSet) {
-                            elemParam.setPropertyValue(pType.getName(), value);
-                        }
-                        if (param.getName().equals(EParameterName.DB_TYPE.getName())) {
-                            IElementParameter elementParameter = elemParam.getElementParameter(EParameterName.DB_VERSION
-                                    .getName());
-                            JobSettingVersionUtil.setDbVersion(elementParameter, value, true);
-                            IElementParameter elementParameter2 = elemParam.getElementParameter(EParameterName.SCHEMA_DB
-                                    .getName());
-                            DesignerUtilities.setSchemaDB(elementParameter2, param.getValue());
-                        } else if (param.getName().equals(
-                                JobSettingsConstants.getExtraParameterName(EParameterName.DB_TYPE.getName()))) {
-                            IElementParameter elementParameter = elemParam.getElementParameter(JobSettingsConstants
-                                    .getExtraParameterName(EParameterName.DB_VERSION.getName()));
-                            JobSettingVersionUtil.setDbVersion(elementParameter, value, true);
-                            IElementParameter elementParameter2 = elemParam.getElementParameter(JobSettingsConstants
-                                    .getExtraParameterName(EParameterName.SCHEMA_DB.getName()));
-                            DesignerUtilities.setSchemaDB(elementParameter2, param.getValue());
-                        }
-                    } else if (param.getFieldType().equals(EParameterFieldType.TABLE)) {
-                        List<Map<String, Object>> tableValues = new ArrayList<Map<String, Object>>();
-                        String[] codeList = param.getListItemsDisplayCodeName();
-                        Map<String, Object> lineValues = null;
-                        for (ElementValueType elementValue : (List<ElementValueType>) pType.getElementValue()) {
-                            boolean found = false;
-                            for (int i = 0; i < codeList.length && !found; i++) {
-                                if (codeList[i].equals(elementValue.getElementRef())) {
-                                    found = true;
-                                }
-                            }
-                            if (found) {
-                                if ((lineValues == null) || (lineValues.get(elementValue.getElementRef()) != null)) {
-                                    lineValues = new HashMap<String, Object>();
-                                    tableValues.add(lineValues);
-                                }
-                                boolean needRemoveQuotes = false;
-                                IElementParameter tmpParam = null;
-                                for (Object o : param.getListItemsValue()) {
-                                    if (o instanceof IElementParameter) {
-                                        IElementParameter tableParam = (IElementParameter) o;
-                                        if (tableParam.getName().equals(elementValue.getElementRef())) {
-                                            tmpParam = tableParam;
-                                            if (tableParam.getFieldType() == EParameterFieldType.CONNECTION_LIST) {
-                                                needRemoveQuotes = true;
-                                            }
-                                        }
+        // if it's a generic component,try to serialize the component to json,then save all in a new ElementParameter,
+        // that name: PROPERTIES".Then later when load the job, if the component loaded is a generic component... if
+        // yes,then deserialize the json to get back the properties / set each element parameter.
+        // Check if it's a generic component
+        IComponent component = null;
+        if (elemParam instanceof Node) {
+            component = ((INode) elemParam).getComponent();
+            if (EComponentType.GENERIC.equals(component.getComponentType())) {
+                generic = true;
+            }
+        }
+        if (generic) {
+            for (int j = 0; j < listParamType.size(); j++) {
+                pType = (ElementParameterType) listParamType.get(j);
+                if (pType != null) {
+                    if ("PROPERTIES".equals(pType.getName())) {//$NON-NLS-1$
+                        String pTypeValue = pType.getValue();
+                        if (pTypeValue != null) {
+                            if (component != null && component instanceof AbstractComponent) {
+                                AbstractComponent comp = (AbstractComponent) component;
+                                comp.initNodePropertiesFromSerialized((INode) elemParam, pTypeValue);
+                                List<? extends IElementParameter> paramList = elemParam.getElementParameters();
+                                for (int m = 0; m < paramList.size(); m++) {
+                                    IElementParameter param = paramList.get(m);
+                                    if (!param.isSerialized()) {
+                                        continue;
                                     }
-                                }
-
-                                String elemValue = elementValue.getValue();
-                                if (tmpParam != null && EParameterFieldType.PASSWORD.equals(tmpParam.getFieldType())) {
-                                    elemValue = elementValue.getRawValue();
-                                }
-                                if (needRemoveQuotes) {
-                                    lineValues.put(elementValue.getElementRef(), TalendTextUtils.removeQuotes(elemValue));
-                                } else {
-                                    lineValues.put(elementValue.getElementRef(), elemValue);
-                                }
-                                if (elementValue.getType() != null) {
-                                    lineValues.put(elementValue.getElementRef() + IEbcdicConstant.REF_TYPE,
-                                            elementValue.getType());
+                                    if ((param.isReadOnly() && !isJunitLoad)
+                                            && !(param.getName().equals(EParameterName.UNIQUE_NAME.getName()) || param.getName()
+                                                    .equals(EParameterName.VERSION.getName()))) {
+                                        continue;
+                                    }
+                                    comp.initParamPropertiesFromSerialized(param, pTypeValue);
+                                    String value = null;
+                                    Object obj = comp.genericFromSerialized(pTypeValue, param.getName());
+                                    if (obj != null) {
+                                        value = obj.toString();
+                                    }
+                                    loadElementParameters(elemParam, pType, param, param.getName(), value, false);
                                 }
                             }
                         }
-                        // check missing codes in the table to have the default values.
-                        for (Map<String, Object> line : tableValues) {
-                            for (int i = 0; i < codeList.length; i++) {
-                                if (!line.containsKey(codeList[i])) {
-                                    IElementParameter itemParam = (IElementParameter) param.getListItemsValue()[i];
-                                    line.put(codeList[i], itemParam.getValue());
-                                }
-                            }
-                        }
-
-                        elemParam.setPropertyValue(pType.getName(), tableValues);
-                    } else if (param.getFieldType().equals(EParameterFieldType.TABLE_BY_ROW)) {
-                        List<Map<String, Object>> tableValues = new ArrayList<Map<String, Object>>();
-                        Map<String, Object> lineValues = null;
-                        for (ElementValueType elementValue : (List<ElementValueType>) pType.getElementValue()) {
-                            if ((lineValues == null) || (lineValues.get(elementValue.getElementRef()) != null)) {
-                                lineValues = new HashMap<String, Object>();
-                                tableValues.add(lineValues);
-                            }
-                            lineValues.put(elementValue.getElementRef(), elementValue.getValue());
-                        }
-                        elemParam.setPropertyValue(pType.getName(), tableValues);
-                    } else if (param.getFieldType().equals(EParameterFieldType.ENCODING_TYPE)) {
-                        // fix for bug 2193
-                        boolean setToCustom = false;
-                        if (EmfComponent.REPOSITORY.equals(elemParam.getPropertyValue(EParameterName.PROPERTY_TYPE.getName()))
-                                && param.getRepositoryValue() != null && param.getRepositoryValue().equals("ENCODING")) { //$NON-NLS-1$
-                            setToCustom = true;
-                        }
-                        String tempValue = (String) param.getChildParameters().get(EParameterName.ENCODING_TYPE.getName())
-                                .getValue();
-                        if (!tempValue.equals(EmfComponent.ENCODING_TYPE_CUSTOM)) {
-                            tempValue = tempValue.replaceAll("'", ""); //$NON-NLS-1$ //$NON-NLS-2$
-                            tempValue = tempValue.replaceAll("\"", ""); //$NON-NLS-1$ //$NON-NLS-2$
-                            tempValue = TalendTextUtils.addQuotes(tempValue);
-                            if (!tempValue.equals(value)) {
-                                setToCustom = true;
-                            }
+                    } else {
+                        IElementParameter param = null;
+                        if (EParameterFieldType.SURVIVOR_RELATION.name().equals(pType.getField())) {
+                            param = new ElementParameter(elemParam);
+                            param.setValue(pType.getValue());
+                            param.setName(pType.getName());
+                            param.setCategory(EComponentCategory.TECHNICAL);
+                            param.setFieldType(EParameterFieldType.SURVIVOR_RELATION);
+                            param.setNumRow(99);
+                            param.setShow(false);
+                            param.setReadOnly(false);
+                            elemParam.addElementParameter(param);
+                            param = null;
+                            continue;
                         }
 
-                        if (setToCustom) {
-                            param.getChildParameters().get(EParameterName.ENCODING_TYPE.getName())
-                                    .setValue(EmfComponent.ENCODING_TYPE_CUSTOM);
-                        }
-                        elemParam.setPropertyValue(pType.getName(), value);
-                        // end of fix for bug 2193
-                    } else if (param.getFieldType().equals(EParameterFieldType.PASSWORD)) {
-                        param.setValue(pType.getRawValue());
-                    } else if (!param.getFieldType().equals(EParameterFieldType.SCHEMA_TYPE)) {
-                        if (param.getFieldType().equals(EParameterFieldType.COLOR)) {
-                            if (value != null && value.length() > 2) {
-                                elemParam.setPropertyValue(pType.getName(), TalendTextUtils.removeQuotesIfExist(value)); // value.substring(1,
+                        param = elemParam.getElementParameter(pType.getName());
+                        if (param != null) {
+                            if ((param.isReadOnly() && !isJunitLoad)
+                                    && !(param.getName().equals(EParameterName.UNIQUE_NAME.getName()) || param.getName().equals(
+                                            EParameterName.VERSION.getName()))) {
+                                continue;
                             }
-                        } else {
-                            elemParam.setPropertyValue(pType.getName(), value);
+                            //
+                            loadElementParameters(elemParam, pType, param, pType.getName(), pType.getValue(), false);
                         }
                     }
-                } else if (UpdateTheJobsActionsOnTable.isClear && "CLEAR_TABLE".equals(pType.getName()) //$NON-NLS-1$
-                        && "true".equals(pType.getValue()) //$NON-NLS-1$
-                        && "NONE".equals(elemParam.getElementParameter(Process.TABLE_ACTION).getValue())) { //$NON-NLS-1$
-                    elemParam.setPropertyValue(Process.TABLE_ACTION, "CLEAR"); //$NON-NLS-1$
-                    UpdateTheJobsActionsOnTable.isClear = false;
                 }
             }
+        } else {
+            for (int j = 0; j < listParamType.size(); j++) {
+                pType = (ElementParameterType) listParamType.get(j);
+                if (pType != null) {
+                    IElementParameter param = null;
+                    if (EParameterFieldType.SURVIVOR_RELATION.name().equals(pType.getField())) {
+                        param = new ElementParameter(elemParam);
+                        param.setValue(pType.getValue());
+                        param.setName(pType.getName());
+                        param.setCategory(EComponentCategory.TECHNICAL);
+                        param.setFieldType(EParameterFieldType.SURVIVOR_RELATION);
+                        param.setNumRow(99);
+                        param.setShow(false);
+                        param.setReadOnly(false);
+                        elemParam.addElementParameter(param);
+                        param = null;
+                        continue;
+                    }
+                    param = elemParam.getElementParameter(pType.getName());
+                    if (param != null) {
+                        if ((param.isReadOnly() && !isJunitLoad)
+                                && !(param.getName().equals(EParameterName.UNIQUE_NAME.getName()) || param.getName().equals(
+                                        EParameterName.VERSION.getName()))) {
+                            continue;
+                        }
+                        //
+                        loadElementParameters(elemParam, pType, param, pType.getName(), pType.getValue(), false);
+                    }
+                }
+            }
+        }
+    }
+
+    private void loadElementParameters(Element elemParam, ElementParameterType pType, IElementParameter param, String key,
+            String value, boolean isJunitLoad) {
+        if (param != null) {
+            if (pType.isSetContextMode()) {
+                param.setContextMode(pType.isContextMode());
+            } else {
+                param.setContextMode(false);
+            }
+            if (param.getFieldType().equals(EParameterFieldType.CHECK) || param.getFieldType().equals(EParameterFieldType.RADIO)) {
+                if ("false".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value) || !pType.isContextMode()) { //$NON-NLS-1$ //$NON-NLS-2$
+                    Boolean boolean1 = new Boolean(value);
+                    elemParam.setPropertyValue(key, boolean1);
+                } else {
+                    elemParam.setPropertyValue(key, value);
+                }
+            } else if (param.getFieldType().equals(EParameterFieldType.CLOSED_LIST)) {
+                boolean valueSet = false;
+                if (!ArrayUtils.contains(param.getListItemsValue(), value)) {
+                    if (ArrayUtils.contains(param.getListItemsDisplayName(), value)) {
+                        valueSet = true;
+                        int index = ArrayUtils.indexOf(param.getListItemsDisplayName(), value);
+                        elemParam.setPropertyValue(key, param.getListItemsValue()[index]);
+                    }
+                }
+                if (!valueSet) {
+                    elemParam.setPropertyValue(key, value);
+                }
+                if (param.getName().equals(EParameterName.DB_TYPE.getName())) {
+                    IElementParameter elementParameter = elemParam.getElementParameter(EParameterName.DB_VERSION.getName());
+                    JobSettingVersionUtil.setDbVersion(elementParameter, value, true);
+                    IElementParameter elementParameter2 = elemParam.getElementParameter(EParameterName.SCHEMA_DB.getName());
+                    DesignerUtilities.setSchemaDB(elementParameter2, param.getValue());
+                } else if (param.getName().equals(JobSettingsConstants.getExtraParameterName(EParameterName.DB_TYPE.getName()))) {
+                    IElementParameter elementParameter = elemParam.getElementParameter(JobSettingsConstants
+                            .getExtraParameterName(EParameterName.DB_VERSION.getName()));
+                    JobSettingVersionUtil.setDbVersion(elementParameter, value, true);
+                    IElementParameter elementParameter2 = elemParam.getElementParameter(JobSettingsConstants
+                            .getExtraParameterName(EParameterName.SCHEMA_DB.getName()));
+                    DesignerUtilities.setSchemaDB(elementParameter2, param.getValue());
+                }
+            } else if (param.getFieldType().equals(EParameterFieldType.TABLE)) {
+                List<Map<String, Object>> tableValues = new ArrayList<Map<String, Object>>();
+                String[] codeList = param.getListItemsDisplayCodeName();
+                Map<String, Object> lineValues = null;
+                for (ElementValueType elementValue : (List<ElementValueType>) pType.getElementValue()) {
+                    boolean found = false;
+                    for (int i = 0; i < codeList.length && !found; i++) {
+                        if (codeList[i].equals(elementValue.getElementRef())) {
+                            found = true;
+                        }
+                    }
+                    if (found) {
+                        if ((lineValues == null) || (lineValues.get(elementValue.getElementRef()) != null)) {
+                            lineValues = new HashMap<String, Object>();
+                            tableValues.add(lineValues);
+                        }
+                        boolean needRemoveQuotes = false;
+                        IElementParameter tmpParam = null;
+                        for (Object o : param.getListItemsValue()) {
+                            if (o instanceof IElementParameter) {
+                                IElementParameter tableParam = (IElementParameter) o;
+                                if (tableParam.getName().equals(elementValue.getElementRef())) {
+                                    tmpParam = tableParam;
+                                    if (tableParam.getFieldType() == EParameterFieldType.CONNECTION_LIST) {
+                                        needRemoveQuotes = true;
+                                    }
+                                }
+                            }
+                        }
+
+                        String elemValue = elementValue.getValue();
+                        if (tmpParam != null && EParameterFieldType.PASSWORD.equals(tmpParam.getFieldType())) {
+                            elemValue = elementValue.getRawValue();
+                        }
+                        if (needRemoveQuotes) {
+                            lineValues.put(elementValue.getElementRef(), TalendTextUtils.removeQuotes(elemValue));
+                        } else {
+                            lineValues.put(elementValue.getElementRef(), elemValue);
+                        }
+                        if (elementValue.getType() != null) {
+                            lineValues.put(elementValue.getElementRef() + IEbcdicConstant.REF_TYPE, elementValue.getType());
+                        }
+                    }
+                }
+                // check missing codes in the table to have the default values.
+                for (Map<String, Object> line : tableValues) {
+                    for (int i = 0; i < codeList.length; i++) {
+                        if (!line.containsKey(codeList[i])) {
+                            IElementParameter itemParam = (IElementParameter) param.getListItemsValue()[i];
+                            line.put(codeList[i], itemParam.getValue());
+                        }
+                    }
+                }
+
+                elemParam.setPropertyValue(key, tableValues);
+            } else if (param.getFieldType().equals(EParameterFieldType.TABLE_BY_ROW)) {
+                List<Map<String, Object>> tableValues = new ArrayList<Map<String, Object>>();
+                Map<String, Object> lineValues = null;
+                for (ElementValueType elementValue : (List<ElementValueType>) pType.getElementValue()) {
+                    if ((lineValues == null) || (lineValues.get(elementValue.getElementRef()) != null)) {
+                        lineValues = new HashMap<String, Object>();
+                        tableValues.add(lineValues);
+                    }
+                    lineValues.put(elementValue.getElementRef(), elementValue.getValue());
+                }
+                elemParam.setPropertyValue(key, tableValues);
+            } else if (param.getFieldType().equals(EParameterFieldType.ENCODING_TYPE)) {
+                // fix for bug 2193
+                boolean setToCustom = false;
+                if (EmfComponent.REPOSITORY.equals(elemParam.getPropertyValue(EParameterName.PROPERTY_TYPE.getName()))
+                        && param.getRepositoryValue() != null && param.getRepositoryValue().equals("ENCODING")) { //$NON-NLS-1$
+                    setToCustom = true;
+                }
+                String tempValue = (String) param.getChildParameters().get(EParameterName.ENCODING_TYPE.getName()).getValue();
+                if (!tempValue.equals(EmfComponent.ENCODING_TYPE_CUSTOM)) {
+                    tempValue = tempValue.replaceAll("'", ""); //$NON-NLS-1$ //$NON-NLS-2$
+                    tempValue = tempValue.replaceAll("\"", ""); //$NON-NLS-1$ //$NON-NLS-2$
+                    tempValue = TalendTextUtils.addQuotes(tempValue);
+                    if (!tempValue.equals(value)) {
+                        setToCustom = true;
+                    }
+                }
+
+                if (setToCustom) {
+                    param.getChildParameters().get(EParameterName.ENCODING_TYPE.getName())
+                            .setValue(EmfComponent.ENCODING_TYPE_CUSTOM);
+                }
+                elemParam.setPropertyValue(key, value);
+                // end of fix for bug 2193
+            } else if (param.getFieldType().equals(EParameterFieldType.PASSWORD)) {
+                param.setValue(pType.getRawValue());
+            } else if (!param.getFieldType().equals(EParameterFieldType.SCHEMA_TYPE)) {
+                if (param.getFieldType().equals(EParameterFieldType.COLOR)) {
+                    if (value != null && value.length() > 2) {
+                        elemParam.setPropertyValue(key, TalendTextUtils.removeQuotesIfExist(value)); // value.substring(1,
+                    }
+                } else {
+                    elemParam.setPropertyValue(key, value);
+                }
+            }
+        } else if (UpdateTheJobsActionsOnTable.isClear && "CLEAR_TABLE".equals(key) //$NON-NLS-1$
+                && "true".equals(pType.getValue()) //$NON-NLS-1$
+                && "NONE".equals(elemParam.getElementParameter(Process.TABLE_ACTION).getValue())) { //$NON-NLS-1$
+            elemParam.setPropertyValue(Process.TABLE_ACTION, "CLEAR"); //$NON-NLS-1$
+            UpdateTheJobsActionsOnTable.isClear = false;
         }
     }
 
@@ -1486,6 +1581,12 @@ public class Process extends Element implements IProcess2, IGEFProcess, ILastVer
         // }
         listParamType = nType.getElementParameter();
         paramList = node.getElementParameters();
+
+        // Check if it's a generic component
+        IComponent component = node.getComponent();
+        if (EComponentType.GENERIC.equals(component.getComponentType())) {
+            generic = true;
+        }
 
         saveElementParameters(fileFact, paramList, listParamType, process);
         listMetaType = nType.getMetadata();

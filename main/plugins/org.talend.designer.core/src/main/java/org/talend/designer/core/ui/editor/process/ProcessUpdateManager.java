@@ -47,6 +47,7 @@ import org.talend.core.model.metadata.QueryUtil;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.FTPConnection;
 import org.talend.core.model.metadata.builder.connection.HeaderFooterConnection;
+import org.talend.core.model.metadata.builder.connection.MetadataTable;
 import org.talend.core.model.metadata.builder.connection.Query;
 import org.talend.core.model.metadata.builder.connection.SAPConnection;
 import org.talend.core.model.metadata.builder.connection.SAPFunctionUnit;
@@ -93,8 +94,10 @@ import org.talend.core.model.update.UpdatesConstants;
 import org.talend.core.model.update.extension.UpdateManagerProviderDetector;
 import org.talend.core.model.utils.SAPConnectionUtils;
 import org.talend.core.model.utils.TalendTextUtils;
+import org.talend.core.runtime.services.IGenericWizardService;
 import org.talend.core.service.IDesignerMapperService;
 import org.talend.core.service.IEBCDICProviderService;
+import org.talend.core.service.IMetadataManagmentService;
 import org.talend.core.ui.ICDCProviderService;
 import org.talend.core.ui.IJobletProviderService;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
@@ -1283,7 +1286,29 @@ public class ProcessUpdateManager extends AbstractUpdateManager {
                                 }
 
                             } else {
-                                IMetadataTable table = UpdateRepositoryUtils.getTableByName(connectionItem, schemaName);
+                                IMetadataTable table = null;
+                                IGenericWizardService wizardService = null;
+                                if (GlobalServiceRegister.getDefault().isServiceRegistered(IGenericWizardService.class)) {
+                                    wizardService = (IGenericWizardService) GlobalServiceRegister.getDefault().getService(
+                                            IGenericWizardService.class);
+                                }
+                                // Generic
+                                if (wizardService != null && wizardService.isGenericItem(connectionItem)) {
+                                    List<MetadataTable> metadataTables = wizardService.getMetadataTables(connectionItem
+                                            .getConnection());
+                                    for (MetadataTable metadataTable : metadataTables) {
+                                        if (metadataTable.getLabel().equals(schemaName)) {
+                                            if (GlobalServiceRegister.getDefault().isServiceRegistered(
+                                                    IMetadataManagmentService.class)) {
+                                                IMetadataManagmentService mmService = (IMetadataManagmentService) GlobalServiceRegister
+                                                        .getDefault().getService(IMetadataManagmentService.class);
+                                                table = mmService.convertMetadataTable(metadataTable);
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    table = UpdateRepositoryUtils.getTableByName(connectionItem, schemaName);
+                                }
                                 if (table != null) {
                                     String source = UpdateRepositoryUtils.getRepositorySourceName(connectionItem)
                                             + UpdatesConstants.SEGMENT_LINE + schemaName;

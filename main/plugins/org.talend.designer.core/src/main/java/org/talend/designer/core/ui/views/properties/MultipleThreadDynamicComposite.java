@@ -829,7 +829,7 @@ public class MultipleThreadDynamicComposite extends ScrolledComposite implements
         }
 
         // add CSS class
-        CoreUIPlugin.setCSSClass(this, MultipleThreadDynamicComposite.class.getSimpleName());
+        CoreUIPlugin.setCSSClass(this, MultipleThreadDynamicComposite.class.getSimpleName(), false);
     }
 
     /*

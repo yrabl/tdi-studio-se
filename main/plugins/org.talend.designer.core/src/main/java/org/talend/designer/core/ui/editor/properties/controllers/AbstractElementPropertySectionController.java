@@ -1136,7 +1136,6 @@ public abstract class AbstractElementPropertySectionController implements Proper
     }
 
     protected void executeCommand(Command c) {
-
         if (c == null) {
             return;
         }
@@ -1147,7 +1146,6 @@ public abstract class AbstractElementPropertySectionController implements Proper
             // if can't find command stack, just execute it.
             c.execute();
         }
-        // refreshDynamicProperty();
     }
 
     private void refreshDynamicProperty() {

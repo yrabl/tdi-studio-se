@@ -44,6 +44,7 @@ import org.talend.commons.CommonsPlugin;
 import org.talend.commons.exception.CommonExceptionHandler;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.ui.runtime.exception.ExceptionHandler;
+import org.talend.components.api.properties.ComponentProperties;
 import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.PluginChecker;
@@ -291,6 +292,8 @@ public class Node extends Element implements IGraphicalNode {
 
     private boolean isUpdate;
 
+    private ComponentProperties componentProperties;
+
     /**
      * Getter for index.
      * 
@@ -440,6 +443,14 @@ public class Node extends Element implements IGraphicalNode {
         needlibrary = false;
     }
 
+    public Node(INode oldNode, IProcess2 process) {
+        this.oldcomponent = oldNode.getComponent();
+        this.componentProperties = oldNode.getComponentProperties();
+        this.process = process;
+        init(oldNode.getComponent());
+        needlibrary = false;
+    }
+
     private MetadataTable getNewMetadataTable() {
         // All component types use the same MetadataTable implementation.
         return new MetadataTable();
@@ -530,8 +541,10 @@ public class Node extends Element implements IGraphicalNode {
         for (IElementParameter param : getElementParameters()) {
             if (param.getValue() != null && param.getValue() instanceof String) {
                 String value = (String) param.getValue();
-                value = value.replace("__NODE_UNIQUE_NAME__", uniqueName2); //$NON-NLS-1$
-                param.setValue(value);
+                if (value.contains("__NODE_UNIQUE_NAME__")) {
+                    value = value.replace("__NODE_UNIQUE_NAME__", uniqueName2); //$NON-NLS-1$
+                    param.setValue(value);
+                }
             }
         }
 
@@ -3049,17 +3062,6 @@ public class Node extends Element implements IGraphicalNode {
         }
     }
 
-    private void checkDataprepRun(IElementParameter param) {
-        if (EParameterName.PREPARATION_ID.getName().equals(param.getName())) {
-            final IElementParameter prepIdParam = getElementParameter(EParameterName.PREPARATION_ID.getName());
-            if (prepIdParam == null || prepIdParam.getValue() == null
-                    || "".equals(TalendTextUtils.removeQuotes(String.valueOf(prepIdParam.getValue())).trim())) {
-                Problems.add(ProblemStatus.ERROR, this, "Must set the preparation id");
-
-            }
-        }
-    }
-
     public int getCurrentActiveLinksNbInput(EConnectionType type) {
         int nb = 0;
         for (IConnection connection : inputs) {
@@ -4963,6 +4965,16 @@ public class Node extends Element implements IGraphicalNode {
             return;
         }
         param.setValue(new Boolean(subtreeStart));
+    }
+
+    @Override
+    public void setComponentProperties(ComponentProperties props) {
+        componentProperties = props;
+    }
+
+    @Override
+    public ComponentProperties getComponentProperties() {
+        return componentProperties;
     }
 
     public Integer getMrGroupId() {

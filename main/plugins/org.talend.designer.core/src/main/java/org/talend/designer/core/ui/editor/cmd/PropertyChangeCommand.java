@@ -156,7 +156,7 @@ public class PropertyChangeCommand extends Command {
         IElementParameter currentParam = elem.getElementParameter(propName);
         propertyTypeName = EParameterName.PROPERTY_TYPE.getName();
         for (IElementParameter param : elem.getElementParameters()) {
-            if (param.getFieldType().equals(EParameterFieldType.PROPERTY_TYPE)
+            if (param.getFieldType() != null && param.getFieldType().equals(EParameterFieldType.PROPERTY_TYPE)
                     && param.getCategory().equals(currentParam.getCategory())) {
                 propertyTypeName = param.getName() + ":" + EParameterName.PROPERTY_TYPE.getName(); //$NON-NLS-1$
                 break;

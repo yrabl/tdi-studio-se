@@ -999,6 +999,10 @@ public class SchemaTypeController extends AbstractRepositoryController {
                                 labelText.setText(TalendTextUtils.addQuotes(name));
                                 paramName = "SCHEMA_TARGET";
                             }
+                        } else if (nodeElement.getComponent().getName().startsWith("tSalesforce")) {
+                            paramName = paramName + ":" + EParameterName.REPOSITORY_SCHEMA_TYPE.getName();
+                            Command selectorCommand = new PropertyChangeCommand(elem, paramName, TalendTextUtils.addQuotes(value));
+                            executeCommand(selectorCommand);
                         } else {
                             Command dbSelectorCommand = new PropertyChangeCommand(elem, paramName,
                                     TalendTextUtils.addQuotes(repositoryMetadata.getTableName()));

@@ -43,8 +43,11 @@ import org.eclipse.ui.part.ViewPart;
 import org.talend.commons.ui.runtime.image.EImage;
 import org.talend.commons.ui.runtime.image.ImageProvider;
 import org.talend.commons.ui.runtime.image.ImageUtils.ICON_SIZE;
+import org.talend.core.GlobalServiceRegister;
 import org.talend.core.PluginChecker;
 import org.talend.core.model.components.ComponentCategory;
+import org.talend.core.model.components.EComponentType;
+import org.talend.core.model.components.IComponent;
 import org.talend.core.model.process.EComponentCategory;
 import org.talend.core.model.process.EConnectionType;
 import org.talend.core.model.process.Element;
@@ -55,6 +58,7 @@ import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.INode;
 import org.talend.core.model.process.IProcess;
 import org.talend.core.model.process.IProcess2;
+import org.talend.core.runtime.services.IGenericWizardService;
 import org.talend.core.ui.images.CoreImageProvider;
 import org.talend.core.ui.properties.tab.HorizontalTabFactory;
 import org.talend.core.ui.properties.tab.IDynamicProperty;
@@ -215,6 +219,16 @@ public class ComponentSettingsView extends ViewPart implements IComponentSetting
         getParentMap().put(ComponentSettingsView.PARENT, parent);
         getCategoryMap().put(ComponentSettingsView.CATEGORY, category);
         if (element instanceof Node) {
+            IComponent component = ((Node) element).getComponent();
+            IGenericWizardService wizardService = null;
+            boolean generic = false;
+            if (EComponentType.GENERIC.equals(component.getComponentType())) {
+                generic = true;
+                if (GlobalServiceRegister.getDefault().isServiceRegistered(IGenericWizardService.class)) {
+                    wizardService = (IGenericWizardService) GlobalServiceRegister.getDefault().getService(
+                            IGenericWizardService.class);
+                }
+            }
             tabFactory.getTabbedPropertyComposite().setCompactViewVisible(false);
             if (category == EComponentCategory.BASIC) {
                 // getElementMap().put(ComponentSettingsView.ELEMENT, element);
@@ -227,6 +241,13 @@ public class ComponentSettingsView extends ViewPart implements IComponentSetting
                 tabFactory.getTabbedPropertyComposite().setCompactView(isCompactView);
                 dc = new MissingSettingsMultiThreadDynamicComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.NO_FOCUS, category,
                         element, isCompactView);
+                // Generic
+                if (generic && wizardService != null) {
+                    Composite composite = wizardService.creatDynamicComposite(parent, element, EComponentCategory.BASIC, true);
+                    if (composite instanceof MultipleThreadDynamicComposite) {
+                        dc = (MultipleThreadDynamicComposite) composite;
+                    }
+                }
 
             } else if (category == EComponentCategory.DYNAMICS_SETTINGS) {
                 dc = new AdvancedContextComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.NO_FOCUS, element);
@@ -235,6 +256,13 @@ public class ComponentSettingsView extends ViewPart implements IComponentSetting
             } else if (category == EComponentCategory.ADVANCED) {
                 dc = new MissingSettingsMultiThreadDynamicComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.NO_FOCUS, category,
                         element, true);
+                // Generic
+                if (generic && wizardService != null) {
+                    Composite composite = wizardService.creatDynamicComposite(parent, element, EComponentCategory.ADVANCED, true);
+                    if (composite instanceof MultipleThreadDynamicComposite) {
+                        dc = (MultipleThreadDynamicComposite) composite;
+                    }
+                }
             } else {
                 dc = new MultipleThreadDynamicComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.NO_FOCUS, category, element,
                         true);

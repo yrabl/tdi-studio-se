@@ -197,7 +197,8 @@ public class RepositoryChangeMetadataCommand extends ChangeMetadataCommand {
                 }
                 Item item = lastVersion.getProperty().getItem();
                 if (item instanceof ConnectionItem) {
-                    for (IElementParameter param : node.getElementParameters()) {
+                    List<? extends IElementParameter> elementParameters = new ArrayList(node.getElementParameters());
+                    for (IElementParameter param : elementParameters) {
                         if (param.getRepositoryValue() != null && !param.getRepositoryValue().equals("")) {//$NON-NLS-1$
                             boolean isCustomSfConn = false;
                             if (item instanceof SalesforceSchemaConnectionItem) {

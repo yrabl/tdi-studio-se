@@ -150,6 +150,8 @@ public class ElementParameter implements IElementParameter {
 
     private Object defaultValue;
 
+    protected boolean isSerialized = false;
+
     public ElementParameter(final IElement element) {
         this.element = element;
     }
@@ -1249,4 +1251,23 @@ public class ElementParameter implements IElementParameter {
         this.enable = enable;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.core.model.process.IElementParameter#isSerialized()
+     */
+    @Override
+    public boolean isSerialized() {
+        return isSerialized;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.core.model.process.IElementParameter#setSerialized(boolean)
+     */
+    @Override
+    public void setSerialized(boolean isSerialized) {
+        this.isSerialized = isSerialized;
+    }
 }

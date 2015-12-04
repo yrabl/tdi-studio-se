@@ -211,7 +211,9 @@ public class CheckController extends AbstractElementPropertySectionController {
             return;
         }
         if (!param.isContextMode()) {
-            if (value instanceof String) {
+            if (value == null) {
+                checkBtn.setSelection(false);
+            } else if (value instanceof String) {
                 checkBtn.setSelection(Boolean.valueOf((String) value));
             } else {
                 checkBtn.setSelection((Boolean) value);

@@ -81,6 +81,7 @@ public class NodeConnector implements INodeConnector {
      * 
      * @see org.talend.designer.core.model.components.INodeConnector#getConnectionType()
      */
+    @Override
     public EConnectionType getDefaultConnectionType() {
         return this.defaultConnectionType;
     }
@@ -91,6 +92,7 @@ public class NodeConnector implements INodeConnector {
      * @seeorg.talend.designer.core.model.components.INodeConnector#setConnectionType(org.talend.core.model.designer.
      * EConnectionType)
      */
+    @Override
     public void setDefaultConnectionType(final EConnectionType defaultConnectionType) {
         this.defaultConnectionType = defaultConnectionType;
     }
@@ -100,6 +102,7 @@ public class NodeConnector implements INodeConnector {
      * 
      * @see org.talend.designer.core.model.components.INodeConnector#isBuiltIn()
      */
+    @Override
     public boolean isBuiltIn() {
         return this.builtIn;
     }
@@ -109,34 +112,42 @@ public class NodeConnector implements INodeConnector {
      * 
      * @see org.talend.designer.core.model.components.INodeConnector#setBuiltIn(boolean)
      */
+    @Override
     public void setBuiltIn(final boolean builtIn) {
         this.builtIn = builtIn;
     }
 
+    @Override
     public int getCurLinkNbInput() {
         return this.curLinkNbInput;
     }
 
+    @Override
     public void setCurLinkNbInput(int curLinkNbInput) {
         this.curLinkNbInput = curLinkNbInput;
     }
 
+    @Override
     public int getCurLinkNbOutput() {
         return this.curLinkNbOutput;
     }
 
+    @Override
     public void setCurLinkNbOutput(int curLinkNbOutput) {
         this.curLinkNbOutput = curLinkNbOutput;
     }
 
+    @Override
     public int getMaxLinkInput() {
         return this.maxLinkInput;
     }
 
+    @Override
     public void setMaxLinkInput(int maxLinkInput) {
         this.maxLinkInput = maxLinkInput;
     }
 
+    @Override
     public int getMaxLinkOutput() {
         if (parentNode != null) {
             // && defaultConnectionType.equals(EConnectionType.FLOW_MAIN)) {
@@ -148,22 +159,27 @@ public class NodeConnector implements INodeConnector {
         return this.maxLinkOutput;
     }
 
+    @Override
     public void setMaxLinkOutput(int maxLinkOutput) {
         this.maxLinkOutput = maxLinkOutput;
     }
 
+    @Override
     public int getMinLinkInput() {
         return this.minLinkInput;
     }
 
+    @Override
     public void setMinLinkInput(int minLinkInput) {
         this.minLinkInput = minLinkInput;
     }
 
+    @Override
     public int getMinLinkOutput() {
         return this.minLinkOutput;
     }
 
+    @Override
     public void setMinLinkOutput(int minLinkOutput) {
         this.minLinkOutput = minLinkOutput;
     }
@@ -173,6 +189,7 @@ public class NodeConnector implements INodeConnector {
      * 
      * @return the linkName
      */
+    @Override
     public String getLinkName() {
         return linkName;
     }
@@ -182,6 +199,7 @@ public class NodeConnector implements INodeConnector {
      * 
      * @param linkName the linkName to set
      */
+    @Override
     public void setLinkName(String linkName) {
         this.linkName = linkName;
     }
@@ -191,6 +209,7 @@ public class NodeConnector implements INodeConnector {
      * 
      * @return the menuName
      */
+    @Override
     public String getMenuName() {
         return menuName;
     }
@@ -200,6 +219,7 @@ public class NodeConnector implements INodeConnector {
      * 
      * @param menuName the menuName to set
      */
+    @Override
     public void setMenuName(String menuName) {
         this.menuName = menuName;
     }
@@ -209,6 +229,7 @@ public class NodeConnector implements INodeConnector {
      * 
      * @return the name
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -218,15 +239,18 @@ public class NodeConnector implements INodeConnector {
      * 
      * @param name the name to set
      */
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    @Override
     public void addConnectionProperty(EConnectionType type, RGB rgb, Integer lineStyle) {
         rgb = DesignerColorUtils.getPreferenceConnectionColor(type, rgb);
         propertyMap.put(type, new ConnectionProperty(rgb, lineStyle));
     }
 
+    @Override
     public IConnectionProperty getConnectionProperty(EConnectionType type) {
         return propertyMap.get(type);
     }
@@ -269,6 +293,7 @@ public class NodeConnector implements INodeConnector {
          * 
          * @return the color
          */
+        @Override
         public RGB getRGB() {
             return rgb;
         }
@@ -278,6 +303,7 @@ public class NodeConnector implements INodeConnector {
          * 
          * @param color the color to set
          */
+        @Override
         public void setRGB(RGB rgb) {
             this.rgb = rgb;
         }
@@ -287,6 +313,7 @@ public class NodeConnector implements INodeConnector {
          * 
          * @return the lineStyle
          */
+        @Override
         public Integer getLineStyle() {
             return lineStyle;
         }
@@ -296,6 +323,7 @@ public class NodeConnector implements INodeConnector {
          * 
          * @param lineStyle the lineStyle to set
          */
+        @Override
         public void setLineStyle(Integer lineStyle) {
             this.lineStyle = lineStyle;
         }
@@ -305,6 +333,7 @@ public class NodeConnector implements INodeConnector {
          * 
          * @return the linkedComponent
          */
+        @Override
         public String getLinkedComponent() {
             return this.linkedComponent;
         }
@@ -314,6 +343,7 @@ public class NodeConnector implements INodeConnector {
          * 
          * @param linkedComponent the linkedComponent to set
          */
+        @Override
         public void setLinkedComponent(String linkedComponent) {
             this.linkedComponent = linkedComponent;
         }
@@ -324,6 +354,7 @@ public class NodeConnector implements INodeConnector {
      * 
      * @return the baseSchema
      */
+    @Override
     public String getBaseSchema() {
         return baseSchema;
     }
@@ -333,6 +364,7 @@ public class NodeConnector implements INodeConnector {
      * 
      * @param baseSchema the baseSchema to set
      */
+    @Override
     public void setBaseSchema(String baseSchema) {
         this.baseSchema = baseSchema;
     }
@@ -342,9 +374,10 @@ public class NodeConnector implements INodeConnector {
      * 
      * @see org.talend.core.model.process.INodeConnector#isMultiSchema()
      */
+    @Override
     public boolean isMultiSchema() {
         IElementParameter schemaParam = parentNode.getElementParameterFromField(EParameterFieldType.SCHEMA_TYPE);
-        if (schemaParam != null && schemaParam.getContext().equals("FLOW")) {
+        if (schemaParam != null && schemaParam.getContext() != null && schemaParam.getContext().equals("FLOW")) {
             if (schemaParam.isShow(parentNode.getElementParameters())) {
                 return false;
             }
@@ -357,14 +390,17 @@ public class NodeConnector implements INodeConnector {
      * 
      * @see org.talend.core.model.process.INodeConnector#setMultiSchema(boolean)
      */
+    @Override
     public void setMultiSchema(boolean multiSchema) {
         this.multiSchema = multiSchema;
     }
 
+    @Override
     public String getNotShowIf() {
         return this.notShowIf;
     }
 
+    @Override
     public void setNotShowIf(String notShowIf) {
         this.notShowIf = notShowIf;
     }
@@ -374,6 +410,7 @@ public class NodeConnector implements INodeConnector {
      * 
      * @see org.talend.core.model.process.INodeConnector#isMergeAllowDifferentSchema()
      */
+    @Override
     public boolean isMergeAllowDifferentSchema() {
         return mergeAllowDifferentSchema;
     }
@@ -383,10 +420,12 @@ public class NodeConnector implements INodeConnector {
      * 
      * @see org.talend.core.model.process.INodeConnector#setMergeAllowDifferentSchema(boolean)
      */
+    @Override
     public void setMergeAllowDifferentSchema(boolean mergeOption) {
         this.mergeAllowDifferentSchema = mergeOption;
     }
 
+    @Override
     public boolean isShow() {
         String notShowIf = getNotShowIf();
         String showIf = getShowIf();
@@ -400,14 +439,17 @@ public class NodeConnector implements INodeConnector {
         return this.show;
     }
 
+    @Override
     public void setShow(boolean show) {
         this.show = show;
     }
 
+    @Override
     public String getShowIf() {
         return this.showIf;
     }
 
+    @Override
     public void setShowIf(String showIf) {
         this.showIf = showIf;
     }

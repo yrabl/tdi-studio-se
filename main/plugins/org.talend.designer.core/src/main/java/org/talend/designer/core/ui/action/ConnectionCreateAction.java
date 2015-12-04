@@ -145,6 +145,9 @@ public class ConnectionCreateAction extends SelectionAction {
             menuList = new ArrayList<String>();
             if (curNodeConnector == null) {
                 curNodeConnector = node.getConnectorFromType(connecType);
+                if (curNodeConnector == null) {
+                    return false;
+                }
             }
 
             if (curNodeConnector.getMaxLinkOutput() != -1) {

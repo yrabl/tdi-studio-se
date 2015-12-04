@@ -12,17 +12,57 @@
 // ============================================================================
 package org.talend.designer.core.model.components;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.talend.core.model.components.ComponentCategory;
 import org.talend.core.model.components.IComponent;
+import org.talend.core.model.process.IElementParameter;
+import org.talend.core.model.process.INode;
+import org.talend.core.model.temp.ECodePart;
+import org.talend.designer.core.i18n.Messages;
 
 /**
  * ggu class global comment. Detailled comment
  */
 public abstract class AbstractComponent implements IComponent {
+
+    protected static final String EQUALS = "=="; //$NON-NLS-1$
+
+    protected static final String DEFAULT_COLOR = "255;255;255"; //$NON-NLS-1$
+
+    protected static final String BUILTIN = "BUILT_IN"; //$NON-NLS-1$
+
+    protected static final String REPOSITORY = "REPOSITORY"; //$NON-NLS-1$
+
+    protected static final String TNS_FILE = "USE_TNS_FILE"; //$NON-NLS-1$
+
+    protected static final String TEXT_BUILTIN = Messages.getString("EmfComponent.builtIn"); //$NON-NLS-1$
+
+    protected static final String TEXT_REPOSITORY = Messages.getString("EmfComponent.repository"); //$NON-NLS-1$
+
+    protected static final String TEXT_TNS_FILE = Messages.getString("EmfComponent.tnsfile"); //$NON-NLS-1$
+
+    protected static final String TSTATCATCHER_NAME = "tStatCatcher"; //$NON-NLS-1$
+
+    protected static final String ENCODING_TYPE_UTF_8 = "UTF-8"; //$NON-NLS-1$
+
+    protected static final String ENCODING_TYPE_ISO_8859_15 = "ISO-8859-15"; //$NON-NLS-1$
+
+    protected static final String ENCODING_TYPE_CUSTOM = "CUSTOM"; //$NON-NLS-1$
+
+    protected static final String STRING_TYPE = "String"; //$NON-NLS-1$
+
+    protected static final boolean ADVANCED_PROPERTY = true;
+
+    protected static final boolean NORMAL_PROPERTY = false;
+
+    protected List<ECodePart> codePartListX;
+
+    protected Map<String, ImageDescriptor> imageRegistry = new HashMap<String, ImageDescriptor>();
 
     private String paletteType;
 
@@ -160,6 +200,26 @@ public abstract class AbstractComponent implements IComponent {
     @Override
     public boolean isAllowedPropagated() {
         return true;
+    }
+
+    public void initNodePropertiesFromSerialized(INode node, String serialized) {
+
+    }
+
+    public void initParamPropertiesFromSerialized(IElementParameter param, String serialized) {
+        // nothing by default
+    }
+
+    public Object getElementParameterValue(IElementParameter param) {
+        return null;
+    }
+
+    public Object genericFromSerialized(String serialized, String name) {
+        return null;
+    }
+
+    public String genericToSerialized(IElementParameter param) {
+        return null;
     }
 
 }

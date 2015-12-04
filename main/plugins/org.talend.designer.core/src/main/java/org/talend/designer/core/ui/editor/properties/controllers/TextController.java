@@ -220,9 +220,9 @@ public class TextController extends AbstractElementPropertySectionController {
             if (!value.equals(labelText.getText())) {
                 // see feature 0025
                 if (isPasswordParam(param)) {
-                    labelText.setText(TalendTextUtils.hidePassword((String) value));
+                    labelText.setText(TalendTextUtils.hidePassword(value.toString()));
                 } else {
-                    labelText.setText((String) value);
+                    labelText.setText(value.toString());
                 }
 
                 valueChanged = true;
@@ -291,7 +291,7 @@ public class TextController extends AbstractElementPropertySectionController {
      * @return
      */
     protected boolean isPasswordParam(final IElementParameter parameter) {
-        if (ContextParameterUtils.containContextVariables((String) parameter.getValue())) {
+        if (ContextParameterUtils.containContextVariables(parameter.getValue().toString())) {
             return false;
         }
 
