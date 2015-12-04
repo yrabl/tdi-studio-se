@@ -91,11 +91,12 @@
             mvn_uri="mvn:org.talend.libraries/javax.ws.rs-api-2.0-m10/6.0.0">
         </libraryNeeded>
         <libraryNeeded
-            context=""
-            id="wsdl4j-1.6.3.jar"
-            name="wsdl4j-1.6.3.jar"
-            mvn_uri="mvn:org.talend.libraries/wsdl4j-1.6.3/6.0.0"
-            bundleID="org.apache.servicemix.bundles.wsdl4j">
+              bundleID="org.apache.servicemix.bundles.wsdl4j"
+              context="plugin:org.talend.libraries.apache.cxf"
+              id="wsdl4j-1.6.3.jar"
+              mvn_uri="mvn:org.talend.libraries/wsdl4j-1.6.3/6.0.0"
+              name="wsdl4j-1.6.3.jar"
+              uripath="platform:/plugin/org.talend.libraries.apache.cxf/lib/wsdl4j-1.6.3.jar">
         </libraryNeeded>
         <libraryNeeded
             context="Third party library to connect to Windows Azure"
@@ -525,12 +526,6 @@
     	</libraryNeeded>
 
     	<!-- HDP_2_3 libraries -->
-        <libraryNeeded
-            context="plugin:org.talend.libraries.asm"
-            id="asm-3.2.jar"
-            name="asm-3.2.jar" mvn_uri="mvn:org.talend.libraries/asm-3.2/6.1.0"
-            uripath="platform:/plugin/org.talend.libraries.asm/lib/asm-3.2.jar">
-        </libraryNeeded>
 
         <libraryNeeded
             context="plugin:org.talend.libraries.hadoop.hdp.2.3"
@@ -1854,9 +1849,11 @@
             bundleID="" />
 
 	   	<libraryNeeded
-	   		context="plugin:org.talend.libraries.hadoop.cloudera.cdh5.1"
-        	id="jersey-core-1.9.jar"
-         	name="jersey-core-1.9.jar" mvn_uri="mvn:org.talend.libraries/jersey-core-1.9/6.0.0" >
+           context="plugin:org.talend.libraries.hadoop.cloudera.cdh5.1"
+           id="jersey-core-1.9.jar"
+           mvn_uri="mvn:org.talend.libraries/jersey-core-1.9/6.0.0"
+           name="jersey-core-1.9.jar"
+           required="true">
     	</libraryNeeded>
 
     	<libraryNeeded
@@ -2120,7 +2117,7 @@
 	   		context="plugin:org.talend.libraries.hadoop.mapr.3.1.0"
         	id="json-20080701.jar"
          	name="json-20080701.jar" mvn_uri="mvn:org.talend.libraries/json-20080701/6.0.0"
-         	uripath="platform:/plugin/org.talend.libraries.hadoop.mapr.3.1.0/lib/json-20080701.jar">
+         	uripath="platform:/plugin/org.talend.libraries.hadoop/lib/json-20080701.jar">
     	</libraryNeeded>
 
     	<libraryNeeded
@@ -2189,7 +2186,7 @@
             context="plugin:org.talend.libraries.hadoop.hdp.2.1"
             id="jettison-1.3.4.jar"
             name="jettison-1.3.4.jar" mvn_uri="mvn:org.talend.libraries/jettison-1.3.4/6.0.0"
-            uripath="platform:/plugin/org.talend.libraries.hadoop.hdp.2.1/lib/jettison-1.3.4.jar">
+            uripath="platform:/plugin/org.talend.libraries.hadoop/lib/jettison-1.3.4.jar">
         </libraryNeeded>
         <libraryNeeded
             context="plugin:org.talend.libraries.hadoop.hdp.2.1"
@@ -2563,12 +2560,6 @@
             uripath="platform:/plugin/org.talend.libraries.hadoop.hdp.2.2/lib/tezServer/api-util-1.0.0-M20.jar">
         </libraryNeeded>
         <libraryNeeded
-            id="asm-3.1.jar"
-            name="asm-3.1.jar" mvn_uri="mvn:org.talend.libraries/asm-3.1/6.0.0"
-            context="plugin:org.talend.libraries.hadoop.hdp.2.2"
-            uripath="platform:/plugin/org.talend.libraries.hadoop.hdp.2.2/lib/tezServer/asm-3.1.jar">
-        </libraryNeeded>
-        <libraryNeeded
             id="avro-1.7.4.jar"
             name="avro-1.7.4.jar" mvn_uri="mvn:org.talend.libraries/avro-1.7.4/6.0.0"
             context="plugin:org.talend.libraries.hadoop.hdp.2.2"
@@ -2737,22 +2728,28 @@
             uripath="platform:/plugin/org.talend.libraries.hadoop.hdp.2.2/lib/tezServer/javax.inject-1.jar">
         </libraryNeeded>
         <libraryNeeded
-            id="jaxb-impl-2.2.3-1.jar"
-            name="jaxb-impl-2.2.3-1.jar" mvn_uri="mvn:org.talend.libraries/jaxb-impl-2.2.3-1/6.0.0"
-            context="plugin:org.talend.libraries.hadoop.hdp.2.2"
-            uripath="platform:/plugin/org.talend.libraries.hadoop.hdp.2.2/lib/tezServer/jaxb-impl-2.2.3-1.jar">
+              context="plugin:org.talend.libraries.hadoop.hdp.2.2"
+              id="jaxb-impl-2.2.3-1.jar"
+              mvn_uri="mvn:org.talend.libraries/jaxb-impl-2.2.3-1/6.0.0"
+              name="jaxb-impl-2.2.3-1.jar"
+              required="true"
+              uripath="platform:/plugin/org.talend.libraries.hadoop.hdp.2.2/lib/tezServer/jaxb-impl-2.2.3-1.jar">
         </libraryNeeded>
         <libraryNeeded
-            id="jersey-client-1.9.jar"
-            name="jersey-client-1.9.jar" mvn_uri="mvn:org.talend.libraries/jersey-client-1.9/6.0.0"
-            context="plugin:org.talend.libraries.hadoop.hdp.2.2"
-            uripath="platform:/plugin/org.talend.libraries.hadoop.hdp.2.2/lib/tezServer/jersey-client-1.9.jar">
+              context="plugin:org.talend.libraries.hadoop.hdp.2.2"
+              id="jersey-client-1.9.jar"
+              mvn_uri="mvn:org.talend.libraries/jersey-client-1.9/6.0.0"
+              name="jersey-client-1.9.jar"
+              required="true"
+              uripath="platform:/plugin/org.talend.libraries.hadoop.hdp.2.2/lib/tezServer/jersey-client-1.9.jar">
         </libraryNeeded>
         <libraryNeeded
-            id="jersey-core-1.9.jar"
-            name="jersey-core-1.9.jar" mvn_uri="mvn:org.talend.libraries/jersey-core-1.9/6.0.0"
-            context="plugin:org.talend.libraries.hadoop.hdp.2.2"
-            uripath="platform:/plugin/org.talend.libraries.hadoop.hdp.2.2/lib/tezServer/jersey-core-1.9.jar">
+              context="plugin:org.talend.libraries.hadoop.hdp.2.2"
+              id="jersey-core-1.9.jar"
+              mvn_uri="mvn:org.talend.libraries/jersey-core-1.9/6.0.0"
+              name="jersey-core-1.9.jar"
+              required="true"
+              uripath="platform:/plugin/org.talend.libraries.hadoop.hdp.2.2/lib/tezServer/jersey-core-1.9.jar">
         </libraryNeeded>
         <libraryNeeded
             id="jersey-guice-1.9.jar"
@@ -8156,7 +8153,8 @@
               id="jsr250-api-1.0.jar"
               mvn_uri="mvn:org.talend.libraries/jsr250-api-1.0/6.0.0"
               name="jsr250-api-1.0.jar"
-              required="true">
+              required="true"
+              uripath="platform:/plugin/org.talend.repository.hadoopcluster.configurator/lib/jsr250-api-1.0.jar">
         </libraryNeeded>
         <libraryNeeded
               context="plugin:org.talend.libraries.apache.axis2"
@@ -8256,6 +8254,14 @@
               mvn_uri="mvn:org.talend.libraries/jts-1.9/6.0.0"
               name="jts-1.9.jar"
               required="true">
+        </libraryNeeded>
+        <libraryNeeded
+              context="plugin:org.talend.libraries.apache.axis2"
+              id="activation-1.1.jar"
+              mvn_uri="mvn:org.talend.libraries/activation-1.1/6.0.0"
+              name="activation-1.1.jar"
+              required="true"
+              uripath="platform:/plugin/org.talend.libraries.apache.axis2/lib/activation-1.1.jar">
         </libraryNeeded>
 	</extension>
 
