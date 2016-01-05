@@ -38,8 +38,8 @@ import org.talend.cwm.relational.TdColumn;
 import org.talend.repository.model.RepositoryNode;
 import org.talend.sqlbuilder.Messages;
 import org.talend.sqlbuilder.SqlBuilderPlugin;
-import org.talend.sqlbuilder.dbstructure.RepositoryNodeType;
 import org.talend.sqlbuilder.dbstructure.DBTreeProvider.MetadataTableRepositoryObject;
+import org.talend.sqlbuilder.dbstructure.RepositoryNodeType;
 import org.talend.sqlbuilder.repository.utility.SQLBuilderRepositoryNodeManager;
 import org.talend.sqlbuilder.sessiontree.model.SessionTreeNode;
 
@@ -138,7 +138,7 @@ public class TableNode extends AbstractNode {
     /**
      * @return List of column names for this table.
      */
-    @SuppressWarnings("unchecked")//$NON-NLS-1$
+    @SuppressWarnings("unchecked")
     public List getColumnNames() {
 
         if (pcolumnNames == null) {
@@ -162,7 +162,7 @@ public class TableNode extends AbstractNode {
     /**
      * @return List of column names for this table.
      */
-    @SuppressWarnings("unchecked")//$NON-NLS-1$
+    @SuppressWarnings("unchecked")
     public List getForeignKeyNames() {
 
         if (pforeignKeyNames == null) {
@@ -186,7 +186,7 @@ public class TableNode extends AbstractNode {
     /**
      * @return List of column names for this table.
      */
-    @SuppressWarnings("unchecked")//$NON-NLS-1$
+    @SuppressWarnings("unchecked")
     public List getPrimaryKeyNames() {
 
         if (pprimaryKeyNames == null) {
@@ -214,6 +214,7 @@ public class TableNode extends AbstractNode {
     /**
      * @return Qualified table name
      */
+    @Override
     public String getQualifiedName() {
 
         if (ptableInfo == null) {
@@ -245,6 +246,7 @@ public class TableNode extends AbstractNode {
      * @return Type.
      * @see org.talend.sqlbuilder.dbstructure.nodes.INode#getType()
      */
+    @Override
     public String getType() {
 
         return ptableInfo.getType();
@@ -253,6 +255,7 @@ public class TableNode extends AbstractNode {
     /**
      * @return UniqueIdentifier.
      */
+    @Override
     public String getUniqueIdentifier() {
 
         return getQualifiedName();
@@ -261,6 +264,7 @@ public class TableNode extends AbstractNode {
     /**
      * @return isEndNode.
      */
+    @Override
     public boolean isEndNode() {
 
         return false;
@@ -295,6 +299,7 @@ public class TableNode extends AbstractNode {
      * 
      * @see org.talend.sqlbuilder.dbstructure.nodes.AbstractNode#loadChildren()
      */
+    @Override
     public void loadChildren() {
 
         if (ptableInfo == null) {
@@ -411,7 +416,13 @@ public class TableNode extends AbstractNode {
         // Retrive metadataColumns from Database
         IMetadataConnection iMetadataConnection = ConvertionHelper.convert(connection);
         List<TdColumn> metadataColumns = new ArrayList<TdColumn>();
-        metadataColumns = ExtractMetaDataFromDataBase.returnMetadataColumnsFormTable(iMetadataConnection, getLabelText());
+        try {
+            metadataColumns = ExtractMetaDataFromDataBase.returnMetadataColumnsFormTable(iMetadataConnection, getLabelText());
+        } catch (Exception e) {
+            SqlBuilderPlugin.log(e.getMessage(), e);
+            return false;
+
+        }
         Iterator iterate = metadataColumns.iterator();
 
         while (iterate.hasNext()) {
@@ -505,7 +516,7 @@ public class TableNode extends AbstractNode {
      * @return columns
      * @exception
      */
-    @SuppressWarnings("deprecation")//$NON-NLS-1$
+    @SuppressWarnings("deprecation")
     public static EList getColumns(RepositoryNode repositoryNode) {
         return getMetadataTable(repositoryNode).getColumns();
     }
@@ -517,7 +528,7 @@ public class TableNode extends AbstractNode {
      * @return columns
      * @exception
      */
-    @SuppressWarnings("deprecation")//$NON-NLS-1$
+    @SuppressWarnings("deprecation")
     public static MetadataTable getMetadataTable(RepositoryNode repositoryNode) {
         RepositoryNodeType type = SQLBuilderRepositoryNodeManager.getRepositoryType(repositoryNode);
         if (type != RepositoryNodeType.TABLE) {

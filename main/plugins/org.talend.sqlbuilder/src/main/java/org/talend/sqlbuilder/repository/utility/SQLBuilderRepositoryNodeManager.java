@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.talend.commons.exception.PersistenceException;
@@ -81,7 +84,6 @@ import org.talend.sqlbuilder.editors.MultiPageSqlBuilderEditor;
 import org.talend.sqlbuilder.ui.AbstractSQLEditorComposite;
 import org.talend.sqlbuilder.ui.SQLBuilderDialog;
 import org.talend.utils.sql.ConnectionUtils;
-
 import orgomg.cwm.resource.relational.Catalog;
 import orgomg.cwm.resource.relational.Schema;
 
@@ -486,9 +488,14 @@ public class SQLBuilderRepositoryNodeManager {
      * @param iMetadataConnection
      * @param tablesFromDB
      * @param metadataColumn
+     * @throws SQLException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws ClassNotFoundException
      */
     private void modifyOneColumnFromDB(IMetadataConnection iMetadataConnection, List<MetadataTable> tablesFromDB,
-            MetadataColumn metadataColumn) {
+            MetadataColumn metadataColumn) throws ClassNotFoundException, InstantiationException, IllegalAccessException,
+            SQLException {
         MetadataTable tableFromDB = null;
         for (MetadataTable table : tablesFromDB) {
             if (table.getSourceName().equals(metadataColumn.getTable().getSourceName())) {
@@ -497,8 +504,8 @@ public class SQLBuilderRepositoryNodeManager {
         }
         if (tableFromDB != null) {
             List<MetadataColumn> columnsFromDB = new ArrayList<MetadataColumn>();
-            columnsFromDB.addAll(
-                    ExtractMetaDataFromDataBase.returnMetadataColumnsFormTable(iMetadataConnection, tableFromDB.getSourceName()));
+            columnsFromDB.addAll(ExtractMetaDataFromDataBase.returnMetadataColumnsFormTable(iMetadataConnection,
+                    tableFromDB.getSourceName()));
             modifyOldOneColumnFromDB(columnsFromDB, metadataColumn);
         }
     }
@@ -509,10 +516,15 @@ public class SQLBuilderRepositoryNodeManager {
      * @param tablesFromEMF
      * @param iMetadataConnection
      * @param tablesFromDB
+     * @throws SQLException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws ClassNotFoundException
      */
     @SuppressWarnings("unchecked")
     private void modifyOldConnection(List<MetadataTable> tablesFromEMF, IMetadataConnection iMetadataConnection,
-            List<MetadataTable> tablesFromDB, RepositoryNode oldNode) {
+            List<MetadataTable> tablesFromDB, RepositoryNode oldNode) throws ClassNotFoundException, InstantiationException,
+            IllegalAccessException, SQLException {
         for (MetadataTable tableFromDB : tablesFromDB) {
             MetadataTable tableFromModel = null;
             for (MetadataTable tableFromEMF : tablesFromEMF) {
@@ -527,9 +539,9 @@ public class SQLBuilderRepositoryNodeManager {
                 List<MetadataColumn> columnsFromDB = new ArrayList<MetadataColumn>();
                 columnsFromDB.addAll(ExtractMetaDataFromDataBase.returnMetadataColumnsFormTable(iMetadataConnection,
                         tableFromDB.getSourceName()));
-
                 List<MetadataColumn> columnsFromEMF = tableFromModel.getColumns();
                 fixedColumns(columnsFromDB, columnsFromEMF);
+
             }
         }
         fixedTables(tablesFromDB, tablesFromEMF, iMetadataConnection, oldNode);
@@ -650,8 +662,8 @@ public class SQLBuilderRepositoryNodeManager {
         }
         DatabaseConnectionItem item = PropertiesFactory.eINSTANCE.createDatabaseConnectionItem();
         Property connectionProperty = PropertiesFactory.eINSTANCE.createProperty();
-        connectionProperty
-                .setAuthor(((RepositoryContext) CorePlugin.getContext().getProperty(Context.REPOSITORY_CONTEXT_KEY)).getUser());
+        connectionProperty.setAuthor(((RepositoryContext) CorePlugin.getContext().getProperty(Context.REPOSITORY_CONTEXT_KEY))
+                .getUser());
         connectionProperty.setVersion(VersionUtils.DEFAULT_VERSION);
         connectionProperty.setStatusCode(""); //$NON-NLS-1$
 
@@ -862,8 +874,8 @@ public class SQLBuilderRepositoryNodeManager {
      * @throws InstantiationException
      * @throws ClassNotFoundException
      */
-    public DatabaseMetaData getDatabaseMetaData(IMetadataConnection iMetadataConnection)
-            throws ClassNotFoundException, InstantiationException, IllegalAccessException, SQLException {
+    public DatabaseMetaData getDatabaseMetaData(IMetadataConnection iMetadataConnection) throws ClassNotFoundException,
+            InstantiationException, IllegalAccessException, SQLException {
         ExtractMetaDataUtils extractMeta = ExtractMetaDataUtils.getInstance();
         extractMeta.getConnection(iMetadataConnection.getDbType(), iMetadataConnection.getUrl(),
                 iMetadataConnection.getUsername(), iMetadataConnection.getPassword(), iMetadataConnection.getDatabase(),
@@ -1213,32 +1225,41 @@ public class SQLBuilderRepositoryNodeManager {
 
     @SuppressWarnings("unchecked")
     private static void saveEMFMetadataColumn(String id, List<MetadataColumn> columnNodes) {
-        DatabaseConnectionItem item = getEMFItem(id);
-        final DatabaseConnection connection = (DatabaseConnection) item.getConnection();
-        IMetadataConnection iMetadataConnection = ConvertionHelper.convert(connection);
-        Set<MetadataTable> tableset = ConnectionHelper.getTables(connection);
-        List<MetadataTable> tables = new ArrayList<MetadataTable>();
-        tables.addAll(tableset);
-        List<MetadataColumn> emfCols = new ArrayList<MetadataColumn>();
-        List<MetadataColumn> dbCols = new ArrayList<MetadataColumn>();
-        for (MetadataColumn col : columnNodes) {
-            for (MetadataTable table : tables) {
-                if (table.getLabel().equals(col.getTable().getLabel())) {
-                    List<TdColumn> returnCols = ExtractMetaDataFromDataBase.returnMetadataColumnsFormTable(iMetadataConnection,
-                            table.getSourceName());
-                    for (MetadataColumn emfcolumn : table.getColumns()) {
-                        for (MetadataColumn column : returnCols) {
-                            if (emfcolumn.getLabel().equals(col.getLabel()) && column.getLabel().equals(col.getOriginalField())) {
-                                emfCols.add(emfcolumn);
-                                dbCols.add(column);
+        try {
+            DatabaseConnectionItem item = getEMFItem(id);
+            final DatabaseConnection connection = (DatabaseConnection) item.getConnection();
+            IMetadataConnection iMetadataConnection = ConvertionHelper.convert(connection);
+            Set<MetadataTable> tableset = ConnectionHelper.getTables(connection);
+            List<MetadataTable> tables = new ArrayList<MetadataTable>();
+            tables.addAll(tableset);
+            List<MetadataColumn> emfCols = new ArrayList<MetadataColumn>();
+            List<MetadataColumn> dbCols = new ArrayList<MetadataColumn>();
+            for (MetadataColumn col : columnNodes) {
+                for (MetadataTable table : tables) {
+                    if (table.getLabel().equals(col.getTable().getLabel())) {
+                        List<TdColumn> returnCols = ExtractMetaDataFromDataBase.returnMetadataColumnsFormTable(
+                                iMetadataConnection, table.getSourceName());
+                        for (MetadataColumn emfcolumn : table.getColumns()) {
+                            for (MetadataColumn column : returnCols) {
+                                if (emfcolumn.getLabel().equals(col.getLabel())
+                                        && column.getLabel().equals(col.getOriginalField())) {
+                                    emfCols.add(emfcolumn);
+                                    dbCols.add(column);
+                                }
                             }
                         }
                     }
                 }
             }
+            saveOneMetadataColumn(emfCols, columnNodes, dbCols);
+            saveMetaData(item);
+        } catch (Exception e) {
+            ExceptionHandler.process(e);
+            Status status = new Status(IStatus.ERROR, SqlBuilderPlugin.PLUGIN_ID, 0, "Error encountered when retrieving schema.",
+                    e);
+            ErrorDialog errorDialog = new ErrorDialog(null, "Error", null, status, IStatus.ERROR);
+            errorDialog.open();
         }
-        saveOneMetadataColumn(emfCols, columnNodes, dbCols);
-        saveMetaData(item);
     }
 
     @SuppressWarnings("unchecked")
