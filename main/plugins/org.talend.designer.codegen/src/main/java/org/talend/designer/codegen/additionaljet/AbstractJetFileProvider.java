@@ -20,7 +20,7 @@ import java.net.URL;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.talend.commons.ui.runtime.exception.ExceptionHandler;
+import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.io.FilesUtils;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 
@@ -48,6 +48,7 @@ public abstract class AbstractJetFileProvider {
                 try {
                     final FileFilter sourceFolderFilter = new FileFilter() {
 
+                        @Override
                         public boolean accept(File pathname) {
                             return false;
                         }

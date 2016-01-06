@@ -17,8 +17,8 @@ import java.beans.PropertyChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.talend.commons.CommonsPlugin;
 import org.talend.commons.runtime.model.components.IComponentConstants;
-import org.talend.commons.ui.runtime.CommonUIPlugin;
 import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ILibraryManagerService;
@@ -136,7 +136,7 @@ public class CodeGeneratorService implements ICodeGeneratorService {
     public Job refreshTemplates() {
         Element oldComponent = null;
         IComponentSettingsView viewer = null;
-        if (!CommonUIPlugin.isFullyHeadless()) {
+        if (!CommonsPlugin.isHeadless()) {
             // TDI-25866:In case select a component and sctrl+shift+f3,need clean its componentSetting view
             IWorkbenchWindow wwindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             if (wwindow != null && wwindow.getActivePage() != null) {
@@ -163,7 +163,7 @@ public class CodeGeneratorService implements ICodeGeneratorService {
         if (oldComponent != null && viewer != null) {
             viewer.setElement(oldComponent);
         }
-        if (!CommonUIPlugin.isFullyHeadless()) {
+        if (!CommonsPlugin.isHeadless()) {
             CorePlugin.getDefault().getDesignerCoreService()
                     .synchronizeDesignerUI(new PropertyChangeEvent(this, IComponentConstants.NORMAL, null, null));
         }

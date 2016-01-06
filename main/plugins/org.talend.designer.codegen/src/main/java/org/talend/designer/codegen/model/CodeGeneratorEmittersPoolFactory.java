@@ -50,7 +50,6 @@ import org.talend.commons.exception.BusinessException;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.runtime.model.components.IComponentConstants;
 import org.talend.commons.runtime.utils.io.IOUtils;
-import org.talend.commons.ui.runtime.CommonUIPlugin;
 import org.talend.commons.utils.StringUtils;
 import org.talend.commons.utils.time.TimeMeasure;
 import org.talend.core.CorePlugin;
@@ -213,7 +212,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                 monitorWrap.done();
                 TimeMeasure.step("initialize Jet Emitters", "initialize and generate each jet emitters"); //$NON-NLS-1$ //$NON-NLS-2$
 
-                if (!CommonUIPlugin.isFullyHeadless()) {
+                if (!CommonsPlugin.isHeadless()) {
                     if (firstTime) {
                         Job job = new Job(Messages.getString("CodeGeneratorEmittersPoolFactory.updatePaletteForEditors")) { //$NON-NLS-1$
 
@@ -616,7 +615,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                 TalendJetEmitter emitter = new TalendJetEmitter(jetBean, dummyEmitter.getTalendEclipseHelper());
                 // wzhang modified to fix bug 11439
                 if (monitorWrap.isCanceled()) {
-                    if (!CommonUIPlugin.isFullyHeadless()) {
+                    if (!CommonsPlugin.isHeadless()) {
                         Display.getDefault().syncExec(new Runnable() {
 
                             @Override

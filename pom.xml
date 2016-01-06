@@ -81,6 +81,7 @@
 		<module>main/plugins/org.talend.designer.alfrescooutput</module>
 		<module>main/plugins/org.talend.designer.business.diagram</module>
 		<module>main/plugins/org.talend.designer.codegen</module>
+		<module>main/plugins/org.talend.designer.codegen.ui</module>
 		<module>main/plugins/org.talend.designer.components.exchange</module>
 		<module>main/plugins/org.talend.designer.components.libs</module>
 		<module>main/plugins/org.talend.designer.components.localprovider</module>

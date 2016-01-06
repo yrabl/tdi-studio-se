@@ -10,11 +10,12 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.designer.codegen.components.ui;
+package org.talend.designer.codegen.ui.preference;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.talend.designer.codegen.CodeGeneratorActivator;
+import org.talend.designer.codegen.components.ui.IComponentPreferenceConstant;
 
 /**
  * DOC zli class global comment. Detailled comment
@@ -24,6 +25,7 @@ public class ComponentPreferenceInitializer extends AbstractPreferenceInitialize
     public ComponentPreferenceInitializer() {
     }
 
+    @Override
     public void initializeDefaultPreferences() {
         IPreferenceStore preferenceStore = CodeGeneratorActivator.getDefault().getPreferenceStore();
 

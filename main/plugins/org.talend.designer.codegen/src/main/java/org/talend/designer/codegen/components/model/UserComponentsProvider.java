@@ -28,7 +28,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.osgi.framework.Bundle;
-import org.talend.commons.ui.runtime.exception.ExceptionHandler;
+import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.io.FilesUtils;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.PluginChecker;
@@ -112,10 +112,11 @@ public class UserComponentsProvider extends AbstractComponentsProvider {
                 File source = new File(sourcePath);
                 if (source.exists()) {
                     for (File file : source.listFiles(ff)) {
-                        if (file.isDirectory())
+                        if (file.isDirectory()) {
                             FilesUtils.copyFolder(file,
                                     new File(installationFolder.getAbsolutePath() + File.separator + file.getName()), true, ff,
                                     null, true, false);
+                        }
                     }
                 }
             }

@@ -28,4 +28,5 @@ public interface IComponentPreferenceConstant {
     public static final String USER_COMPONENTS_FOLDER = "USER_COMPONENTS_FOLDER"; //$NON-NLS-1$
 
     public static final String LINK_STYLE = "LINK_STYLE"; //$NON-NLS-1$
+
 }

@@ -25,7 +25,6 @@ import org.talend.commons.exception.BusinessException;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.ui.services.IComponentsLocalProviderService;
 import org.talend.designer.codegen.components.model.ComponentFileChecker;
-import org.talend.designer.codegen.components.ui.ComponenttRunJobPreferencePage;
 import org.talend.designer.codegen.components.ui.IComponentPreferenceConstant;
 import org.talend.designer.codegen.i18n.Messages;
 
@@ -42,10 +41,12 @@ public class ComponentsLocalProviderService implements IComponentsLocalProviderS
      * 
      * @see org.talend.designer.components.IComponentsLocalProviderService#isAvoidToShowJobAfterDoubleClick()
      */
+    @Override
     public boolean isAvoidToShowJobAfterDoubleClick() {
-        return CodeGeneratorActivator.getDefault().getPreferenceStore().getBoolean(ComponenttRunJobPreferencePage.IS_AVOID);
+        return CodeGeneratorActivator.getDefault().getPreferenceStore().getBoolean(IComponentPreferenceConstant.IS_AVOID);
     }
 
+    @Override
     public boolean isAvoidToShowJobletAfterDoubleClick() {
         return CodeGeneratorActivator.getDefault().getPreferenceStore().getBoolean(IComponentPreferenceConstant.IS_AVOID_JOBLET);
     }
@@ -55,10 +56,12 @@ public class ComponentsLocalProviderService implements IComponentsLocalProviderS
      * 
      * @see org.talend.designer.components.IComponentsLocalProviderService#getPreferenceStore()
      */
+    @Override
     public IPreferenceStore getPreferenceStore() {
         return CodeGeneratorActivator.getDefault().getPreferenceStore();
     }
 
+    @Override
     public void setPreferenceStoreValue(String key, Object value) {
         if (key != null) {
             if (value != null) {
@@ -78,10 +81,12 @@ public class ComponentsLocalProviderService implements IComponentsLocalProviderS
      * 
      * @see org.talend.designer.components.IComponentsLocalProviderService#getPlugin()
      */
+    @Override
     public AbstractUIPlugin getPlugin() {
         return CodeGeneratorActivator.getDefault();
     }
 
+    @Override
     public boolean validateComponent(String componentFolder, ECodeLanguage language) {
         if (componentFolder != null && language != null) {
             File folder = new File(componentFolder);
@@ -93,6 +98,7 @@ public class ComponentsLocalProviderService implements IComponentsLocalProviderS
                     final BusinessException tempE = e;
                     Display.getDefault().syncExec(new Runnable() {
 
+                        @Override
                         public void run() {
                             Status status = new Status(IStatus.ERROR, CodeGeneratorActivator.PLUGIN_ID, 1, tempE.getMessage(),
                                     tempE.getCause());

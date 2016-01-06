@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+     <extension
+             point="org.eclipse.ui.preferencePages">
+          <page
+                category="org.talend.core.prefs"
+                class="org.talend.designer.codegen.ui.preference.ComponentsPreferencePage"
+                id="org.talend.designer.codegen.components.preference"
+                name="%components">
+          </page>
+          <page
+                category="org.talend.designer.codegen.components.preference"
+                class="org.talend.core.ui.component.preference.ComponentsFormatPreferencePage"
+                id="org.talend.designer.codegen.components.preference.format"
+                name="%format">
+          </page>
+       </extension>
+   
+       <extension
+             point="org.eclipse.core.runtime.preferences">
+          <initializer
+                class="org.talend.designer.codegen.components.ui.ComponentPreferenceInitializer">
+          </initializer>
+       </extension>
+
+</plugin>

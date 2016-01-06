@@ -22,7 +22,7 @@ import java.util.List;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.talend.commons.ui.runtime.exception.ExceptionHandler;
+import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.io.FilesUtils;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.designer.codegen.CodeGeneratorActivator;
@@ -30,7 +30,6 @@ import org.talend.designer.codegen.additionaljet.AbstractJetFileProvider;
 import org.talend.designer.codegen.additionaljet.CustomizeJetFilesProviderManager;
 import org.talend.designer.codegen.config.EInternalTemplate;
 import org.talend.designer.codegen.config.TemplateUtil;
-import org.talend.utils.files.FileUtils;
 
 /**
  * Create a list of Available templates in the application.
@@ -97,6 +96,7 @@ public class CodeGeneratorInternalTemplatesFactory {
 
             final FileFilter sourceFolderFilter = new FileFilter() {
 
+                @Override
                 public boolean accept(File pathname) {
                     return false;
                 }
@@ -127,17 +127,21 @@ public class CodeGeneratorInternalTemplatesFactory {
             file = new File(FileLocator.toFileURL(url).getPath());
             for (File f : file.listFiles(new FileFilter() {
 
+                @Override
                 public boolean accept(File pathname) {
-                    if (pathname.getName().contains(EInternalTemplate.HEADER_ADDITIONAL.toString()))
-                        if (pathname.getName().contains(language.getExtension() + TemplateUtil.TEMPLATE_EXT))
+                    if (pathname.getName().contains(EInternalTemplate.HEADER_ADDITIONAL.toString())) {
+                        if (pathname.getName().contains(language.getExtension() + TemplateUtil.TEMPLATE_EXT)) {
                             return true;
+                        }
+                    }
                     return false;
                 }
             })) {
                 if (f.exists()) {
                     TemplateUtil template = new TemplateUtil(f.getName().substring(0, f.getName().lastIndexOf(".")), "0.0.1");
-                    if (!templates.contains(template))
+                    if (!templates.contains(template)) {
                         templates.add(template);
+                    }
                 }
             }
         } catch (IOException e) {

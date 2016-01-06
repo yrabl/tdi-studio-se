@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.designer.codegen.components.ui;
+package org.talend.designer.codegen.ui.preference;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -45,7 +45,8 @@ import org.talend.core.GlobalServiceRegister;
 import org.talend.core.PluginChecker;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.ICodeGeneratorService;
-import org.talend.designer.codegen.i18n.Messages;
+import org.talend.designer.codegen.components.ui.IComponentPreferenceConstant;
+import org.talend.designer.codegen.ui.i18n.Messages;
 import org.talend.designer.core.DesignerPlugin;
 import org.talend.designer.core.assist.TalendEditorComponentCreationUtil;
 import org.talend.designer.core.ui.preferences.TalendDesignerPrefConstants;
