@@ -63,10 +63,10 @@ import org.talend.core.model.components.EComponentType;
 import org.talend.core.model.components.IComponent;
 import org.talend.core.model.components.IComponentFileNaming;
 import org.talend.core.model.components.IComponentsFactory;
+import org.talend.core.model.components.IComponentsService;
 import org.talend.core.model.repository.ExternalNodesFactory;
 import org.talend.core.model.temp.ECodePart;
 import org.talend.core.ui.branding.IBrandingService;
-import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.ICodeGeneratorService;
 import org.talend.designer.codegen.config.EInternalTemplate;
@@ -149,7 +149,8 @@ public final class CodeGeneratorEmittersPoolFactory {
                 templatesFactory.setCurrentLanguage(codeLanguage);
                 templatesFactory.init();
 
-                IComponentsFactory componentsFactory = ComponentsFactoryProvider.getInstance();
+                IComponentsFactory componentsFactory = ((IComponentsService) GlobalServiceRegister.getDefault().getService(
+                        IComponentsService.class)).getComponentsFactory();
 
                 long startTime = System.currentTimeMillis();
 
@@ -390,7 +391,8 @@ public final class CodeGeneratorEmittersPoolFactory {
     private static void initComponent(ECodeLanguage codeLanguage, List<JetBean> jetBeans, ECodePart codePart, IComponent component) {
 
         if (component.getAvailableCodeParts().contains(codePart)) {
-            IComponentFileNaming fileNamingInstance = ComponentsFactoryProvider.getFileNamingInstance();
+            IComponentFileNaming fileNamingInstance = ((IComponentsService) GlobalServiceRegister.getDefault().getService(
+                    IComponentsService.class)).getComponentFileNaming();
             String templateURI = component.getPathSource() + TemplateUtil.DIR_SEP + component.getName() + TemplateUtil.DIR_SEP
                     + fileNamingInstance.getJetFileName(component, codeLanguage.getExtension(), codePart);
             String componentsPath = IComponentsFactory.COMPONENTS_LOCATION;

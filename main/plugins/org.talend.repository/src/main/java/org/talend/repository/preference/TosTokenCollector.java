@@ -77,8 +77,6 @@ public class TosTokenCollector extends AbstractTokenCollector {
 
     private static final TokenKey TOS_COUNT_METADATAS = new TokenKey("tos.count.metadatas"); //$NON-NLS-1$
 
-    public static final int TOP_USED_COMPONENTS_MAX = 20;
-
     /**
      * ggu JobTokenCollector constructor comment.
      */
@@ -201,7 +199,7 @@ public class TosTokenCollector extends AbstractTokenCollector {
 
         // top 20 component
         jObject.put(TOS_JOB_TOP20_COMPONENTS.getKey(),
-                TokenInforUtil.convertTopComponents(numComponentMap, TOP_USED_COMPONENTS_MAX));
+                TokenInforUtil.convertTopComponents(numComponentMap, AbstractTokenCollector.TOP_USED_COMPONENTS_MAX));
 
         return jObject;
     }
@@ -264,7 +262,7 @@ public class TosTokenCollector extends AbstractTokenCollector {
 
         // top20
         propertiesObject.put(TOS_JOB_TOP20_COMPONENTS.getKey(),
-                TokenInforUtil.convertTopComponentsArray(numComponentMap, TOP_USED_COMPONENTS_MAX));
+                TokenInforUtil.convertTopComponentsArray(numComponentMap, AbstractTokenCollector.TOP_USED_COMPONENTS_MAX));
     }
 
 }

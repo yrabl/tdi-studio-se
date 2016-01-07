@@ -33,6 +33,7 @@ import org.talend.core.model.components.EComponentType;
 import org.talend.core.model.components.IComponent;
 import org.talend.core.model.components.IComponentFileNaming;
 import org.talend.core.model.components.IComponentsFactory;
+import org.talend.core.model.components.IComponentsService;
 import org.talend.core.model.process.EConnectionType;
 import org.talend.core.model.process.ElementParameterParser;
 import org.talend.core.model.process.IConnection;
@@ -45,7 +46,6 @@ import org.talend.core.model.process.IProcess;
 import org.talend.core.model.temp.ECodePart;
 import org.talend.core.model.temp.ETypeGen;
 import org.talend.core.ui.branding.IBrandingService;
-import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.designer.codegen.config.CloseBlocksCodeArgument;
 import org.talend.designer.codegen.config.CodeGeneratorArgument;
 import org.talend.designer.codegen.config.EInternalTemplate;
@@ -223,8 +223,7 @@ public class CodeGenerator implements ICodeGenerator {
                         componentsCode.append(generateTypedComponentCode(EInternalTemplate.SUBPROCESS_HEADER, subTree));
                         componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.BEGIN, null));
                         componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.MAIN, null));
-                        componentsCode.append(generateTypedComponentCode(EInternalTemplate.PART_ENDMAIN,
-                                subTree.getRootNode()));
+                        componentsCode.append(generateTypedComponentCode(EInternalTemplate.PART_ENDMAIN, subTree.getRootNode()));
                         componentsCode.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.END, null));
                         StringBuffer finallyPart = new StringBuffer();
                         finallyPart.append(generateComponentsCode(subTree, subTree.getRootNode(), ECodePart.FINALLY, null));
@@ -748,7 +747,8 @@ public class CodeGenerator implements ICodeGenerator {
                 content.append(generateTypedComponentCode(EInternalTemplate.PART_HEADER, node, part, incomingName, subProcess));
             }
 
-            IComponentFileNaming componentFileNaming = ComponentsFactoryProvider.getFileNamingInstance();
+            IComponentFileNaming componentFileNaming = ((IComponentsService) GlobalServiceRegister.getDefault().getService(
+                    IComponentsService.class)).getComponentFileNaming();
 
             IComponent component = node.getComponent();
             String templateURI = component.getPathSource() + TemplateUtil.DIR_SEP + node.getComponent().getName()
@@ -815,7 +815,8 @@ public class CodeGenerator implements ICodeGenerator {
         try {
             content.append(generateTypedComponentCode(EInternalTemplate.PART_HEADER, node, part));
 
-            IComponentFileNaming componentFileNaming = ComponentsFactoryProvider.getFileNamingInstance();
+            IComponentFileNaming componentFileNaming = ((IComponentsService) GlobalServiceRegister.getDefault().getService(
+                    IComponentsService.class)).getComponentFileNaming();
             String templateURI = node.getComponent().getPathSource() + TemplateUtil.DIR_SEP + node.getComponent().getName()
                     + TemplateUtil.DIR_SEP
                     + componentFileNaming.getJetFileName(node.getComponent(), language.getExtension(), part);

@@ -20,8 +20,23 @@
        <extension
              point="org.eclipse.core.runtime.preferences">
           <initializer
-                class="org.talend.designer.codegen.components.ui.ComponentPreferenceInitializer">
+                class="org.talend.designer.codegen.ui.preference.ComponentPreferenceInitializer">
           </initializer>
+       </extension>
+       <extension
+             point="org.talend.core.runtime.service">
+          <Service
+                class="org.talend.designer.codegen.ui.service.ComponentsLocalProviderService"
+                serviceId="ComponentsLocalProviderService">
+          </Service>
+       </extension>
+       <extension
+             point="org.talend.core.runtime.tokenInfo_provider">
+          <provider
+                collector="org.talend.designer.codegen.ui.token.UserComponentsTokenCollector"
+                id="org.talend.designer.codegen.UserComponentsprovider"
+                name="UserComponents">
+          </provider>
        </extension>
 
 </plugin>

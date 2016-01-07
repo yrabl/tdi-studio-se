@@ -68,7 +68,7 @@ import org.talend.core.model.components.IComponentsFactory;
 import org.talend.core.model.components.IComponentsHandler;
 import org.talend.core.ui.IJobletProviderService;
 import org.talend.core.ui.branding.IBrandingService;
-import org.talend.core.ui.images.CoreImageProvider;
+import org.talend.core.ui.services.IComponentsLocalProviderService;
 import org.talend.core.utils.TalendCacheUtils;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.additionaljet.ComponentsFactoryProviderManager;
@@ -844,7 +844,13 @@ public class ComponentsFactory implements IComponentsFactory {
     public void resetCache() {
         reset();
         if (!CommonsPlugin.isHeadless()) {
-            CoreImageProvider.clearComponentIconImages();
+            if (GlobalServiceRegister.getDefault().isServiceRegistered(IComponentsLocalProviderService.class)) {
+                IComponentsLocalProviderService service = (IComponentsLocalProviderService) GlobalServiceRegister.getDefault()
+                        .getService(IComponentsLocalProviderService.class);
+                if (service != null) {
+                    service.clearComponentIconImages();
+                }
+            }
         }
     }
 

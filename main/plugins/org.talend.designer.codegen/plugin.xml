@@ -29,10 +29,6 @@
       		serviceId="ICodeGeneratorService"
       		class="org.talend.designer.codegen.CodeGeneratorService"/>
       <Service
-            class="org.talend.designer.codegen.ComponentsLocalProviderService"
-            serviceId="ComponentsLocalProviderService">
-      </Service>
-      <Service
             class="org.talend.designer.codegen.components.model.ComponentsService"
             serviceId="IComponentsService">
       </Service>
@@ -53,14 +49,6 @@
             folderName="user"
             id="org.talend.designer.components.model.UserComponentsProvider">
       </ComponentsProvider>
-   </extension>
-   <extension
-         point="org.talend.core.runtime.tokenInfo_provider">
-      <provider
-            collector="org.talend.designer.codegen.components.model.UserComponentsTokenCollector"
-            id="org.talend.designer.codegen.UserComponentsprovider"
-            name="UserComponents">
-      </provider>
    </extension>
    
 </plugin>

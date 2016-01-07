@@ -41,9 +41,10 @@ import org.eclipse.core.runtime.Status;
 import org.osgi.framework.Bundle;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.runtime.utils.io.IOUtils;
+import org.talend.core.GlobalServiceRegister;
 import org.talend.core.model.components.ComponentCompilations;
 import org.talend.core.model.components.IComponentsFactory;
-import org.talend.core.ui.component.ComponentsFactoryProvider;
+import org.talend.core.model.components.IComponentsService;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.config.TemplateUtil;
 import org.talend.designer.codegen.i18n.Messages;
@@ -198,7 +199,8 @@ public final class JetSkeletonManager {
         JetSkeletonManager localInstance = JetSkeletonManager.getInstance();
         localInstance.load();
 
-        IComponentsFactory componentsFactory = ComponentsFactoryProvider.getInstance();
+        IComponentsFactory componentsFactory = ((IComponentsService) GlobalServiceRegister.getDefault().getService(
+                IComponentsService.class)).getComponentsFactory();
 
         List<String> skeletons = new ArrayList<String>();
         List<String> systemSkeletons = getSystemSkeletons();

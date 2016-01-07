@@ -29,7 +29,8 @@ public class ComponentsService implements IComponentsService {
 
     IComponentFileNaming componentsFileNaming = null;
 
-    public IComponentFileNaming getComponentFileNaming() {
+    @Override
+    public synchronized IComponentFileNaming getComponentFileNaming() {
         if (componentsFileNaming == null) {
             componentsFileNaming = ComponentFilesNaming.getInstance();
         }
@@ -41,7 +42,8 @@ public class ComponentsService implements IComponentsService {
      * 
      * @see org.talend.core.model.components.IComponentsService#getComponentsFactory()
      */
-    public IComponentsFactory getComponentsFactory() {
+    @Override
+    public synchronized IComponentsFactory getComponentsFactory() {
         if (componentsFactory == null) {
             componentsFactory = new ComponentsFactory();
         }

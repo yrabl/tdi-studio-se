@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.designer.codegen;
+package org.talend.designer.codegen.ui.service;
 
 import java.io.File;
 
@@ -23,10 +23,12 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.talend.commons.exception.BusinessException;
 import org.talend.core.language.ECodeLanguage;
+import org.talend.core.ui.images.CoreImageProvider;
 import org.talend.core.ui.services.IComponentsLocalProviderService;
+import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.components.model.ComponentFileChecker;
 import org.talend.designer.codegen.components.ui.IComponentPreferenceConstant;
-import org.talend.designer.codegen.i18n.Messages;
+import org.talend.designer.codegen.ui.i18n.Messages;
 
 /**
  * DOC Administrator class global comment. Detailled comment <br/>
@@ -114,5 +116,15 @@ public class ComponentsLocalProviderService implements IComponentsLocalProviderS
             }
         }
         return false;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.talend.core.ui.services.IComponentsLocalProviderService#clearComponentIconImages()
+     */
+    @Override
+    public void clearComponentIconImages() {
+        CoreImageProvider.clearComponentIconImages();
     }
 }

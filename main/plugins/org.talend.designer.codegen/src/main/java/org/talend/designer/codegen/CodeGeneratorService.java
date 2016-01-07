@@ -23,9 +23,9 @@ import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ILibraryManagerService;
 import org.talend.core.model.components.ComponentCompilations;
+import org.talend.core.model.components.IComponentsService;
 import org.talend.core.model.process.Element;
 import org.talend.core.model.process.IProcess;
-import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.core.views.IComponentSettingsView;
 import org.talend.designer.codegen.model.CodeGeneratorEmittersPoolFactory;
 import org.talend.designer.core.IDesignerCoreService;
@@ -149,7 +149,8 @@ public class CodeGeneratorService implements ICodeGeneratorService {
             }
         }
         ComponentCompilations.deleteMarkers();
-        ComponentsFactoryProvider.getInstance().resetCache();
+        ((IComponentsService) GlobalServiceRegister.getDefault().getService(IComponentsService.class)).getComponentsFactory()
+                .resetCache();
         ILibraryManagerService librairesManagerService = (ILibraryManagerService) GlobalServiceRegister.getDefault().getService(
                 ILibraryManagerService.class);
         librairesManagerService.clearCache();
