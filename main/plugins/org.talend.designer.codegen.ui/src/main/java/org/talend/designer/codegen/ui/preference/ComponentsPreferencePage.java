@@ -43,9 +43,9 @@ import org.talend.commons.ui.utils.workbench.preferences.ComboFieldEditor;
 import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.PluginChecker;
-import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.ICodeGeneratorService;
 import org.talend.designer.codegen.components.ui.IComponentPreferenceConstant;
+import org.talend.designer.codegen.ui.CodegenUiPlugin;
 import org.talend.designer.codegen.ui.i18n.Messages;
 import org.talend.designer.core.DesignerPlugin;
 import org.talend.designer.core.assist.TalendEditorComponentCreationUtil;
@@ -115,7 +115,7 @@ public class ComponentsPreferencePage extends FieldEditorPreferencePage implemen
 
     public ComponentsPreferencePage() {
         super(GRID);
-        setPreferenceStore(CodeGeneratorActivator.getDefault().getPreferenceStore());
+        setPreferenceStore(CodegenUiPlugin.getDefault().getPreferenceStore());
     }
 
     public void createFieldEditors2(Composite composite) {
@@ -376,7 +376,7 @@ public class ComponentsPreferencePage extends FieldEditorPreferencePage implemen
     @Override
     public boolean performOk() {
         boolean flag = super.performOk();
-        String newPath = CodeGeneratorActivator.getDefault().getPreferenceStore()
+        String newPath = CodegenUiPlugin.getDefault().getPreferenceStore()
                 .getString(IComponentPreferenceConstant.USER_COMPONENTS_FOLDER);
         if ("".equals(oldPath)) { //$NON-NLS-1$
             oldPath = null;

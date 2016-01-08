@@ -50,5 +50,11 @@
             id="org.talend.designer.components.model.UserComponentsProvider">
       </ComponentsProvider>
    </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.talend.designer.codegen.components.ui.ComponentPreferenceInitializer">
+      </initializer>
+   </extension>
    
 </plugin>

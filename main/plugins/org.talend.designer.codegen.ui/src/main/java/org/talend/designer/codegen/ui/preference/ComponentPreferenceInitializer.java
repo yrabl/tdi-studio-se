@@ -14,8 +14,8 @@ package org.talend.designer.codegen.ui.preference;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.components.ui.IComponentPreferenceConstant;
+import org.talend.designer.codegen.ui.CodegenUiPlugin;
 
 /**
  * DOC zli class global comment. Detailled comment
@@ -27,7 +27,7 @@ public class ComponentPreferenceInitializer extends AbstractPreferenceInitialize
 
     @Override
     public void initializeDefaultPreferences() {
-        IPreferenceStore preferenceStore = CodeGeneratorActivator.getDefault().getPreferenceStore();
+        IPreferenceStore preferenceStore = CodegenUiPlugin.getDefault().getPreferenceStore();
 
         preferenceStore.putValue(IComponentPreferenceConstant.LIMIT, "1000"); //$NON-NLS-1$
         preferenceStore.setDefault(IComponentPreferenceConstant.LIMIT, "1000"); //$NON-NLS-1$

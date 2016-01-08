@@ -26,7 +26,8 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.osgi.framework.Bundle;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.io.FilesUtils;
@@ -54,8 +55,8 @@ public class UserComponentsProvider extends AbstractComponentsProvider {
 
     @Override
     protected File getExternalComponentsLocation() {
-        IPreferenceStore prefStore = CodeGeneratorActivator.getDefault().getPreferenceStore();
-        String path = prefStore.getString(IComponentPreferenceConstant.USER_COMPONENTS_FOLDER);
+        IEclipsePreferences prefStore = InstanceScope.INSTANCE.getNode(CodeGeneratorActivator.PLUGIN_ID);
+        String path = prefStore.get(IComponentPreferenceConstant.USER_COMPONENTS_FOLDER, null);
         return (path == null || path.length() == 0 ? null : new File(path));
     }
 
@@ -63,12 +64,13 @@ public class UserComponentsProvider extends AbstractComponentsProvider {
         if (path == null) {
             path = ""; //$NON-NLS-1$
         }
-        IPreferenceStore prefStore = CodeGeneratorActivator.getDefault().getPreferenceStore();
+
+        IEclipsePreferences prefStore = InstanceScope.INSTANCE.getNode(CodeGeneratorActivator.PLUGIN_ID);
         File userPath = new File(path.trim());
         if (userPath.exists()) {
-            prefStore.setValue(IComponentPreferenceConstant.USER_COMPONENTS_FOLDER, path);
+            prefStore.put(IComponentPreferenceConstant.USER_COMPONENTS_FOLDER, path);
         } else {
-            prefStore.setValue(IComponentPreferenceConstant.USER_COMPONENTS_FOLDER, ""); //$NON-NLS-1$
+            prefStore.put(IComponentPreferenceConstant.USER_COMPONENTS_FOLDER, ""); //$NON-NLS-1$
         }
     }
 

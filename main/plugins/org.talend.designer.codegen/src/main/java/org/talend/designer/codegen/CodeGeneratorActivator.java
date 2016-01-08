@@ -12,7 +12,7 @@
 // ============================================================================
 package org.talend.designer.codegen;
 
-import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.IService;
@@ -26,7 +26,7 @@ import org.talend.repository.model.IRepositoryService;
  * $Id$
  * 
  */
-public class CodeGeneratorActivator extends AbstractUIPlugin {
+public class CodeGeneratorActivator extends Plugin {
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.talend.designer.codegen"; //$NON-NLS-1$

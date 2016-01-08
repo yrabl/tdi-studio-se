@@ -20,7 +20,6 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.talend.commons.exception.BusinessException;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.ui.images.CoreImageProvider;
@@ -28,6 +27,7 @@ import org.talend.core.ui.services.IComponentsLocalProviderService;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.components.model.ComponentFileChecker;
 import org.talend.designer.codegen.components.ui.IComponentPreferenceConstant;
+import org.talend.designer.codegen.ui.CodegenUiPlugin;
 import org.talend.designer.codegen.ui.i18n.Messages;
 
 /**
@@ -45,12 +45,12 @@ public class ComponentsLocalProviderService implements IComponentsLocalProviderS
      */
     @Override
     public boolean isAvoidToShowJobAfterDoubleClick() {
-        return CodeGeneratorActivator.getDefault().getPreferenceStore().getBoolean(IComponentPreferenceConstant.IS_AVOID);
+        return CodegenUiPlugin.getDefault().getPreferenceStore().getBoolean(IComponentPreferenceConstant.IS_AVOID);
     }
 
     @Override
     public boolean isAvoidToShowJobletAfterDoubleClick() {
-        return CodeGeneratorActivator.getDefault().getPreferenceStore().getBoolean(IComponentPreferenceConstant.IS_AVOID_JOBLET);
+        return CodegenUiPlugin.getDefault().getPreferenceStore().getBoolean(IComponentPreferenceConstant.IS_AVOID_JOBLET);
     }
 
     /*
@@ -60,7 +60,7 @@ public class ComponentsLocalProviderService implements IComponentsLocalProviderS
      */
     @Override
     public IPreferenceStore getPreferenceStore() {
-        return CodeGeneratorActivator.getDefault().getPreferenceStore();
+        return CodegenUiPlugin.getDefault().getPreferenceStore();
     }
 
     @Override
@@ -76,16 +76,6 @@ public class ComponentsLocalProviderService implements IComponentsLocalProviderS
                 }
             }
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.designer.components.IComponentsLocalProviderService#getPlugin()
-     */
-    @Override
-    public AbstractUIPlugin getPlugin() {
-        return CodeGeneratorActivator.getDefault();
     }
 
     @Override

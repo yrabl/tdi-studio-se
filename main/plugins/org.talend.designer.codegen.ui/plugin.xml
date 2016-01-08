@@ -18,12 +18,6 @@
        </extension>
    
        <extension
-             point="org.eclipse.core.runtime.preferences">
-          <initializer
-                class="org.talend.designer.codegen.ui.preference.ComponentPreferenceInitializer">
-          </initializer>
-       </extension>
-       <extension
              point="org.talend.core.runtime.service">
           <Service
                 class="org.talend.designer.codegen.ui.service.ComponentsLocalProviderService"
