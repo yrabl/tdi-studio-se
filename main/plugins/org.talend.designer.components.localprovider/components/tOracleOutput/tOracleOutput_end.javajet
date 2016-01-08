@@ -54,7 +54,11 @@ imports="
         IConnection rejectConn = rejectConns.get(0);
         rejectConnName = rejectConn.getName();
     }
-	boolean isUseBatchByDBVersion = (!useExistingConnection && !"ORACLE_8".equalsIgnoreCase(dbVersion)) || (useExistingConnection && !"ORACLE_8".equalsIgnoreCase(NodeUtil.getNodeByUniqueName(node.getProcess(), connection).getUniqueName()));
+    
+	INode connectionNode = NodeUtil.getNodeByUniqueName(node.getProcess(), connection);
+	
+    boolean isUseBatchByDBVersion = (!useExistingConnection && !"ORACLE_8".equalsIgnoreCase(dbVersion)) 
+		|| (useExistingConnection && (connectionNode==null || (connectionNode!=null && !"ORACLE_8".equalsIgnoreCase(connectionNode.getUniqueName()))));
 
     boolean useBatch = true;
     if(useExistingConnection){

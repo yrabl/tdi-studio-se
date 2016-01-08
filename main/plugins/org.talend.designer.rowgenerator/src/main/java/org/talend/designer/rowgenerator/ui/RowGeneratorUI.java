@@ -209,6 +209,8 @@ public class RowGeneratorUI {
         inputReadOnly = this.externalNode.getProcess().isReadOnly();
         if (this.externalNode.getOriginalNode().getJobletNode() != null) {
             inputReadOnly = this.externalNode.getOriginalNode().isReadOnly();
+        } else if (this.externalNode.getOriginalNode().getJunitNode() != null) {
+            inputReadOnly = true;
         }
 
         dataTableView = new MetadataTableEditorViewExt(datasFlowViewSashForm, SWT.BORDER, metadataTableEditor, inputReadOnly,

@@ -59,7 +59,10 @@ skeleton="../templates/db_output_bulk.skeleton"
         rejectConnName = rejectConn.getName();
     }
 
-    boolean isUseBatchByDBVersion = (!useExistingConnection && !"ORACLE_8".equalsIgnoreCase(dbVersion)) || (useExistingConnection && !"ORACLE_8".equalsIgnoreCase(NodeUtil.getNodeByUniqueName(node.getProcess(), connection).getUniqueName()));
+	INode connectionNode = NodeUtil.getNodeByUniqueName(node.getProcess(), connection);
+	
+    boolean isUseBatchByDBVersion = (!useExistingConnection && !"ORACLE_8".equalsIgnoreCase(dbVersion)) 
+		|| (useExistingConnection && (connectionNode==null || (connectionNode!=null && !"ORACLE_8".equalsIgnoreCase(connectionNode.getUniqueName()))));
 
     boolean useBatch = true;
     if(useExistingConnection){
@@ -204,13 +207,6 @@ skeleton="../templates/db_output_bulk.skeleton"
         dbschema_<%=cid%> = (String)globalMap.get("<%=schema%>");
         conn_<%=cid%> = (java.sql.Connection)globalMap.get("<%=conn%>");
         <%
-        INode connectionNode = null;
-        for (INode processNode : node.getProcess().getGeneratingNodes()) {
-            if(connection.equals(processNode.getUniqueName())) {
-                connectionNode = processNode;
-                break;
-            }
-        }
         boolean specify_alias = "true".equals(ElementParameterParser.getValue(connectionNode, "__SPECIFY_DATASOURCE_ALIAS__"));
         if(specify_alias){
             String alias = ElementParameterParser.getValue(connectionNode, "__DATASOURCE_ALIAS__");

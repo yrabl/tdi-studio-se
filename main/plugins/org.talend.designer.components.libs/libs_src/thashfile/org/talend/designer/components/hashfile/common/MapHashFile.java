@@ -21,18 +21,14 @@ public class MapHashFile {
 
         private Map<Object, Object> tMultiTheadLockMap = new HashMap<Object, Object>();
 
-        public Object get(Object key) {
+        public synchronized Object get(Object key) {
             if (tMultiTheadLockMap.get(key) == null) {
-                synchronized (TalendMultiThreadLockMap.this) {
-                    if (tMultiTheadLockMap.get(key) == null) {
-                        tMultiTheadLockMap.put(key, new Object());
-                    }
-                }
+                tMultiTheadLockMap.put(key, new Object());
             }
             return tMultiTheadLockMap.get(key);
         }
         
-        public void remove(Object key){
+        public synchronized void remove(Object key){
             tMultiTheadLockMap.remove(key);
         }
     }
