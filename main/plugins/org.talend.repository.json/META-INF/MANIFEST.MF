@@ -3,9 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %pluginName
 Bundle-SymbolicName: org.talend.repository.json;singleton:=true
 Bundle-Version: 6.2.0.qualifier
-Bundle-ClassPath: .,
- lib/staxon-1.2.jar,
- lib/xom-1.2.7.jar
+Bundle-ClassPath: .
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,

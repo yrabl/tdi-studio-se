@@ -284,7 +284,8 @@ public class ChangeValuesFromRepository extends ChangeMetadataCommand {
         } else {
             oldValues.clear();
             IElementParameter propertyParam = elem.getElementParameter(propertyName);
-            for (IElementParameter param : elem.getElementParameters()) {
+            List<IElementParameter> elementParameters = new ArrayList<>(elem.getElementParameters());
+            for (IElementParameter param : elementParameters) {
                 String repositoryValue = param.getRepositoryValue();
                 if (param.getFieldType() == EParameterFieldType.PROPERTY_TYPE) {
                     continue;
