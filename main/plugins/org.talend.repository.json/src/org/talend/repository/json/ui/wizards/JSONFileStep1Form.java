@@ -510,6 +510,14 @@ public class JSONFileStep1Form extends AbstractJSONFileStepForm {
             @Override
             public void modifyText(final ModifyEvent e) {
                 String jsonPath = fileFieldJSON.getText();
+                String _jsonPath = jsonPath;
+                if (isContextMode()) {
+                    ContextType contextType = ConnectionContextHelper.getContextTypeForContextMode(
+                            connectionItem.getConnection(), connectionItem.getConnection().getContextName());
+                    jsonPath = TalendQuoteUtils.removeQuotes(ConnectionContextHelper.getOriginalValue(contextType,
+                            jsonPath));
+                
+                }
                 String text = validateJsonFilePath(jsonPath);
                 if (text == null || text.isEmpty()) {
                     return;
@@ -551,6 +559,10 @@ public class JSONFileStep1Form extends AbstractJSONFileStepForm {
                     xsdPathChanged = true;
                 } else {
                     xsdPathChanged = false;
+                }
+                
+                if (isContextMode()) {
+                    jsonPath = _jsonPath;
                 }
                 if (Path.fromOSString(jsonPath).toFile().isFile()) {
                     getConnection().setJSONFilePath(PathUtils.getPortablePath(jsonPath));

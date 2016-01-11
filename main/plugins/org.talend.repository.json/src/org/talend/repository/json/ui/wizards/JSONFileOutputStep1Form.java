@@ -77,7 +77,6 @@ import org.talend.metadata.managment.ui.wizard.metadata.xml.utils.TreeUtil;
 import org.talend.repository.ProjectManager;
 import org.talend.repository.json.util.JSONUtil;
 import org.talend.repository.ui.wizards.metadata.connection.files.xml.TreePopulator;
-
 import orgomg.cwm.resource.record.RecordFactory;
 import orgomg.cwm.resource.record.RecordFile;
 
@@ -175,10 +174,51 @@ public class JSONFileOutputStep1Form extends AbstractJSONFileStepForm {
 
     @Override
     protected void adaptFormToEditable() {
-        noFileButton.setEnabled(!isContextMode());
-        useFileButton.setEnabled(!isContextMode());
-        encodingCombo.setReadOnly(!isContextMode());
-        outputFilePath.setEditable(!isContextMode());
+        String JSONFilePath = getConnection().getJSONFilePath();
+        boolean isFromFile = (JSONFilePath != null && !JSONFilePath.equals("")); //$NON-NLS-1$
+        if(isContextMode()) {
+            if (isFromFile) {
+                noFileButton.setEnabled(false);
+                useFileButton.setEnabled(false);
+                
+                useFileButton.setSelection(true);
+                noFileButton.setSelection(false);
+                
+                jsonFilePath.setEditable(true);
+                encodingCombo.setReadOnly(false);
+            } else {
+                noFileButton.setEnabled(false);
+                useFileButton.setEnabled(false);
+
+                noFileButton.setSelection(true);
+                useFileButton.setSelection(false);
+                
+                jsonFilePath.setEditable(false);
+                encodingCombo.setReadOnly(true);
+            }
+            outputFilePath.setEditable(false);
+        } else {
+            if (isFromFile) {
+                noFileButton.setEnabled(true);
+                useFileButton.setEnabled(true);
+                
+                noFileButton.setSelection(false);
+                useFileButton.setSelection(true);
+                
+                jsonFilePath.setEditable(true);
+                encodingCombo.setReadOnly(false);
+            } else {
+                noFileButton.setEnabled(true);
+                useFileButton.setEnabled(true);
+                
+                useFileButton.setSelection(false);
+                noFileButton.setSelection(true);
+                
+                jsonFilePath.setEditable(false);
+                encodingCombo.setReadOnly(true);
+            }
+            outputFilePath.setEditable(true);
+        }
         super.adaptFormToEditable();
     }
 
@@ -226,6 +266,10 @@ public class JSONFileOutputStep1Form extends AbstractJSONFileStepForm {
         GridData gd = new GridData(18, 12);
         commonNodesLimitation.setLayoutData(gd);
         commonNodesLimitation.setText(String.valueOf(TreePopulator.getLimit()));
+        
+        if (!noFileButton.getSelection() && !useFileButton.getSelection()) {
+            noFileButton.setSelection(true);
+        }
     }
 
     private void createOutputFile(final Composite mainComposite, final int width, final int height) {
@@ -638,15 +682,19 @@ public class JSONFileOutputStep1Form extends AbstractJSONFileStepForm {
                 availableJSONTree.setEnabled(enable);
                 fileContentText.setEnabled(enable);
                 outputFilePath.setEditable(true);
+                exportContextBtn.setEnabled(true);
+                revertContextBtn.setEnabled(false);
             } else {
                 // noFileButton.setEnabled(!isContextMode());
                 // useFileButton.setEnabled(!isContextMode());
                 outputFilePath.setEditable(!isContextMode());
-                jsonFilePath.setEditable(!isContextMode());
-                encodingCombo.setEnabled(!isContextMode());
+                jsonFilePath.setEditable(!isContextMode() || enable);
+                encodingCombo.setEnabled(!isContextMode() || enable);
                 commonNodesLimitation.setEditable(!isContextMode());
-                availableJSONTree.setEnabled(!isContextMode());
+                availableJSONTree.setEnabled(!isContextMode() || enable);
                 fileContentText.setEnabled(!isContextMode());
+                exportContextBtn.setEnabled(false);
+                revertContextBtn.setEnabled(true);
             }
         }
     }

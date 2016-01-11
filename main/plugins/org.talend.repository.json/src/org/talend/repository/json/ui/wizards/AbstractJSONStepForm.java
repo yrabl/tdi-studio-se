@@ -27,7 +27,6 @@ import org.talend.core.model.properties.ContextItem;
 import org.talend.core.ui.context.model.table.ConectionAdaptContextVariableModel;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
 import org.talend.metadata.managment.ui.model.IConnParamName;
-import org.talend.metadata.managment.ui.utils.ConnectionContextHelper;
 import org.talend.metadata.managment.ui.wizard.AbstractForm;
 import org.talend.metadata.managment.ui.wizard.metadata.xml.node.FOXTreeNode;
 import org.talend.repository.json.util.JSONConnectionContextHelper;
@@ -90,7 +89,7 @@ public abstract class AbstractJSONStepForm extends AbstractForm {
             } else {
                 Map<ContextItem, List<ConectionAdaptContextVariableModel>> variableModels = JSONConnectionContextHelper
                         .exportAsContext(connectionItem, getConetxtParams());
-                contextManager = ConnectionContextHelper.contextManager;
+                contextManager = JSONConnectionContextHelper.contextManager;
 
                 if (variableModels != null) {
                     Iterator<ContextItem> contextItor = variableModels.keySet().iterator();

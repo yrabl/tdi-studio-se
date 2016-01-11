@@ -927,11 +927,14 @@ public class JSONFileStep2Form extends AbstractJSONFileStepForm implements IRefr
             }
 
             String pathStr = getConnection().getJSONFilePath();
-            if (isContextMode()) {
+            boolean isContextMode = isContextMode();
+            if (isContextMode) {
                 ContextType contextType = ConnectionContextHelper.getContextTypeForContextMode(connectionItem.getConnection(),
                         connectionItem.getConnection().getContextName());
                 pathStr = TalendQuoteUtils.removeQuotes(ConnectionContextHelper.getOriginalValue(contextType, pathStr));
             }
+            exportContextBtn.setEnabled(!isContextMode);
+            revertContextBtn.setEnabled(isContextMode);
 
             // diffrent from xml , we do not save the content in item , find it in wizard temp
             if (EJsonReadbyMode.XPATH.getValue().equals(this.wizard.getReadbyMode())

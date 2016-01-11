@@ -97,6 +97,7 @@ import org.talend.core.service.IStormProcessService;
 import org.talend.core.services.ICoreTisService;
 import org.talend.core.ui.CoreUIPlugin;
 import org.talend.core.ui.IJobletProviderService;
+import org.talend.core.ui.ITestContainerProviderService;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.core.ui.metadata.dialog.MetadataDialog;
 import org.talend.core.ui.process.IGEFProcess;
@@ -1347,8 +1348,18 @@ public class Node extends Element implements IGraphicalNode {
                                 takeSchema = getTakeSchema();
                             }
                         }
-
-                        if (takeSchema) {
+                        boolean isJunitInput = false;
+                        if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
+                            ITestContainerProviderService testContainerService = (ITestContainerProviderService) GlobalServiceRegister
+                                    .getDefault().getService(ITestContainerProviderService.class);
+                            if (testContainerService != null
+                                    && testContainerService.isTestCaseComponent(connection.getSource().getComponent())) {
+                                if (connection.getSource().getComponent().getInputType() != null) {
+                                    isJunitInput = connection.getSource().getComponent().getInputType().equals("Input");//$NON-NLS-1$
+                                }
+                            }
+                        }
+                        if (takeSchema && !isJunitInput) {
                             ((Node) connection.getSource()).takeSchemaFrom(this, mainConnector.getName());
                         }
                     } else if (connection.getSourceNodeConnector().isMultiSchema()) {
