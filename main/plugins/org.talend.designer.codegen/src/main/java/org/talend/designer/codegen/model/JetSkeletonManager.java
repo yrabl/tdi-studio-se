@@ -42,10 +42,10 @@ import org.osgi.framework.Bundle;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.runtime.utils.io.IOUtils;
 import org.talend.core.GlobalServiceRegister;
-import org.talend.core.model.components.ComponentCompilations;
 import org.talend.core.model.components.IComponentsFactory;
 import org.talend.core.model.components.IComponentsService;
 import org.talend.designer.codegen.CodeGeneratorActivator;
+import org.talend.designer.codegen.components.model.ComponentCompilations;
 import org.talend.designer.codegen.config.TemplateUtil;
 import org.talend.designer.codegen.i18n.Messages;
 

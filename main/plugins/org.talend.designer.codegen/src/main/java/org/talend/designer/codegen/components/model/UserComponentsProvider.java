@@ -33,7 +33,6 @@ import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.io.FilesUtils;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.PluginChecker;
-import org.talend.core.i18n.Messages;
 import org.talend.core.model.components.AbstractComponentsProvider;
 import org.talend.core.model.components.ComponentUtilities;
 import org.talend.core.model.components.IComponentsFactory;
@@ -42,6 +41,7 @@ import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.components.ui.IComponentPreferenceConstant;
+import org.talend.designer.codegen.i18n.Messages;
 import org.talend.repository.ProjectManager;
 
 /***/

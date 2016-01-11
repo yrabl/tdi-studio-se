@@ -34,7 +34,6 @@ import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.SystemException;
 import org.talend.commons.utils.generation.JavaUtils;
 import org.talend.commons.utils.io.FilesUtils;
-import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.model.general.ILibrariesService;
 import org.talend.core.model.properties.Item;
@@ -93,7 +92,7 @@ public class JavaRoutineSynchronizer extends AbstractRoutineSynchronizer {
         }
 
         try {
-            ILibrariesService jms = CorePlugin.getDefault().getLibrariesService();
+            ILibrariesService jms = (ILibrariesService) GlobalServiceRegister.getDefault().getService(ILibrariesService.class);
             List<URL> urls = jms.getTalendRoutinesFolder();
 
             for (URL systemModuleURL : urls) {
@@ -219,7 +218,7 @@ public class JavaRoutineSynchronizer extends AbstractRoutineSynchronizer {
         routineContent = routineContent.replaceFirst(regexp, "public class " + label + " {");//$NON-NLS-1$//$NON-NLS-2$
         // constructor
         Matcher matcher = Pattern.compile("(.*public\\s+)(\\w+)(\\s*\\(.*)", Pattern.DOTALL).matcher(routineContent); //$NON-NLS-1$
-        if (matcher.find()) { 
+        if (matcher.find()) {
             routineContent = matcher.group(1) + label + matcher.group(3);
         }
         routineItem.getContent().setInnerContent(routineContent.getBytes());

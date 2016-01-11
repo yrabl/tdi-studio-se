@@ -32,19 +32,19 @@ import org.talend.commons.exception.BusinessException;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.utils.Timer;
 import org.talend.commons.utils.workbench.resources.ResourceUtils;
-import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.IService;
 import org.talend.core.context.Context;
 import org.talend.core.context.RepositoryContext;
 import org.talend.core.language.ECodeLanguage;
-import org.talend.core.model.components.ComponentCompilations;
 import org.talend.core.model.general.Project;
 import org.talend.core.model.properties.PropertiesFactory;
 import org.talend.core.model.properties.User;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.repository.model.RepositoryFactoryProvider;
 import org.talend.core.repository.utils.ProjectHelper;
+import org.talend.core.runtime.CoreRuntimePlugin;
+import org.talend.designer.codegen.components.model.ComponentCompilations;
 import org.talend.designer.codegen.i18n.Messages;
 import org.talend.repository.model.RepositoryConstants;
 
@@ -157,7 +157,7 @@ public class CodeGenInit implements IApplication {
         HashMap<String, String> fields = new HashMap<String, String>();
         repositoryContext.setFields(fields);
 
-        Context ctx = CorePlugin.getContext();
+        Context ctx = CoreRuntimePlugin.getInstance().getContext();
         ctx.putProperty(Context.REPOSITORY_CONTEXT_KEY, repositoryContext);
 
         repositoryFactory.setRepositoryFactoryFromProvider(RepositoryFactoryProvider

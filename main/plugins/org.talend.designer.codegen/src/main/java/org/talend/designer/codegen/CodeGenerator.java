@@ -24,7 +24,6 @@ import org.eclipse.emf.codegen.jet.JETException;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.PasswordEncryptUtil;
 import org.talend.commons.utils.VersionUtils;
-import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.context.Context;
 import org.talend.core.context.RepositoryContext;
@@ -45,6 +44,7 @@ import org.talend.core.model.process.INode;
 import org.talend.core.model.process.IProcess;
 import org.talend.core.model.temp.ECodePart;
 import org.talend.core.model.temp.ETypeGen;
+import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.designer.codegen.config.CloseBlocksCodeArgument;
 import org.talend.designer.codegen.config.CodeGeneratorArgument;
@@ -59,6 +59,8 @@ import org.talend.designer.codegen.i18n.Messages;
 import org.talend.designer.codegen.model.CodeGeneratorEmittersPoolFactory;
 import org.talend.designer.codegen.model.CodeGeneratorInternalTemplatesFactoryProvider;
 import org.talend.designer.codegen.proxy.JetProxy;
+import org.talend.designer.core.IDesignerCoreService;
+import org.talend.designer.runprocess.IRunProcessService;
 
 /**
  * CodeGenerator.
@@ -152,16 +154,16 @@ public class CodeGenerator implements ICodeGenerator {
             }
             processTree = new NodesTree(process, nodes, true);
 
-            RepositoryContext repositoryContext = (RepositoryContext) CorePlugin.getContext().getProperty(
-                    Context.REPOSITORY_CONTEXT_KEY);
+            RepositoryContext repositoryContext = (RepositoryContext) CoreRuntimePlugin.getInstance().getContext()
+                    .getProperty(Context.REPOSITORY_CONTEXT_KEY);
             language = repositoryContext.getProject().getLanguage();
 
         }
     }
 
     public CodeGenerator() {
-        RepositoryContext repositoryContext = (RepositoryContext) CorePlugin.getContext().getProperty(
-                Context.REPOSITORY_CONTEXT_KEY);
+        RepositoryContext repositoryContext = (RepositoryContext) CoreRuntimePlugin.getInstance().getContext()
+                .getProperty(Context.REPOSITORY_CONTEXT_KEY);
         language = repositoryContext.getProject().getLanguage();
 
     }
@@ -173,9 +175,13 @@ public class CodeGenerator implements ICodeGenerator {
      */
     private boolean isMethodSizeNeeded() {
         // must match TalendDesignerPrefConstants.DISPLAY_METHOD_SIZE
-        boolean displayMethodSize = Boolean.parseBoolean(CorePlugin.getDefault().getDesignerCoreService()
-                .getPreferenceStore("displayMethodSize")); //$NON-NLS-1$
-        return displayMethodSize;
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(IDesignerCoreService.class)) {
+            IDesignerCoreService service = (IDesignerCoreService) GlobalServiceRegister.getDefault().getService(
+                    IDesignerCoreService.class);
+            return Boolean.parseBoolean(service.getPreferenceStore("displayMethodSize")); //$NON-NLS-1$
+        }
+
+        return false;
     }
 
     /**
@@ -350,7 +356,11 @@ public class CodeGenerator implements ICodeGenerator {
                 codeGenArgument.setJobVersion(jobVersion);
 
                 codeGenArgument.setIsRunInMultiThread(getRunInMultiThread());
-                codeGenArgument.setPauseTime(CorePlugin.getDefault().getRunProcessService().getPauseTime());
+                if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
+                    IRunProcessService service = (IRunProcessService) GlobalServiceRegister.getDefault().getService(
+                            IRunProcessService.class);
+                    codeGenArgument.setPauseTime(service.getPauseTime());
+                }
 
                 JetBean jetBean = initializeJetBean(codeGenArgument);
 
@@ -433,7 +443,11 @@ public class CodeGenerator implements ICodeGenerator {
         codeGenArgument.setCheckingSyntax(checkingSyntax);
         codeGenArgument.setIncomingName(incomingName);
         codeGenArgument.setIsRunInMultiThread(getRunInMultiThread());
-        codeGenArgument.setPauseTime(CorePlugin.getDefault().getRunProcessService().getPauseTime());
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
+            IRunProcessService service = (IRunProcessService) GlobalServiceRegister.getDefault().getService(
+                    IRunProcessService.class);
+            codeGenArgument.setPauseTime(service.getPauseTime());
+        }
         JetBean jetBean = initializeJetBean(codeGenArgument);
 
         StringBuffer content = new StringBuffer();
@@ -737,7 +751,11 @@ public class CodeGenerator implements ICodeGenerator {
         argument.setCheckingSyntax(checkingSyntax);
         argument.setIncomingName(incomingName);
         argument.setIsRunInMultiThread(getRunInMultiThread());
-        argument.setPauseTime(CorePlugin.getDefault().getRunProcessService().getPauseTime());
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
+            IRunProcessService service = (IRunProcessService) GlobalServiceRegister.getDefault().getService(
+                    IRunProcessService.class);
+            argument.setPauseTime(service.getPauseTime());
+        }
 
         JetBean jetBean = initializeJetBean(argument);
 
@@ -808,7 +826,12 @@ public class CodeGenerator implements ICodeGenerator {
 
         argument.setCheckingSyntax(checkingSyntax);
         argument.setIsRunInMultiThread(getRunInMultiThread());
-        argument.setPauseTime(CorePlugin.getDefault().getRunProcessService().getPauseTime());
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
+            IRunProcessService service = (IRunProcessService) GlobalServiceRegister.getDefault().getService(
+                    IRunProcessService.class);
+            argument.setPauseTime(service.getPauseTime());
+        }
+
         JetBean jetBean = initializeJetBean(argument);
 
         StringBuffer content = new StringBuffer();

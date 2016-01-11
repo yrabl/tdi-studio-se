@@ -14,13 +14,13 @@ package org.talend.designer.codegen;
 
 import org.eclipse.core.runtime.jobs.Job;
 import org.talend.commons.CommonsPlugin;
-import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ILibraryManagerService;
-import org.talend.core.model.components.ComponentCompilations;
 import org.talend.core.model.components.IComponentsService;
+import org.talend.core.model.general.ILibrariesService;
 import org.talend.core.model.process.IProcess;
 import org.talend.core.ui.services.IComponentsLocalProviderService;
+import org.talend.designer.codegen.components.model.ComponentCompilations;
 import org.talend.designer.codegen.model.CodeGeneratorEmittersPoolFactory;
 import org.talend.designer.core.IDesignerCoreService;
 
@@ -135,7 +135,7 @@ public class CodeGeneratorService implements ICodeGeneratorService {
         ILibraryManagerService librairesManagerService = (ILibraryManagerService) GlobalServiceRegister.getDefault().getService(
                 ILibraryManagerService.class);
         librairesManagerService.clearCache();
-        CorePlugin.getDefault().getLibrariesService().syncLibraries();
+        ((ILibrariesService) GlobalServiceRegister.getDefault().getService(ILibrariesService.class)).syncLibraries();
         Job job = CodeGeneratorEmittersPoolFactory.initialize();
         // achen modify to record ctrl+shift+f3 is pressed to fix bug 0006107
         IDesignerCoreService designerCoreService = (IDesignerCoreService) GlobalServiceRegister.getDefault().getService(

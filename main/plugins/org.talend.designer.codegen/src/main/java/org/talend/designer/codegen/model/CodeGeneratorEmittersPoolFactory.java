@@ -50,30 +50,30 @@ import org.talend.commons.runtime.model.components.IComponentConstants;
 import org.talend.commons.runtime.utils.io.IOUtils;
 import org.talend.commons.utils.StringUtils;
 import org.talend.commons.utils.time.TimeMeasure;
-import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.IService;
 import org.talend.core.PluginChecker;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.language.LanguageManager;
-import org.talend.core.model.components.ComponentCompilations;
 import org.talend.core.model.components.EComponentType;
+import org.talend.core.model.components.ExternalNodesFactory;
 import org.talend.core.model.components.IComponent;
 import org.talend.core.model.components.IComponentFileNaming;
 import org.talend.core.model.components.IComponentsFactory;
 import org.talend.core.model.components.IComponentsService;
-import org.talend.core.model.repository.ExternalNodesFactory;
 import org.talend.core.model.temp.ECodePart;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.core.ui.services.IComponentsLocalProviderService;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.ICodeGeneratorService;
+import org.talend.designer.codegen.components.model.ComponentCompilations;
 import org.talend.designer.codegen.config.EInternalTemplate;
 import org.talend.designer.codegen.config.JetBean;
 import org.talend.designer.codegen.config.LightJetBean;
 import org.talend.designer.codegen.config.TalendJetEmitter;
 import org.talend.designer.codegen.config.TemplateUtil;
 import org.talend.designer.codegen.i18n.Messages;
+import org.talend.designer.core.IDesignerCoreService;
 import org.talend.designer.core.model.components.EmfComponent;
 
 /**
@@ -218,11 +218,12 @@ public final class CodeGeneratorEmittersPoolFactory {
 
                             @Override
                             protected IStatus run(IProgressMonitor monitor) {
-                                CorePlugin
-                                        .getDefault()
-                                        .getDesignerCoreService()
-                                        .synchronizeDesignerUI(
-                                                new PropertyChangeEvent(this, IComponentConstants.NORMAL, null, null));
+                                if (GlobalServiceRegister.getDefault().isServiceRegistered(IDesignerCoreService.class)) {
+                                    IDesignerCoreService service = (IDesignerCoreService) GlobalServiceRegister.getDefault()
+                                            .getService(IDesignerCoreService.class);
+                                    service.synchronizeDesignerUI(new PropertyChangeEvent(this, IComponentConstants.NORMAL, null,
+                                            null));
+                                }
                                 return Status.OK_STATUS;
                             }
 
@@ -277,9 +278,9 @@ public final class CodeGeneratorEmittersPoolFactory {
                         Messages.getString("CodeGeneratorEmittersPoolFactory.failCompail") //$NON-NLS-1$
                                 + message.toString());
             }
-            if (!CommonsPlugin.isHeadless()) {
-                CorePlugin.getDefault().getRcpService().activeSwitchProjectAction();
-            }
+            // if (!CommonsPlugin.isHeadless()) {
+            // CorePlugin.getDefault().getRcpService().activeSwitchProjectAction();
+            // }
             return Status.OK_STATUS;
         }
 
@@ -372,7 +373,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                 template.getResourceName(), template.getVersion(), codeLanguage.getName(), ""); //$NON-NLS-1$
         jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
         jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
-        jetBean.addClassPath("CORE_LIBRARIES", CorePlugin.PLUGIN_ID); //$NON-NLS-1$
+        jetBean.addClassPath("CORE_LIBRARIES", "org.talend.core"); //$NON-NLS-1$
         jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
         jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
         jetBean.setClassLoader(new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader());
@@ -409,7 +410,7 @@ public final class CodeGeneratorEmittersPoolFactory {
             jetBean.addClassPath("EMF_COMMON", "org.eclipse.emf.common"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
-            jetBean.addClassPath("CORE_LIBRARIES", CorePlugin.PLUGIN_ID); //$NON-NLS-1$
+            jetBean.addClassPath("CORE_LIBRARIES", "org.talend.core"); //$NON-NLS-1$
             jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
             jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
             jetBean.addClassPath("COMPONENT_FRAMEWORK", "org.talend.components.api"); //$NON-NLS-1$
@@ -511,7 +512,7 @@ public final class CodeGeneratorEmittersPoolFactory {
             jetBean.addClassPath("EMF_COMMON", "org.eclipse.emf.common"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
-            jetBean.addClassPath("CORE_LIBRARIES", CorePlugin.PLUGIN_ID); //$NON-NLS-1$
+            jetBean.addClassPath("CORE_LIBRARIES", "org.talend.core"); //$NON-NLS-1$
             jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
             jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
 
