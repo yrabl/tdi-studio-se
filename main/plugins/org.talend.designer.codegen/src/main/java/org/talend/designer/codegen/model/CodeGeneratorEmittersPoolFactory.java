@@ -43,8 +43,6 @@ import org.eclipse.emf.codegen.jet.JETEmitter;
 import org.eclipse.emf.codegen.jet.JETException;
 import org.eclipse.emf.common.CommonPlugin;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Display;
 import org.talend.commons.CommonsPlugin;
 import org.talend.commons.exception.BusinessException;
 import org.talend.commons.exception.ExceptionHandler;
@@ -67,6 +65,7 @@ import org.talend.core.model.components.IComponentsService;
 import org.talend.core.model.repository.ExternalNodesFactory;
 import org.talend.core.model.temp.ECodePart;
 import org.talend.core.ui.branding.IBrandingService;
+import org.talend.core.ui.services.IComponentsLocalProviderService;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.ICodeGeneratorService;
 import org.talend.designer.codegen.config.EInternalTemplate;
@@ -617,17 +616,12 @@ public final class CodeGeneratorEmittersPoolFactory {
                 TalendJetEmitter emitter = new TalendJetEmitter(jetBean, dummyEmitter.getTalendEclipseHelper());
                 // wzhang modified to fix bug 11439
                 if (monitorWrap.isCanceled()) {
-                    if (!CommonsPlugin.isHeadless()) {
-                        Display.getDefault().syncExec(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                MessageDialog.openError(Display.getDefault().getActiveShell(),
-                                        Messages.getString("CodeGeneratorEmittersPoolFactory.operationCanceled"), //$NON-NLS-1$
-                                        Messages.getString("CodeGeneratorEmittersPoolFactory.dialogContent")); //$NON-NLS-1$
-
-                            }
-                        });
+                    if (GlobalServiceRegister.getDefault().isServiceRegistered(IComponentsLocalProviderService.class)) {
+                        IComponentsLocalProviderService service = (IComponentsLocalProviderService) GlobalServiceRegister
+                                .getDefault().getService(IComponentsLocalProviderService.class);
+                        if (service != null) {
+                            service.showJetEmitterGenerationCancelMessage();
+                        }
                     }
                     return;
                 }

@@ -3,26 +3,7 @@
 <plugin>
    <extension-point id="additional_jetfile" name="Additional Jet File to generate" schema="schema/additional_jetfile.exsd"/>
    <extension-point id="componentFilter" name="Component filter" schema="schema/componentFilter.exsd"/>
-   <extension
-         point="org.eclipse.ui.commands">
-      <command
-            categoryId="Talend"
-            id="refreshTemplates"
-            name="Refresh templates"/>
-   </extension>
-   <extension
-         point="org.eclipse.ui.bindings">
-      <key
-            commandId="refreshTemplates"
-            contextId="talend.global"
-            schemeId="org.talend.core.scheme"
-            sequence="CTRL+SHIFT+F3"/>
-   </extension>
-   <extension
-         point="org.talend.core.global_actions">
-      <GlobalAction class="org.talend.designer.codegen.RefreshTemplatesAction"/>
-   </extension>
-   
+
    <extension
          point="org.talend.core.runtime.service">
       <Service 

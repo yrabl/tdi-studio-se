@@ -12,21 +12,15 @@
 // ============================================================================
 package org.talend.designer.codegen;
 
-import java.beans.PropertyChangeEvent;
-
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.talend.commons.CommonsPlugin;
-import org.talend.commons.runtime.model.components.IComponentConstants;
 import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ILibraryManagerService;
 import org.talend.core.model.components.ComponentCompilations;
 import org.talend.core.model.components.IComponentsService;
-import org.talend.core.model.process.Element;
 import org.talend.core.model.process.IProcess;
-import org.talend.core.views.IComponentSettingsView;
+import org.talend.core.ui.services.IComponentsLocalProviderService;
 import org.talend.designer.codegen.model.CodeGeneratorEmittersPoolFactory;
 import org.talend.designer.core.IDesignerCoreService;
 
@@ -134,20 +128,7 @@ public class CodeGeneratorService implements ICodeGeneratorService {
      */
     @Override
     public Job refreshTemplates() {
-        Element oldComponent = null;
-        IComponentSettingsView viewer = null;
-        if (!CommonsPlugin.isHeadless()) {
-            // TDI-25866:In case select a component and sctrl+shift+f3,need clean its componentSetting view
-            IWorkbenchWindow wwindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-            if (wwindow != null && wwindow.getActivePage() != null) {
-                viewer = (IComponentSettingsView) wwindow.getActivePage().findView(IComponentSettingsView.ID);
 
-                if (viewer != null) {
-                    oldComponent = viewer.getElement();
-                    viewer.cleanDisplay();
-                }
-            }
-        }
         ComponentCompilations.deleteMarkers();
         ((IComponentsService) GlobalServiceRegister.getDefault().getService(IComponentsService.class)).getComponentsFactory()
                 .resetCache();
@@ -160,13 +141,14 @@ public class CodeGeneratorService implements ICodeGeneratorService {
         IDesignerCoreService designerCoreService = (IDesignerCoreService) GlobalServiceRegister.getDefault().getService(
                 IDesignerCoreService.class);
         designerCoreService.getLastGeneratedJobsDateMap().clear();
-
-        if (oldComponent != null && viewer != null) {
-            viewer.setElement(oldComponent);
-        }
         if (!CommonsPlugin.isHeadless()) {
-            CorePlugin.getDefault().getDesignerCoreService()
-                    .synchronizeDesignerUI(new PropertyChangeEvent(this, IComponentConstants.NORMAL, null, null));
+            if (GlobalServiceRegister.getDefault().isServiceRegistered(IComponentsLocalProviderService.class)) {
+                IComponentsLocalProviderService service = (IComponentsLocalProviderService) GlobalServiceRegister.getDefault()
+                        .getService(IComponentsLocalProviderService.class);
+                if (service != null) {
+                    service.synchronizeDesignerUIAfterRefreshTemplates();
+                }
+            }
         }
         return job;
     }

@@ -10,9 +10,10 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.designer.codegen;
+package org.talend.designer.codegen.ui.action;
 
 import org.eclipse.jface.action.Action;
+import org.talend.designer.codegen.CodeGeneratorService;
 
 /**
  * DOC mhirt class global comment. Detailled comment <br/>

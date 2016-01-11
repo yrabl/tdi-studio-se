@@ -45,6 +45,7 @@ import org.talend.core.GlobalServiceRegister;
 import org.talend.core.PluginChecker;
 import org.talend.designer.codegen.ICodeGeneratorService;
 import org.talend.designer.codegen.components.ui.IComponentPreferenceConstant;
+import org.talend.designer.codegen.components.ui.LINK_STYLE;
 import org.talend.designer.codegen.ui.CodegenUiPlugin;
 import org.talend.designer.codegen.ui.i18n.Messages;
 import org.talend.designer.core.DesignerPlugin;

@@ -12,18 +12,26 @@
 // ============================================================================
 package org.talend.designer.codegen.ui.service;
 
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.talend.commons.CommonsPlugin;
 import org.talend.commons.exception.BusinessException;
+import org.talend.commons.runtime.model.components.IComponentConstants;
+import org.talend.core.CorePlugin;
 import org.talend.core.language.ECodeLanguage;
+import org.talend.core.model.process.Element;
 import org.talend.core.ui.images.CoreImageProvider;
 import org.talend.core.ui.services.IComponentsLocalProviderService;
+import org.talend.core.views.IComponentSettingsView;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.components.model.ComponentFileChecker;
 import org.talend.designer.codegen.components.ui.IComponentPreferenceConstant;
@@ -117,4 +125,45 @@ public class ComponentsLocalProviderService implements IComponentsLocalProviderS
     public void clearComponentIconImages() {
         CoreImageProvider.clearComponentIconImages();
     }
+
+    @Override
+    public void showJetEmitterGenerationCancelMessage() {
+        if (!CommonsPlugin.isHeadless()) {
+            Display.getDefault().syncExec(new Runnable() {
+
+                @Override
+                public void run() {
+                    MessageDialog.openError(Display.getDefault().getActiveShell(),
+                            Messages.getString("CodeGeneratorEmittersPoolFactory.operationCanceled"), //$NON-NLS-1$
+                            Messages.getString("CodeGeneratorEmittersPoolFactory.dialogContent")); //$NON-NLS-1$
+
+                }
+            });
+        }
+        return;
+
+    }
+
+    @Override
+    public void synchronizeDesignerUIAfterRefreshTemplates() {
+        // TDI-25866:In case select a component and sctrl+shift+f3,need clean its componentSetting view
+        Element oldComponent = null;
+        IComponentSettingsView viewer = null;
+        IWorkbenchWindow wwindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        if (wwindow != null && wwindow.getActivePage() != null) {
+            viewer = (IComponentSettingsView) wwindow.getActivePage().findView(IComponentSettingsView.ID);
+
+            if (viewer != null) {
+                oldComponent = viewer.getElement();
+                viewer.cleanDisplay();
+            }
+        }
+        if (oldComponent != null && viewer != null) {
+            viewer.setElement(oldComponent);
+        }
+
+        CorePlugin.getDefault().getDesignerCoreService()
+                .synchronizeDesignerUI(new PropertyChangeEvent(this, IComponentConstants.NORMAL, null, null));
+    }
+
 }
