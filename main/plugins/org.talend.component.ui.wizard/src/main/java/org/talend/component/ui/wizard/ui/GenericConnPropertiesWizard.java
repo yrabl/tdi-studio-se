@@ -20,7 +20,6 @@ import org.talend.component.ui.model.genericMetadata.GenericConnection;
 import org.talend.component.ui.model.genericMetadata.GenericConnectionItem;
 import org.talend.components.api.properties.ComponentProperties;
 import org.talend.components.api.properties.ComponentProperties.Deserialized;
-import org.talend.components.api.schema.SchemaElement;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
@@ -48,11 +47,12 @@ public class GenericConnPropertiesWizard extends PropertiesWizard {
                 Deserialized fromSerialized = ComponentProperties.fromSerialized(compPropertiesStr);
                 if (fromSerialized != null) {
                     ComponentProperties componentProperties = fromSerialized.properties;
-                    SchemaElement nameProperty = componentProperties.getProperty(IGenericConstants.NAME_PROPERTY);
-                    Object namePropertyVal = componentProperties.getValue(nameProperty);
+                    org.talend.components.api.properties.Property nameProperty = (org.talend.components.api.properties.Property) componentProperties
+                            .getProperty(IGenericConstants.NAME_PROPERTY);
+                    Object namePropertyVal = nameProperty.getValue();
                     String newName = property.getLabel();
                     if (newName != null && !newName.equals(namePropertyVal)) {
-                        componentProperties.setValue(nameProperty, newName);
+                        nameProperty.setValue(newName);
                         connection.setCompProperties(componentProperties.toSerialized());
                         try {
                             ProxyRepositoryFactory.getInstance().save(gcItem);

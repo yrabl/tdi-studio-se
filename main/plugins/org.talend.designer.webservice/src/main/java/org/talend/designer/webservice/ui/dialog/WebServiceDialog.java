@@ -53,6 +53,8 @@ public class WebServiceDialog extends Dialog implements WebServiceEventListener 
 
     private Button nextButton;
 
+    private boolean isRepositoryMode = false;
+
     public WebServiceDialog(Shell parentShell, WebServiceComponentMain webServiceComponentMain) {
         super(parentShell);
         this.webServiceComponentMain = webServiceComponentMain;
@@ -63,6 +65,7 @@ public class WebServiceDialog extends Dialog implements WebServiceEventListener 
         return this.webServiceUI;
     }
 
+    @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         if (title != null) {
@@ -78,6 +81,14 @@ public class WebServiceDialog extends Dialog implements WebServiceEventListener 
     public void setTitle(String title) {
         this.title = title;
 
+    }
+
+    public boolean isRepositoryMode() {
+        return this.isRepositoryMode;
+    }
+
+    public void setRepositoryMode(boolean isRepositoryMode) {
+        this.isRepositoryMode = isRepositoryMode;
     }
 
     /**
@@ -102,6 +113,7 @@ public class WebServiceDialog extends Dialog implements WebServiceEventListener 
         return webServiceComponentMain.getWebServiceManager().getUIManager();
     }
 
+    @Override
     protected void buttonPressed(int buttonId) {
         if (IDialogConstants.OK_ID == buttonId) {
             okPressed();
@@ -114,6 +126,7 @@ public class WebServiceDialog extends Dialog implements WebServiceEventListener 
         }
     }
 
+    @Override
     protected void cancelPressed() {
         super.cancelPressed();
         getUIManager().setDialogResponse(SWT.CANCEL);
@@ -125,6 +138,7 @@ public class WebServiceDialog extends Dialog implements WebServiceEventListener 
      * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
      */
 
+    @Override
     protected void createButtonsForButtonBar(Composite parent) {
         // create OK and Cancel buttons by default
         createButton(parent, IDialogConstants.BACK_ID, IDialogConstants.BACK_LABEL, false);
@@ -136,6 +150,7 @@ public class WebServiceDialog extends Dialog implements WebServiceEventListener 
         nextButton = getButton(IDialogConstants.NEXT_ID);
     }
 
+    @Override
     protected Control createDialogArea(Composite parent) {
         Composite panel = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
@@ -150,6 +165,9 @@ public class WebServiceDialog extends Dialog implements WebServiceEventListener 
         webServiceUI = new WebServiceUI(panel, this.webServiceComponentMain);
         webServiceUI.addListener(this);
         webServiceUI.init();
+        if (isRepositoryMode) {
+            webServiceUI.setRepositoryMode();
+        }
 
         return panel;
     }
@@ -189,6 +207,7 @@ public class WebServiceDialog extends Dialog implements WebServiceEventListener 
         }
     }
 
+    @Override
     protected void okPressed() {
         // if (getWebServiceUI().getIsFirst()) {
         // super.cancelPressed();
@@ -292,8 +311,9 @@ public class WebServiceDialog extends Dialog implements WebServiceEventListener 
 
             if (inputData.getParameterName() != null) {
                 String name = inputData.getParameterName();
-                if (!name.equals(""))
+                if (!name.equals("")) {
                     inputMap.put("ELEMENT", name);
+                }
             } else if (inputData.getParameterName() == null && inputData.getParameter() != null) {
                 if (inputData.getParameter().getParent() != null) {
                     String name = new ParameterInfoUtil().getParentName(inputData.getParameter());
@@ -467,10 +487,11 @@ public class WebServiceDialog extends Dialog implements WebServiceEventListener 
     private void warningDialog(String title) {
         MessageBox box = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_WARNING | SWT.OK);
         box.setText("WARNING"); //$NON-NLS-1$
-        box.setMessage(title); //$NON-NLS-1$
+        box.setMessage(title); 
         box.open();
     }
 
+    @Override
     public void checkPerformed(boolean enable) {
         final Button okBtn = getButton(IDialogConstants.OK_ID);
         if (okBtn != null) {

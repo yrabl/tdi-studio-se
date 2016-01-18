@@ -7,7 +7,8 @@ imports="
         org.talend.components.api.properties.ComponentProperties
         org.talend.components.api.runtime.ComponentRuntimeContainer
         org.talend.components.api.runtime.ComponentRuntime
-        org.talend.components.api.schema.SchemaElement
+        org.talend.components.api.properties.Property
+        org.talend.components.api.NamedThing
 		org.talend.component.core.model.Component
         org.talend.core.model.metadata.IMetadataColumn
         org.talend.core.model.metadata.IMetadataTable
@@ -54,20 +55,22 @@ org.talend.components.api.component.ComponentDefinition def_<%=cid %> =
 List<Component.CodegenPropInfo> propsToProcess = component.getCodegenPropInfos(componentProps);
 %>
 
-<%= componentProps.getClass().getName()%> props_<%=cid %> = (<%= componentProps.getClass().getName()%>) def_<%=cid %>.createProperties();
-props_<%=cid %>.setRuntimeOnly().init();
+<%= componentProps.getClass().getName()%> props_<%=cid %> = (<%= componentProps.getClass().getName()%>) def_<%=cid %>.createRuntimeProperties();
 <%
 
 for (Component.CodegenPropInfo propInfo : propsToProcess) { // propInfo
-	List<SchemaElement> properties = propInfo.props.getProperties();
-	for (SchemaElement property : properties) { // property
-		Object value = propInfo.props.getValue(property);
-		if (value != null && (!(value instanceof String) || !((String)value).equals(""))) { // if
+	List<NamedThing> properties = propInfo.props.getProperties();
+	for (NamedThing prop : properties) { // property
+        if (prop instanceof Property) { // if, only deal with valued Properties
+        Property property = (Property)prop;
+		  Object value = property.getValue();
+		  if (value != null && (!(value instanceof String) || !((String)value).equals(""))) { // if
 %>
-			props_<%=cid %><%=propInfo.fieldName%>.setValue("<%=property.getName()%>", 
-				<%=component.getCodegenValue(property, propInfo.props.getStringValue(property))%>);
+	       		props_<%=cid %><%=propInfo.fieldName%>.setValue("<%=property.getName()%>", 
+			     	<%=component.getCodegenValue(property, property.getStringValue())%>);
 <%
-		} // if
+    		} // if
+        }//else may be a ComponentProperties so ignor
 	} // property
 } // propInfo
 %>

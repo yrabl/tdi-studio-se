@@ -57,6 +57,7 @@ import org.talend.core.runtime.repository.build.BuildExportManager;
 import org.talend.core.service.ITransformService;
 import org.talend.core.ui.ITestContainerProviderService;
 import org.talend.designer.maven.model.TalendMavenConstants;
+import org.talend.designer.runprocess.IProcessor;
 import org.talend.designer.runprocess.ProcessorUtilities;
 import org.talend.model.bridge.ReponsitoryContextBridge;
 import org.talend.repository.documentation.ExportFileResource;
@@ -88,7 +89,7 @@ public class BuildJobHandler extends AbstractBuildJobHandler {
     }
 
     @Override
-    public void generateJobFiles(IProgressMonitor monitor) throws Exception {
+    public IProcessor generateJobFiles(IProgressMonitor monitor) throws Exception {
         LastGenerationInfo.getInstance().getUseDynamicMap().clear();
         LastGenerationInfo.getInstance().getUseRulesMap().clear();
 
@@ -133,27 +134,20 @@ public class BuildJobHandler extends AbstractBuildJobHandler {
                 argumentsMap.put(TalendProcessArgumentConstant.ARG_LOG4J_LEVEL, this.exportChoice.get(ExportChoice.log4jLevel));
             }
         }
-        /*
-         * FIXME. Shouldn't set them here, because it's not init yet. will set it before code gen in
-         * ProcessorUtilities.generateCode
-         */
-        // argumentsMap.put(TalendProcessArgumentConstant.ARG_NEED_XMLMAPPINGS, needXmlMappings());
-        // argumentsMap.put(TalendProcessArgumentConstant.ARG_NEED_RULES, needRules());
-        // argumentsMap.put(TalendProcessArgumentConstant.ARG_NEED_PIGUDFS, needPigUDFs());
 
         // generation option
         int generationOption = (isOptionChoosed(ExportChoice.includeTestSource) || isOptionChoosed(ExportChoice.executeTests)) ? ProcessorUtilities.GENERATE_ALL_CHILDS
                 | ProcessorUtilities.GENERATE_TESTS
                 : ProcessorUtilities.GENERATE_ALL_CHILDS;
+        if (isOptionChoosed(ExportChoice.doNotCompileCode)) {
+            generationOption = generationOption | ProcessorUtilities.GENERATE_WITHOUT_COMPILING;
+        }
         argumentsMap.put(TalendProcessArgumentConstant.ARG_GENERATE_OPTION, generationOption);
 
-        // ProcessorUtilities.generateCode(processItem, contextName, version,
-        // isOptionChoosed(ExportChoice.addStatistics), false,
-        // isOptionChoosed(ExportChoice.applyToChildren), isOptionChoosed(ExportChoice.needContext), generationOption,
-        // monitor);
         ProcessorUtilities.setExportConfig(JavaUtils.JAVA_APP_NAME, null, null);
-        ProcessorUtilities.generateCode(processItem, contextName, version, argumentsMap, monitor);
+        IProcessor processor = ProcessorUtilities.generateCode(processItem, contextName, version, argumentsMap, monitor);
         ProcessorUtilities.resetExportConfig();
+        return processor;
     }
 
     @Override

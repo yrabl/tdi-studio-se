@@ -185,27 +185,16 @@
 			<useProjectArtifact>false</useProjectArtifact>
 		</dependencySet>
 		<!-- for children jobs -->
-		<!-- <dependencySet> <outputDirectory>${talend.job.name}</outputDirectory> 
-			<includes> <include>${jobs.binaries.includes.set}</include> </includes> <outputFileNameMapping>${artifact.finalName}.${artifact.extension}</outputFileNameMapping> 
-			<useProjectArtifact>true</useProjectArtifact> </dependencySet> -->
-	</dependencySets>
-	<moduleSets>
-		<moduleSet>
-			<useAllReactorProjects>true</useAllReactorProjects>
+		<dependencySet>
+			<outputDirectory>${talend.job.name}</outputDirectory>
 			<includes>
 				<include>${jobs.binaries.includes.set}</include>
 			</includes>
-			<binaries>
-				<outputDirectory>${talend.job.name}</outputDirectory>
-				<includeDependencies>false</includeDependencies>
-				<unpack>false</unpack>
-				<includes>
-					<include>${project.groupId}:*</include>
-				</includes>
-				<outputFileNameMapping>${module.build.finalName}.${module.extension}
-				</outputFileNameMapping>
-			</binaries>
-		</moduleSet>
+			<outputFileNameMapping>${artifact.build.finalName}.${artifact.extension}</outputFileNameMapping>
+			<useProjectArtifact>true</useProjectArtifact>
+		</dependencySet>
+	</dependencySets>
+	<moduleSets>
 		<moduleSet>
 			<!-- for routines or talend libs -->
 			<useAllReactorProjects>true</useAllReactorProjects>

@@ -54,13 +54,17 @@ public class TracesConnectionUtils {
         List<Map<String, Object>> values = getTraceConnectionFilterValues(conn);
         IMetadataTable table = conn.getMetadataTable();
 
-        if (table != null && values != null && conn != null) {
+        if (values != null && conn != null && !values.isEmpty()) {
 
             for (Map<String, Object> line : values) {
                 Object column = line.get(IConnection.TRACE_SCHEMA_COLUMN);
                 if (isTraceColumnEnabled(conn, line, column)) {
                     enabledColumns.add((String) column);
                 }
+            }
+        } else if (table != null) {
+            for (IMetadataColumn column : table.getListColumns()) {
+                enabledColumns.add(column.getLabel());
             }
         }
         return enabledColumns;

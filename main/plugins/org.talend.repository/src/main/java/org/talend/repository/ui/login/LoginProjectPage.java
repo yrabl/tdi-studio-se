@@ -821,7 +821,15 @@ public class LoginProjectPage extends AbstractLoginActionPage {
                 if (branch == null) {
                     branch = SVNConstant.EMPTY;
                 }
-                // loginHelper.getPrefManipulator().setLastSVNBranch(tacUrl, projectName, branch);
+                Project project = getProject();
+                try {
+                    loginHelper.getPrefManipulator().setLastSVNBranch(
+                            new JSONObject(project.getEmfProject().getUrl()).getString("location"), project.getTechnicalLabel(),
+                            branch);
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    ExceptionHandler.process(e);
+                }
             }
         });
 

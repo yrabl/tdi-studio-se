@@ -634,7 +634,7 @@ public class ExportItemWizardPage extends WizardPage {
         String exportDirPath = reloadExportPath(DIRECTORY_PATH);
         if (exportDirPath != null) {
             if (arcFileName != null) {
-                if (!new Path(exportDirPath).lastSegment().equals(arcFileName)) {
+                if (new Path(exportDirPath).lastSegment() != null && !new Path(exportDirPath).lastSegment().equals(arcFileName)) {
                     exportDirPath = exportDirPath + File.separator + arcFileName;
                 }
             }
@@ -1036,7 +1036,8 @@ public class ExportItemWizardPage extends WizardPage {
         ProjectManager pManager = ProjectManager.getInstance();
         Project project = pManager.getCurrentProject().getEmfProject();
         String projectPath = lastPath + "\\" + project.getTechnicalLabel(); //$NON-NLS-1$
-        if (new File(projectPath).exists() || new File(archivePathField.getText()).exists()) {
+        if ((itemFromDirectoryRadio.getSelection() && new File(projectPath).exists())
+                || (itemFromArchiveRadio.getSelection() && new File(archivePathField.getText()).exists())) {
             File oldFile = new File(projectPath).exists() ? new File(projectPath) : new File(archivePathField.getText());
             if (MessageDialogWithToggle
                     .openConfirm(

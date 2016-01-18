@@ -18,6 +18,9 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.talend.commons.runtime.xml.XmlNodeRetriever;
+import org.talend.core.utils.TalendQuoteUtils;
+import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
+import org.talend.metadata.managment.ui.utils.ConnectionContextHelper;
 import org.talend.repository.model.json.JSONXPathLoopDescriptor;
 import org.talend.repository.model.json.SchemaTarget;
 import org.talend.repository.ui.wizards.metadata.connection.files.json.EJsonReadbyMode;
@@ -72,6 +75,11 @@ public class JSONToJsonPathLinker extends JSONToXPathLinker {
         } else if (dataOfTableItem instanceof JSONXPathLoopDescriptor) {
             JSONXPathLoopDescriptor target = (JSONXPathLoopDescriptor) dataOfTableItem;
             path = target.getAbsoluteXPathQuery();
+            if (target.getConnection().isContextMode()) {
+                ContextType contextType = ConnectionContextHelper.getContextTypeForContextMode(target.getConnection(), target
+                        .getConnection().getContextName());
+                path = TalendQuoteUtils.removeQuotes(ConnectionContextHelper.getOriginalValue(contextType, path));
+            }
         }
         if (path == null) {
             return super.getTreeItem(tree, dataOfTreeItem, dataOfTableItem);

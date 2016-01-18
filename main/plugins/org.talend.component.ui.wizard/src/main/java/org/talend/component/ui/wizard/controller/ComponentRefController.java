@@ -37,11 +37,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.properties.tabbed.ITabbedPropertyConstants;
 import org.talend.component.core.model.GenericElementParameter;
 import org.talend.components.api.NamedThing;
-import org.talend.core.model.components.IComponent;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.INode;
 import org.talend.core.ui.properties.tab.IDynamicProperty;
 import org.talend.designer.core.i18n.Messages;
+import org.talend.designer.core.model.components.EParameterName;
 import org.talend.designer.core.ui.editor.cmd.PropertyChangeCommand;
 import org.talend.designer.core.ui.editor.nodes.Node;
 import org.talend.designer.core.ui.editor.properties.controllers.AbstractElementPropertySectionController;
@@ -88,6 +88,9 @@ public class ComponentRefController extends AbstractElementPropertySectionContro
                                     }
                                 }
                             }
+                        }
+                        if (StringUtils.isBlank(value)) {
+                            value = ((INode) elem).getUniqueName();
                         }
                         if (value.equals(elem.getPropertyValue(name))) { // same value so no need to do anything
                             return null;
@@ -222,13 +225,27 @@ public class ComponentRefController extends AbstractElementPropertySectionContro
         if (combo == null || combo.isDisposed()) {
             return;
         }
+        INode currentNode = (INode) elem;
         Object value = param.getValue();
         List<INode> refNodes = getRefNodes(param);
         List<String> itemsLabel = new ArrayList<>();
         List<String> itemsValue = new ArrayList<>();
         for (INode node : refNodes) {
-            itemsLabel.add(node.getLabel());
-            itemsValue.add(node.getUniqueName());
+            final String uniqueName = node.getUniqueName();
+            if (uniqueName.equals(currentNode.getUniqueName())) {
+                continue;
+            }
+            String displayName = (String) node.getElementParameter(EParameterName.LABEL.getName()).getValue();
+            if (displayName == null) {
+                displayName = uniqueName + " - " + displayName; //$NON-NLS-1$
+            }
+            if (displayName.indexOf("__UNIQUE_NAME__") != -1) { //$NON-NLS-1$
+                displayName = displayName.replaceAll("__UNIQUE_NAME__", uniqueName); //$NON-NLS-1$
+            } else {
+                displayName = uniqueName + " - " + displayName; //$NON-NLS-1$
+            }
+            itemsLabel.add(displayName);
+            itemsValue.add(uniqueName);
         }
         if (param instanceof GenericElementParameter) {
             GenericElementParameter gParam = (GenericElementParameter) param;
@@ -236,7 +253,7 @@ public class ComponentRefController extends AbstractElementPropertySectionContro
             if (properties != null && properties.length > 0) {
                 NamedThing nt = properties[0];
                 itemsLabel.add(nt.getDisplayName());
-                itemsValue.add(null);
+                itemsValue.add(currentNode.getUniqueName());
             }
         }
         param.setListItemsDisplayName(itemsLabel.toArray(new String[0]));
@@ -260,18 +277,7 @@ public class ComponentRefController extends AbstractElementPropertySectionContro
         List<INode> refNodes = new ArrayList<>();
         if (param instanceof GenericElementParameter) {
             GenericElementParameter gParameter = (GenericElementParameter) param;
-            INode refNode = null;
-            List<? extends INode> nodes = part.getProcess().getGeneratingNodes();
-            for (INode node : nodes) {
-                IComponent component = node.getComponent();
-                if (component != null && component.getName().equals(gParameter.getWidget().getReferencedComponentName())) {
-                    refNode = node;
-                    break;
-                }
-            }
-            if (refNode != null && !refNodes.contains(refNode)) {
-                refNodes.add(refNode);
-            }
+            refNodes = (List<INode>) part.getProcess().getNodesOfType(gParameter.getWidget().getReferencedComponentName());
         }
         return refNodes;
     }

@@ -212,6 +212,9 @@ public class ChangeValuesFromRepository extends ChangeMetadataCommand {
             if (isSchemaEmpty) {
                 allowAutoSwitch = true;
             }
+            if (((INode) elem).getComponent().getName().equals("tWebService")) { //$NON-NLS-1$
+                allowAutoSwitch = true;
+            }
         }
 
         if (propertyName.split(":")[1].equals(propertyTypeName)) { //$NON-NLS-1$
@@ -339,6 +342,8 @@ public class ChangeValuesFromRepository extends ChangeMetadataCommand {
                         } else {
                             objectValue = RepositoryToComponentProperty.getValue(connection, repositoryValue, table);
                         }
+                    } else if (connection instanceof WSDLSchemaConnection && "USE_PROXY".equals(repositoryValue)) { //$NON-NLS-1$
+                        objectValue = ((WSDLSchemaConnection) connection).isUseProxy();
                     } else {
                         IMetadataTable metaTable = table;
                         if (metaTable == null && elem instanceof Node) {

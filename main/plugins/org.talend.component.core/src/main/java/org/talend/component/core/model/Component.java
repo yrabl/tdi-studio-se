@@ -14,6 +14,7 @@ package org.talend.component.core.model;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +30,7 @@ import org.talend.commons.exception.BusinessException;
 import org.talend.component.core.constants.IComponentConstants;
 import org.talend.component.core.i18n.Messages;
 import org.talend.component.core.utils.ComponentsUtils;
+import org.talend.components.api.NamedThing;
 import org.talend.components.api.component.ComponentConnector;
 import org.talend.components.api.component.ComponentDefinition;
 import org.talend.components.api.component.ComponentImageType;
@@ -86,6 +88,8 @@ public class Component extends AbstractComponent {
     private List<IMultipleComponentManager> multipleComponentManagers;
 
     private ComponentsProvider provider;
+
+    private Map<String, String> translatedMap = new HashMap<String, String>();
 
     public Component(ComponentDefinition componentDefinition) throws BusinessException {
         this.componentDefinition = componentDefinition;
@@ -154,8 +158,11 @@ public class Component extends AbstractComponent {
     }
 
     private String getTranslatedValue(final String nameValue) {
-        // TODO
-        return "org.talend.help.tSalesforceInput";//$NON-NLS-1$
+        String returnValue = nameValue;
+        if (translatedMap.containsKey(nameValue)) {
+            return translatedMap.get(nameValue);
+        }
+        return returnValue;
     }
 
     @Override
@@ -167,7 +174,7 @@ public class Component extends AbstractComponent {
         addPropertyParameters(listParam, node, ADVANCED_PROPERTY);
         initializePropertyParameters(listParam, node);
         checkSchemaParameter(listParam, node);
-        // addViewParameters(listParam, node);
+        addViewParameters(listParam, node);
         addDocParameters(listParam, node);
         addValidationRulesParameters(listParam, node);
         return listParam;
@@ -664,7 +671,7 @@ public class Component extends AbstractComponent {
 
         param = new ElementParameter(node);
         param.setName(EParameterName.SUBJOB_COLOR.getName());
-        param.setValue("");//$NON-NLS-1$// TODO
+        param.setValue("");//$NON-NLS-1$ // TODO
         param.setDisplayName(EParameterName.SUBJOB_COLOR.getDisplayName());
         param.setFieldType(EParameterFieldType.TEXT);
         param.setCategory(EComponentCategory.ADVANCED);
@@ -676,7 +683,7 @@ public class Component extends AbstractComponent {
 
         param = new ElementParameter(node);
         param.setName(EParameterName.SUBJOB_TITLE_COLOR.getName());
-        param.setValue("");//$NON-NLS-1$// TODO
+        param.setValue("");//$NON-NLS-1$ // TODO
         param.setDisplayName(EParameterName.SUBJOB_TITLE_COLOR.getDisplayName());
         param.setFieldType(EParameterFieldType.TEXT);
         param.setCategory(EComponentCategory.ADVANCED);
@@ -741,8 +748,8 @@ public class Component extends AbstractComponent {
             props = node.getComponentProperties();
             form = props.getForm(advanced ? IComponentConstants.FORM_ADVANCED : IComponentConstants.FORM_MAIN);
         }
-        listParam.addAll(ComponentsUtils.getParametersFromForm(node, category, node.getComponentProperties(), null, form, null,
-                null));
+        listParam.addAll(
+                ComponentsUtils.getParametersFromForm(node, category, node.getComponentProperties(), null, form, null, null));
     }
 
     private void initializePropertyParameters(List<ElementParameter> listParam, final INode node) {
@@ -784,8 +791,8 @@ public class Component extends AbstractComponent {
                             param.setValue(defaultValue);
                             if (param.getFieldType() == EParameterFieldType.ENCODING_TYPE) {
                                 String encodingType = TalendTextUtils.removeQuotes((String) defaultValue);
-                                IElementParameter elementParameter = param.getChildParameters().get(
-                                        EParameterName.ENCODING_TYPE.getName());
+                                IElementParameter elementParameter = param.getChildParameters()
+                                        .get(EParameterName.ENCODING_TYPE.getName());
                                 if (elementParameter != null) {
                                     elementParameter.setValue(encodingType);
                                 }
@@ -1117,12 +1124,18 @@ public class Component extends AbstractComponent {
         List<NodeConnector> listConnector = new ArrayList<NodeConnector>();
         ComponentConnector[] listConnectors = componentDefinition.getConnectors();
         for (ComponentConnector componentConnector : listConnectors) {
-            String connectorName = componentConnector.getType().name();
+            String originalConnectorName = componentConnector.getType().name();
+            String connectorName = originalConnectorName;
+            boolean isFlow_Sub_ConnectorName = IComponentConstants.MAIN_CONNECTOR_NAME.equals(originalConnectorName)
+                    || IComponentConstants.REJECT_CONNECTOR_NAME.equals(originalConnectorName);
+            if (isFlow_Sub_ConnectorName) {
+                connectorName = "FLOW";//$NON-NLS-1$
+            }
             EConnectionType currentType = EConnectionType.getTypeFromName(connectorName);
             if (currentType == null || ("LOOKUP").equals(connectorName) || ("MERGE").equals(connectorName)) {//$NON-NLS-1$//$NON-NLS-2$
                 if (currentType == null) {
                     log.warn(Messages.getString("Component.componentNotExist", this.getName() //$NON-NLS-1$
-                            , connectorName));
+                    , connectorName));
                 }
                 continue;
             }
@@ -1133,16 +1146,42 @@ public class Component extends AbstractComponent {
             nodeConnector.setMenuName(currentType.getDefaultMenuName());
             RGB rgb = currentType.getRGB();
             Integer lineStyle = currentType.getDefaultLineStyle();
-
-            nodeConnector.setMaxLinkInput(componentConnector.getMaxInput());
-            // nodeConnector.setMaxLinkOutput(componentConnector.getMaxOutput());
-
+            if (!isFlow_Sub_ConnectorName) {
+                nodeConnector.setMaxLinkInput(componentConnector.getMaxInput());
+            }
+            if ("FLOW".equals(connectorName) || "ITERATE".equals(connectorName)) {//$NON-NLS-1$//$NON-NLS-2$
+                nodeConnector.setMaxLinkOutput(componentConnector.getMaxOutput());
+            }
             if (nodeConnector.getName() == null) {
-                nodeConnector.setName(connectorName);
-                nodeConnector.setBaseSchema(currentType.getName());
+                if (isFlow_Sub_ConnectorName) {
+                    nodeConnector.setName(originalConnectorName);
+                    nodeConnector.setBaseSchema(currentType.getName());
+                    if (IComponentConstants.REJECT_CONNECTOR_NAME.equals(originalConnectorName)) {
+                        nodeConnector.setMenuName("Reject"); //$NON-NLS-1$
+                        nodeConnector.setLinkName("Reject"); //$NON-NLS-1$
+                    }
+                } else {
+                    nodeConnector.setName(connectorName);
+                    nodeConnector.setBaseSchema(currentType.getName());
+                }
             }
             nodeConnector.addConnectionProperty(currentType, rgb, lineStyle);
             listConnector.add(nodeConnector);
+            if ("FLOW".equals(connectorName)) { //$NON-NLS-1$
+                // if kind is "flow" (main type), then add the same for the lookup and merge.
+                currentType = EConnectionType.FLOW_REF;
+
+                rgb = currentType.getRGB();
+                lineStyle = currentType.getDefaultLineStyle();
+                nodeConnector.addConnectionProperty(currentType, rgb, lineStyle);
+                nodeConnector.getConnectionProperty(currentType).setRGB(rgb);
+                currentType = EConnectionType.FLOW_MERGE;
+
+                rgb = currentType.getRGB();
+                lineStyle = currentType.getDefaultLineStyle();
+                nodeConnector.addConnectionProperty(currentType, rgb, lineStyle);
+                nodeConnector.getConnectionProperty(currentType).setRGB(rgb);
+            }
         }
 
         for (int i = 0; i < EConnectionType.values().length; i++) {
@@ -1321,7 +1360,7 @@ public class Component extends AbstractComponent {
     private ArrayList<ECodePart> createCodePartList() {
         ArrayList<ECodePart> theCodePartList = new ArrayList<ECodePart>();
         theCodePartList.add(ECodePart.BEGIN);
-        theCodePartList.add(ECodePart.MAIN); 
+        theCodePartList.add(ECodePart.MAIN);
         theCodePartList.add(ECodePart.END);
         return theCodePartList;
     }
@@ -1577,17 +1616,16 @@ public class Component extends AbstractComponent {
     }
 
     protected void processCodegenPropInfos(List<CodegenPropInfo> propList, ComponentProperties props, String fieldString) {
-        for (String fieldName : props.getPropertyFieldNames()) {
-            SchemaElement property = props.getPropertyByFieldName(fieldName);
-            if (property instanceof ComponentProperties) {
+        for (NamedThing prop : props.getProperties()) {
+            if (prop instanceof ComponentProperties) {
                 CodegenPropInfo childPropInfo = new CodegenPropInfo();
                 if (fieldString.equals("")) {//$NON-NLS-1$
-                    childPropInfo.fieldName = "." + fieldName;//$NON-NLS-1$
+                    childPropInfo.fieldName = "." + prop.getName();//$NON-NLS-1$
                 } else {
-                    childPropInfo.fieldName = fieldString + "." + fieldName;//$NON-NLS-1$
+                    childPropInfo.fieldName = fieldString + "." + prop.getName();//$NON-NLS-1$
                 }
-                childPropInfo.className = property.getClass().getName();
-                childPropInfo.props = (ComponentProperties) property;
+                childPropInfo.className = prop.getClass().getName();
+                childPropInfo.props = (ComponentProperties) prop;
                 propList.add(childPropInfo);
                 processCodegenPropInfos(propList, childPropInfo.props, childPropInfo.fieldName);
             }
@@ -1701,8 +1739,8 @@ public class Component extends AbstractComponent {
             Deserialized fromSerialized = ComponentProperties.fromSerialized(serialized);
             if (fromSerialized != null) {
                 ComponentProperties componentProperties = fromSerialized.properties;
-                ((GenericElementParameter) param).setComponentProperties(ComponentsUtils.getCurrentComponentProperties(
-                        componentProperties, param.getName()));
+                ((GenericElementParameter) param).setComponentProperties(
+                        ComponentsUtils.getCurrentComponentProperties(componentProperties, param.getName()));
             }
         }
     }

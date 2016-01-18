@@ -22,6 +22,10 @@ public interface IComponentConstants {
 
     public static final String CONTEXT = "FLOW";//$NON-NLS-1$ 
 
+    public static final String MAIN_CONNECTOR_NAME = "MAIN";//$NON-NLS-1$ 
+
+    public static final String REJECT_CONNECTOR_NAME = "REJECT";//$NON-NLS-1$ 
+
     public static final String DIR_SEPARATOR = "/";//$NON-NLS-1$ 
 
     public static final String EXP_SEPARATOR = ".";//$NON-NLS-1$ 

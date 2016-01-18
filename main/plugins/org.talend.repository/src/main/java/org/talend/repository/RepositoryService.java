@@ -139,6 +139,8 @@ import org.talend.repository.ui.wizards.exportjob.scriptsmanager.JobJavaScriptsM
 import org.talend.repository.ui.wizards.exportjob.scriptsmanager.JobScriptsManager;
 import org.talend.repository.ui.wizards.exportjob.scriptsmanager.JobScriptsManager.ExportChoice;
 import org.talend.repository.ui.wizards.exportjob.scriptsmanager.JobScriptsManagerFactory;
+import org.talend.utils.json.JSONException;
+import org.talend.utils.json.JSONObject;
 
 /**
  * DOC qian class global comment. Detailled comment <br/>
@@ -409,17 +411,6 @@ public class RepositoryService implements IRepositoryService, IRepositoryContext
                         break;
                     }
                 }
-                if (project != null && reload && lastBean != null ) {
-                    if (PluginChecker.isSVNProviderPluginLoaded()) {
-                        ISVNProviderService svnProviderService = (ISVNProviderService) GlobalServiceRegister.getDefault().getService(
-                                ISVNProviderService.class);
-                        if (svnProviderService.isSVNProject(project)) {
-                            String projectUrl = svnProviderService.getProjectUrl(project);
-                            String lastBranch = preferenceManipulator.getLastSVNBranch(projectUrl, project.getTechnicalLabel());
-                            ProjectManager.getInstance().setMainProjectBranch(project, lastBranch);
-                        }
-                    }
-                }
                 if (!reload) {
                     if (deleteProjectIfExist && project != null) {
                         IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -449,6 +440,24 @@ public class RepositoryService implements IRepositoryService, IRepositoryContext
                         }
                     }
 
+                }
+                if (!repositoryFactory.isLocalConnectionProvider()) {
+                    ProjectManager.getInstance().setMainProjectBranch(
+                            project,
+                            preferenceManipulator.getLastSVNBranch(
+                                    new JSONObject(project.getEmfProject().getUrl()).getString("location"),
+                                    project.getTechnicalLabel()));
+                }
+                if (project != null && reload && lastBean != null && repositoryFactory.getRepositoryContext().isOffline()) {
+                    if (PluginChecker.isSVNProviderPluginLoaded()) {
+                        ISVNProviderService svnProviderService = (ISVNProviderService) GlobalServiceRegister.getDefault()
+                                .getService(ISVNProviderService.class);
+                        if (svnProviderService.isSVNProject(project)) {
+                            String projectUrl = svnProviderService.getProjectUrl(project);
+                            String lastBranch = preferenceManipulator.getLastSVNBranch(projectUrl, project.getTechnicalLabel());
+                            ProjectManager.getInstance().setMainProjectBranch(project, lastBranch);
+                        }
+                    }
                 }
                 if (project == null) {
                     throw new LoginException(Messages.getString("RepositoryService.projectNotFound", projectName)); //$NON-NLS-1$
@@ -484,6 +493,9 @@ public class RepositoryService implements IRepositoryService, IRepositoryContext
                 MessageBoxExceptionHandler.process(e, new Shell());
                 repositoryFactory.logOffProject();
                 return false;
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                ExceptionHandler.process(e);
             }
 
             return true;

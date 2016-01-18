@@ -200,6 +200,10 @@ public class WebServiceUI implements AbstractWebService {
 
     private Button inputschemaButton;
 
+    private Button autoMapButtonForIn;
+
+    private Button autoMapButtonForOut;
+
     private Table expressTableForIn;
 
     private Table expressTableForout;
@@ -1777,10 +1781,10 @@ public class WebServiceUI implements AbstractWebService {
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = SWT.END;
-        Button autoMapButton = new Button(buttonCompsoite, SWT.PUSH);
-        autoMapButton.setLayoutData(gd);
-        autoMapButton.setText("Auto Map");
-        autoMapButton.addSelectionListener(new SelectionAdapter() {
+        autoMapButtonForIn = new Button(buttonCompsoite, SWT.PUSH);
+        autoMapButtonForIn.setLayoutData(gd);
+        autoMapButtonForIn.setText("Auto Map");
+        autoMapButtonForIn.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -2562,10 +2566,10 @@ public class WebServiceUI implements AbstractWebService {
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = SWT.END;
-        Button autoMapButton = new Button(butComRow, SWT.PUSH);
-        autoMapButton.setLayoutData(gd);
-        autoMapButton.setText("Auto Map");
-        autoMapButton.addSelectionListener(new SelectionAdapter() {
+        autoMapButtonForOut = new Button(butComRow, SWT.PUSH);
+        autoMapButtonForOut.setLayoutData(gd);
+        autoMapButtonForOut.setText("Auto Map");
+        autoMapButtonForOut.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -3970,5 +3974,35 @@ public class WebServiceUI implements AbstractWebService {
         } catch (Exception e) {
             tabTotabLink.clearLinks();
         }
+    }
+
+    public void setRepositoryMode() {
+        addListButForIn.setEnabled(false);
+        addListButForOut.setEnabled(false);
+        autoMapButtonForIn.setEnabled(false);
+        autoMapButtonForOut.setEnabled(false);
+        denorButForIn.setEnabled(false);
+        denorButForOut.setEnabled(false);
+        expressTableForIn.setEnabled(false);
+        expressTableForout.setEnabled(false);
+        // inputComposite.setEnabled(false);
+        inputschemaButton.setEnabled(false);
+        listTable.setEnabled(false);
+        listTableView.getMainComposite().setEnabled(false);
+        normalizeButForIn.setEnabled(false);
+        normalizeButForOut.setEnabled(false);
+        // outputComposite.setEnabled(false);
+        portListTable.setEnabled(false);
+        portListTableView.getMainComposite().setEnabled(false);
+        refreshbut.setEnabled(false);
+        removeButForIn.setEnabled(false);
+        removeButForout.setEnabled(false);
+        rowoutPutTableView.getMainComposite().setEnabled(false);
+        rowTableForin.setEnabled(false);
+        rowTableForout.setEnabled(false);
+        schemaButton.setEnabled(false);
+        wsdlComposite.setEnabled(false);
+        wsdlField.getTextControl().setEditable(false);
+        wsdlField.getButtonControl().setEnabled(false);
     }
 }

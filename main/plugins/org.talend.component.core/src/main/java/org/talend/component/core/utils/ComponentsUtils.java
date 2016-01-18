@@ -31,6 +31,7 @@ import org.talend.components.api.NamedThing;
 import org.talend.components.api.component.ComponentDefinition;
 import org.talend.components.api.properties.ComponentProperties;
 import org.talend.components.api.properties.NameAndLabel;
+import org.talend.components.api.properties.Property;
 import org.talend.components.api.properties.presentation.Form;
 import org.talend.components.api.properties.presentation.Widget;
 import org.talend.components.api.schema.SchemaElement;
@@ -165,8 +166,8 @@ public class ComponentsUtils {
                 if (!isSameComponentProperties(componentProperties, widgetProperty)) {
                     propertiesPath = getPropertiesPath(parentPropertiesPath, subProperties.getName());
                 }
-                elementParameters.addAll(getParametersFromForm(element, compCategory, subProperties, propertiesPath, subForm,
-                        widget, lastRN));
+                elementParameters.addAll(
+                        getParametersFromForm(element, compCategory, subProperties, propertiesPath, subForm, widget, lastRN));
                 continue;
             }
 
@@ -203,29 +204,31 @@ public class ComponentsUtils {
             if (se == null) {
                 param.setValue(widgetProperty.getDisplayName());
             } else {
-                se = componentProperties.getProperty(se.getName());
-                param.setRequired(se.isRequired());
-                param.setValue(componentProperties.getValue(se));
-                param.setSupportContext(isSupportContext(se));
-                List<?> values = se.getPossibleValues();
-                if (values != null) {
-                    param.setPossibleValues(values);
-                    List<String> possVals = new ArrayList<>();
-                    List<String> possValsDisplay = new ArrayList<>();
-                    for (Object obj : values) {
-                        if (obj instanceof NameAndLabel) {
-                            NameAndLabel nal = (NameAndLabel) obj;
-                            possVals.add(nal.getName());
-                            possValsDisplay.add(nal.getLabel());
-                        } else {
-                            possVals.add(String.valueOf(obj));
-                            possValsDisplay.add(String.valueOf(obj));
+                Property property = componentProperties.getValuedProperty(se.getName());
+                if (property != null) {
+                    param.setRequired(property.isRequired());
+                    param.setValue(property.getValue());
+                    param.setSupportContext(isSupportContext(property));
+                    List<?> values = property.getPossibleValues();
+                    if (values != null) {
+                        param.setPossibleValues(values);
+                        List<String> possVals = new ArrayList<>();
+                        List<String> possValsDisplay = new ArrayList<>();
+                        for (Object obj : values) {
+                            if (obj instanceof NameAndLabel) {
+                                NameAndLabel nal = (NameAndLabel) obj;
+                                possVals.add(nal.getName());
+                                possValsDisplay.add(nal.getLabel());
+                            } else {
+                                possVals.add(String.valueOf(obj));
+                                possValsDisplay.add(String.valueOf(obj));
+                            }
                         }
+                        param.setListItemsDisplayName(possValsDisplay.toArray(new String[0]));
+                        param.setListItemsDisplayCodeName(possValsDisplay.toArray(new String[0]));
+                        param.setListItemsValue(possVals.toArray(new String[0]));
                     }
-                    param.setListItemsDisplayName(possValsDisplay.toArray(new String[0]));
-                    param.setListItemsDisplayCodeName(possValsDisplay.toArray(new String[0]));
-                    param.setListItemsValue(possVals.toArray(new String[0]));
-                }
+                } // else a ComponentProperties so ignor
             }
             // if (widgetProperty instanceof PresentationItem) {
             // param.setValue(null);
@@ -347,7 +350,7 @@ public class ComponentsUtils {
         if (StringUtils.isEmpty(compPropertiesPath)) {
             return componentProperties;
         }
-        SchemaElement property = componentProperties.getProperty(compPropertiesPath);
+        NamedThing property = componentProperties.getProperty(compPropertiesPath);
         if (property == null) {
             return getCurrentComponentPropertiesSpecial(componentProperties, paramName);
         }
@@ -363,14 +366,14 @@ public class ComponentsUtils {
         if (componentProperties == null || paramName == null) {
             return null;
         }
-        List<SchemaElement> schemaElements = componentProperties.getProperties();
-        for (SchemaElement se : schemaElements) {
-            if (paramName.equals(se.getName())) {
+        List<NamedThing> allProps = componentProperties.getProperties();
+        for (NamedThing namedThing : allProps) {
+            if (paramName.equals(namedThing.getName())) {
                 currentComponentProperties = componentProperties;
                 break;
             }
-            if (se instanceof ComponentProperties) {
-                ComponentProperties childComponentProperties = (ComponentProperties) se;
+            if (namedThing instanceof ComponentProperties) {
+                ComponentProperties childComponentProperties = (ComponentProperties) namedThing;
                 currentComponentProperties = getCurrentComponentProperties(childComponentProperties, paramName);
             }
             if (currentComponentProperties != null) {
@@ -380,7 +383,7 @@ public class ComponentsUtils {
         return currentComponentProperties;
     }
 
-    public static SchemaElement getGenericSchemaElement(ComponentProperties componentProperties, String paramName) {
+    public static NamedThing getGenericSchemaElement(ComponentProperties componentProperties, String paramName) {
         if (componentProperties == null || paramName == null) {
             return null;
         }
@@ -396,9 +399,9 @@ public class ComponentsUtils {
         if (currentComponentProperties == null) {
             return null;
         }
-        SchemaElement schemaElement = componentProperties.getProperty(paramName);
-        if (schemaElement != null) {
-            obj = currentComponentProperties.getValue(schemaElement);
+        Property property = componentProperties.getValuedProperty(paramName);
+        if (property != null) {
+            obj = property.getValue();
         }
         return obj;
     }
@@ -414,21 +417,24 @@ public class ComponentsUtils {
         currentComponentProperties.setValue(getPropertyName(paramName), value);
     }
 
-    public static List<SchemaElement> getAllGenericSchemaElements(ComponentProperties componentProperties) {
-        List<SchemaElement> allGenericSchemaElements = new ArrayList<SchemaElement>();
+    /**
+     * looks for all Property type properties of the given componenetProperties and all is nested CompoenetProperties.
+     */
+    public static List<Property> getAllValuedProperties(ComponentProperties componentProperties) {
+        List<Property> allValuedProperties = new ArrayList<>();
         if (componentProperties == null) {
             return null;
         }
-        List<SchemaElement> schemaElements = componentProperties.getProperties();
-        for (SchemaElement se : schemaElements) {
-            if (se instanceof ComponentProperties) {
-                ComponentProperties childComponentProperties = (ComponentProperties) se;
-                allGenericSchemaElements.addAll(getAllGenericSchemaElements(childComponentProperties));
-            } else {
-                allGenericSchemaElements.add(se);
-            }
+        List<NamedThing> namedThings = componentProperties.getProperties();
+        for (NamedThing namedThing : namedThings) {
+            if (namedThing instanceof ComponentProperties) {
+                ComponentProperties childComponentProperties = (ComponentProperties) namedThing;
+                allValuedProperties.addAll(getAllValuedProperties(childComponentProperties));
+            } else if (namedThing instanceof Property) {
+                allValuedProperties.add((Property) namedThing);
+            } // else other type not yet handled
         }
-        return allGenericSchemaElements;
+        return allValuedProperties;
     }
 
     private static String getPropertyPath(String paramName) {

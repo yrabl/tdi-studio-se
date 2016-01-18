@@ -32,6 +32,7 @@ import org.talend.component.core.utils.SchemaUtils;
 import org.talend.components.api.NamedThing;
 import org.talend.components.api.properties.ComponentProperties;
 import org.talend.components.api.properties.PresentationItem;
+import org.talend.components.api.properties.Property;
 import org.talend.components.api.properties.presentation.Form;
 import org.talend.components.api.properties.presentation.Widget;
 import org.talend.components.api.schema.Schema;
@@ -113,12 +114,12 @@ public class GenericElementParameter extends ElementParameter {
         }
         NamedThing[] widgetProperties = widget.getProperties();
         NamedThing widgetProperty = widgetProperties[0];
-        if (widgetProperty instanceof SchemaElement) {
-            SchemaElement se = (SchemaElement) widgetProperty;
-            Object oldValue = componentProperties.getValue(se);
+        if (widgetProperty instanceof Property) {
+            Property se = (Property) widgetProperty;
+            Object oldValue = se.getValue();
             if (newValue != null && !newValue.equals(oldValue)) {
-                se = componentProperties.getProperty(se.getName());
-                componentProperties.setValue(se, newValue);
+                se = (Property) componentProperties.getProperty(se.getName());
+                se.setValue(newValue);
                 fireConnectionPropertyChangedEvent(newValue);
             }
         } else if (widgetProperty instanceof PresentationItem) {
@@ -191,9 +192,9 @@ public class GenericElementParameter extends ElementParameter {
     }
 
     private void update() {
-        SchemaElement property = componentProperties.getProperty(getParameterName());
-        if (property != null) {
-            List<?> values = property.getPossibleValues();
+        NamedThing property = componentProperties.getProperty(getParameterName());
+        if (property != null && property instanceof SchemaElement) {
+            List<?> values = ((SchemaElement) property).getPossibleValues();
             if (values != null) {
                 this.setPossibleValues(values);
             }
@@ -244,8 +245,8 @@ public class GenericElementParameter extends ElementParameter {
             // do nothing
         }
         if (schemaObj != null && schemaObj instanceof Schema) {
-            MetadataTable metadataTable = SchemaUtils
-                    .createSchema(String.valueOf(getValue()), componentProperties.toSerialized());
+            MetadataTable metadataTable = SchemaUtils.createSchema(String.valueOf(getValue()),
+                    componentProperties.toSerialized());
             SchemaUtils.convertComponentSchemaIntoTalendSchema((Schema) schemaObj, metadataTable);
             IMetadataTable newTable = MetadataToolHelper.convert(metadataTable);
             IElement element = this.getElement();

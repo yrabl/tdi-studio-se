@@ -1631,7 +1631,8 @@ public class LoginComposite extends Composite {
                     if (branch == null) {
                         branch = SVNConstant.EMPTY;
                     }
-                    // prefManipulator.setLastSVNBranch(branch);
+                    Project project = getProject();
+                    prefManipulator.setLastSVNBranch(project.getEmfProject().getUrl(), project.getTechnicalLabel(), branch);
                 }
             });
         }

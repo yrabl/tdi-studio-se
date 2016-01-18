@@ -17,6 +17,8 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.talend.core.model.components.IComponent;
+import org.talend.designer.core.model.components.EParameterName;
+import org.talend.designer.core.model.components.EmfComponent;
 import org.talend.designer.webservice.data.ExternalWebServiceUIProperties;
 import org.talend.designer.webservice.managers.WebServiceManager;
 import org.talend.designer.webservice.ui.dialog.WebServiceDialog;
@@ -48,6 +50,10 @@ public class WebServiceComponentMain {
 
     public Dialog createDialog(Shell parentShell) {
         dialog = new WebServiceDialog(parentShell, this);
+        if (EmfComponent.REPOSITORY
+                .equals(this.connector.getElementParameter(EParameterName.PROPERTY_TYPE.getName()).getValue())) {
+            dialog.setRepositoryMode(true);
+        }
         IComponent component = connector.getComponent();
         dialog.setTitle("Talend Integration Suite - " + connector.getUniqueName());
 

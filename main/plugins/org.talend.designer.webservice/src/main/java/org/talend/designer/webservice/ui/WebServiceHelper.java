@@ -31,6 +31,8 @@ import org.talend.core.model.metadata.MetadataTable;
 import org.talend.core.model.metadata.builder.connection.WSDLParameter;
 import org.talend.core.model.metadata.builder.connection.WSDLSchemaConnection;
 import org.talend.core.model.process.IElementParameter;
+import org.talend.core.model.process.IExternalNode;
+import org.talend.core.model.process.INode;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.service.IWebServiceTos;
 import org.talend.core.ui.AbstractWebService;
@@ -50,6 +52,22 @@ public class WebServiceHelper implements IWebServiceTos {
     WebServiceTosSaveManager manager = WebServiceTosSaveManager.getInstance();
 
     public WebServiceHelper() {
+    }
+
+    @Override
+    public AbstractWebService getWebServiceUI(Composite uiParent, ConnectionItem connectionItem, INode node) {
+        if (node != null) {
+            IExternalNode enode = node.getExternalNode();
+            if (enode instanceof WebServiceComponent) {
+                WebServiceComponentMain b = new WebServiceComponentMain((WebServiceComponent) enode);
+                enode.setComponent(b.getWebServiceComponent().getComponent());
+                webServiceUI = new WebServiceUI(uiParent, b, connectionItem);
+                webServiceUI.init();
+                manager.addWebServiceSaveListener(this);
+                return webServiceUI;
+            }
+        }
+        return getWebServiceUI(uiParent, connectionItem);
     }
 
     /*

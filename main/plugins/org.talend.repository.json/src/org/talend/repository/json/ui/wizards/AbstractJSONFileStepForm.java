@@ -41,7 +41,6 @@ import org.talend.core.utils.TalendQuoteUtils;
 import org.talend.datatools.xml.utils.ATreeNode;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
 import org.talend.metadata.managment.ui.utils.ConnectionContextHelper;
-import org.talend.metadata.managment.ui.utils.FileConnectionContextUtils.EFileParamName;
 import org.talend.metadata.managment.ui.utils.OtherConnectionContextUtils.EParamName;
 import org.talend.metadata.managment.ui.wizard.metadata.xml.node.Attribute;
 import org.talend.metadata.managment.ui.wizard.metadata.xml.node.Element;
@@ -107,8 +106,8 @@ public abstract class AbstractJSONFileStepForm extends AbstractJSONStepForm {
 
     protected void collectConnParams() {
         if (getConnection().isInputModel()) {
-            addContextParams(EFileParamName.File, true);
-            addContextParams(EFileParamName.Encoding, true);
+            addContextParams(EParamName.FilePath, true);
+            addContextParams(EParamName.Encoding, true);
             addContextParams(EParamName.XPathQuery, true);
         } else {
             addContextParams(EParamName.OutputFilePath, true);

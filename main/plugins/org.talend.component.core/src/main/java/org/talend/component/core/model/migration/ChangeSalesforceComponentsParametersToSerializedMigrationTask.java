@@ -24,8 +24,9 @@ import org.talend.commons.exception.PersistenceException;
 import org.talend.component.core.constants.IComponentConstants;
 import org.talend.component.core.model.GenericElementParameter;
 import org.talend.component.core.utils.ComponentsUtils;
+import org.talend.components.api.NamedThing;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.api.schema.SchemaElement;
+import org.talend.components.api.properties.Property;
 import org.talend.core.model.components.ComponentCategory;
 import org.talend.core.model.components.IComponent;
 import org.talend.core.model.components.ModifyComponentsAction;
@@ -74,22 +75,20 @@ public class ChangeSalesforceComponentsParametersToSerializedMigrationTask exten
                 FakeNode fNode = new FakeNode(component);
                 for (IElementParameter elementParameter : fNode.getElementParameters()) {
                     if (elementParameter instanceof GenericElementParameter) {
-                        ComponentProperties currentComponentProperties = ComponentsUtils.getCurrentComponentProperties(
-                                componentProperties, elementParameter.getName());
-                        SchemaElement currentSchemaElement = ComponentsUtils.getGenericSchemaElement(componentProperties,
+                        ComponentProperties currentComponentProperties = ComponentsUtils
+                                .getCurrentComponentProperties(componentProperties, elementParameter.getName());
+                        NamedThing currentNamedThing = ComponentsUtils.getGenericSchemaElement(componentProperties,
                                 elementParameter.getName());
-                        // System.out.println(nodeType.getComponentName() + IComponentConstants.EXP_SEPARATOR
-                        //                                + elementParameter.getName() + "=");//$NON-NLS-1$
-                        String oldParameterName = GenericParametersProvider.getString(nodeType.getComponentName()
-                                + IComponentConstants.EXP_SEPARATOR + elementParameter.getName());
+                        String oldParameterName = GenericParametersProvider.getString(
+                                nodeType.getComponentName() + IComponentConstants.EXP_SEPARATOR + elementParameter.getName());
                         EList listParamType = nodeType.getElementParameter();
                         for (Object param : listParamType) {
                             ElementParameterType paramType = (ElementParameterType) param;
                             String paramName = paramType.getName();
                             if (paramName != null && paramName.equals(oldParameterName) && currentComponentProperties != null
-                                    && currentSchemaElement != null) {
-                                currentComponentProperties.setValue(currentSchemaElement,
-                                        ParameterUtilTool.convertSpecialParameterValue(paramType.getValue()));
+                                    && currentNamedThing != null && currentNamedThing instanceof Property) {
+                                ((Property) currentNamedThing)
+                                        .setValue(ParameterUtilTool.convertSpecialParameterValue(paramType.getValue()));
                                 // Only remove the ElementParameterType if contains in the component properties
                                 listParamType.remove(processType);
                                 modified = true;
@@ -101,8 +100,8 @@ public class ChangeSalesforceComponentsParametersToSerializedMigrationTask exten
                 if (modified) {
                     String serializedProperties = componentProperties.toSerialized();
                     if (serializedProperties != null) {
-                        ElementParameterType pType = ParameterUtilTool.createParameterType(null,
-                                "PROPERTIES", serializedProperties); //$NON-NLS-1$
+                        ElementParameterType pType = ParameterUtilTool.createParameterType(null, "PROPERTIES", //$NON-NLS-1$
+                                serializedProperties);
                         nodeType.getElementParameter().add(pType);
                     }
                 }

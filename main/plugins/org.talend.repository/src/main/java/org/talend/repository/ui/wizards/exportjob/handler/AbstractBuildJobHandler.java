@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.repository.ui.wizards.exportjob.handler;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.BooleanUtils;
@@ -20,6 +21,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.talend.commons.exception.ExceptionHandler;
+import org.talend.commons.utils.generation.JavaUtils;
 import org.talend.core.CorePlugin;
 import org.talend.core.model.process.ProcessUtils;
 import org.talend.core.model.properties.Item;
@@ -32,6 +34,7 @@ import org.talend.core.runtime.process.IBuildJobHandler;
 import org.talend.core.runtime.process.ITalendProcessJavaProject;
 import org.talend.designer.maven.model.TalendMavenConstants;
 import org.talend.designer.runprocess.IRunProcessService;
+import org.talend.designer.runprocess.ProcessorUtilities;
 import org.talend.repository.ProjectManager;
 import org.talend.repository.ui.utils.Log4jPrefsSettingManager;
 import org.talend.repository.ui.wizards.exportjob.scriptsmanager.JobScriptsManager.ExportChoice;
@@ -69,7 +72,11 @@ public abstract class AbstractBuildJobHandler implements IBuildJobHandler {
         this.processItem = processItem;
         this.version = version;
         this.contextName = contextName;
-        this.exportChoice = exportChoiceMap;
+        if (exportChoiceMap != null) {
+            this.exportChoice = exportChoiceMap;
+        } else {
+            this.exportChoice = new HashMap<ExportChoice, Object>();
+        }
         IRunProcessService runProcessService = CorePlugin.getDefault().getRunProcessService();
         this.talendProcessJavaProject = runProcessService.getTalendProcessJavaProject();
     }
@@ -150,13 +157,11 @@ public abstract class AbstractBuildJobHandler implements IBuildJobHandler {
         addArg(profileBuffer, isOptionChoosed(ExportChoice.includeLibs), TalendMavenConstants.PROFILE_INCLUDE_LIBS);
         addArg(profileBuffer, isBinaries, TalendMavenConstants.PROFILE_INCLUDE_BINARIES);
 
-        // the log4j is only useful, when binaries
-        if (isLog4jEnable()) {
-            // add log4j to running.
-            addArg(profileBuffer, isBinaries, TalendMavenConstants.PROFILE_INCLUDE_RUNNING_LOG4J);
-            // add log4j for resources.
-            addArg(profileBuffer, !isBinaries, TalendMavenConstants.PROFILE_INCLUDE_LOG4J);
-        }
+        // add log4j to running.
+        addArg(profileBuffer, isLog4jEnable() && isBinaries, TalendMavenConstants.PROFILE_INCLUDE_RUNNING_LOG4J);
+        // add log4j for resources.
+        addArg(profileBuffer, isLog4jEnable() && !isBinaries, TalendMavenConstants.PROFILE_INCLUDE_LOG4J);
+
         // the running context is only useful, when binaries
         addArg(profileBuffer, isBinaries && isOptionChoosed(ExportChoice.needContext),
                 TalendMavenConstants.PROFILE_INCLUDE_CONTEXTS, ProcessUtils.isHDInsight());
@@ -166,10 +171,9 @@ public abstract class AbstractBuildJobHandler implements IBuildJobHandler {
         addArg(profileBuffer, isOptionChoosed(ExportChoice.executeTests), TalendMavenConstants.PROFILE_INCLUDE_TEST_REPORTS);
 
         // xmlMappings folders
-        if (needXmlMappings()) {
-            addArg(profileBuffer, true, TalendMavenConstants.PROFILE_INCLUDE_XMLMAPPINGS);
-            addArg(profileBuffer, isBinaries, TalendMavenConstants.PROFILE_INCLUDE_RUNNING_XMLMAPPINGS);
-        }
+        addArg(profileBuffer, needXmlMappings(), TalendMavenConstants.PROFILE_INCLUDE_XMLMAPPINGS);
+        addArg(profileBuffer, needXmlMappings() && isBinaries, TalendMavenConstants.PROFILE_INCLUDE_RUNNING_XMLMAPPINGS);
+
         // rules
         if (needRules()) {
             addArg(profileBuffer, true, TalendMavenConstants.PROFILE_INCLUDE_RULES);
@@ -208,7 +212,7 @@ public abstract class AbstractBuildJobHandler implements IBuildJobHandler {
     protected void addArg(StringBuffer commandBuffer, boolean include, String arg) {
         addArg(commandBuffer, false, include, arg);
     }
-    
+
     private void addArg(StringBuffer commandBuffer, boolean include, String arg, boolean isHD) {
         if (isHD) {
             commandBuffer.append(NEGATION);
@@ -217,7 +221,7 @@ public abstract class AbstractBuildJobHandler implements IBuildJobHandler {
             addArg(commandBuffer, false, include, arg);
         }
     }
-    
+
     @Override
     public IFile getJobTargetFile() {
         if (talendProcessJavaProject == null) {
@@ -236,5 +240,5 @@ public abstract class AbstractBuildJobHandler implements IBuildJobHandler {
         IFile jobFile = targetFolder.getFile(jobZipName);
         return jobFile;
     }
-    
+
 }

@@ -825,23 +825,38 @@ if(valueMap.get("<%=currEleName%>")!=null) {//open if 8080
 	private void addAttribute(String currEleName, OutputTreeNode node){
 		for(TreeNode tmpNode : node.getChildren()) {
 			if(tmpNode.getNodeType()==NodeType.ATTRIBUT) {
-				if(tmpNode.getExpression()!=null && !("").equals(tmpNode.getExpression()) ){
 %>
-//		if(<%//tool.getValue(node);%>!=null){
-			valueMap.put("<%=currEleName%>",<%generateMethodUtil.generateExprCode(tmpNode.getExpression()); %>);
-			if(valueMap.get("<%=currEleName%>")!=null) {
-				<%=currEleName%>.addAttribute("<%=tmpNode.getName() %>",FormatterUtils.format(<%generateMethodUtil.generateExprCode(tmpNode.getExpression()); %>,<%=tmpNode.getPattern()%>));
-			}<% if(allowEmpty) { %>else {
-				<%=currEleName%>.addAttribute("<%=tmpNode.getName() %>","");
-			}
-			<% } %>
-//		}
+				currentValue = null;
+<%
+				if(tmpNode.getExpression()!=null && !("").equals(tmpNode.getExpression())){
+%>
+    			valueMap.put("<%=currEleName%>",<%generateMethodUtil.generateExprCode(tmpNode.getExpression()); %>);
+    			if(valueMap.get("<%=currEleName%>")!=null) {
+    				currentValue = FormatterUtils.format(<%generateMethodUtil.generateExprCode(tmpNode.getExpression()); %>,<%=tmpNode.getPattern()%>);
+    			}<% if(allowEmpty) { %> else {
+    				currentValue = "";
+    			}
+				<% } %>
 <%
 				} else if(allowEmpty) {
 %>
-			<%=currEleName%>.addAttribute("<%=tmpNode.getName() %>","");
+				currentValue = "";
 <%
 				}
+				
+				String name = tmpNode.getName();
+				
+        		String prefix = null;
+        		String localname = name;
+        		
+        		int index = name.indexOf(":");
+        		if(index > 0) {
+        			prefix = name.substring(0,index);
+        			localname = name.substring(index+1);
+        		}
+%>
+    			routines.system.DocumentHelper.applyNamespace2Attribute(<%=currEleName%>, <%if(prefix != null) {%> "<%=prefix%>" <%} else {%> null <%}%>, "<%=localname%>", currentValue);
+<%
 			}
 		}
 	}
@@ -1036,6 +1051,8 @@ class GenerateDocument_<%=tableName %> {
 	boolean isFirst = true;
 	
 	boolean	needRoot = true;
+	
+	String currentValue = null;
 <%
 //Integer groupSize = new Integer(0);
 //getGroupSize(outputNode, groupSize);

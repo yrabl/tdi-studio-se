@@ -20,9 +20,10 @@ import java.util.Set;
 
 import org.talend.component.core.utils.ComponentsUtils;
 import org.talend.component.ui.model.genericMetadata.GenericConnection;
+import org.talend.components.api.NamedThing;
 import org.talend.components.api.properties.ComponentProperties;
 import org.talend.components.api.properties.ComponentProperties.Deserialized;
-import org.talend.components.api.schema.SchemaElement;
+import org.talend.components.api.properties.Property;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.model.context.ContextUtils;
 import org.talend.core.model.metadata.builder.connection.Connection;
@@ -170,15 +171,18 @@ public class GenericContextUtil {
     }
 
     public static void revertPropertiesValues(ComponentProperties componentProperties, ContextType contextType) {
-        List<SchemaElement> properties = componentProperties.getProperties();
-        for (SchemaElement schemaElement : properties) {
-            if (schemaElement instanceof ComponentProperties) {
-                revertPropertiesValues((ComponentProperties) schemaElement, contextType);
-            } else if (ComponentsUtils.isSupportContext(schemaElement)) {
-                String value = (String) componentProperties.getValue(schemaElement);
-                if (value != null) {
-                    String originalValue = ContextParameterUtils.getOriginalValue(contextType, value);
-                    componentProperties.setValue(schemaElement, TalendQuoteUtils.removeQuotes(originalValue));
+        List<NamedThing> props = componentProperties.getProperties();
+        for (NamedThing namedThing : props) {
+            if (namedThing instanceof ComponentProperties) {
+                revertPropertiesValues((ComponentProperties) namedThing, contextType);
+            } else if (namedThing instanceof Property) {
+                Property property = (Property) namedThing;
+                if (ComponentsUtils.isSupportContext(property)) {
+                    String value = property.getStringValue();
+                    if (value != null) {
+                        String originalValue = ContextParameterUtils.getOriginalValue(contextType, value);
+                        property.setValue(TalendQuoteUtils.removeQuotes(originalValue));
+                    }
                 }
             }
         }

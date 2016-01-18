@@ -27,4 +27,7 @@ public interface ICreateStormProcessService extends IService {
     public Process createStormProcess(Property property);
 
     public ProcessEditorInput getStromProcessEditorInput(ProcessItem processItem, boolean load) throws PersistenceException;
+
+    public ProcessEditorInput getStromProcessEditorInput(ProcessItem processItem, boolean load, boolean lastVersion,
+            boolean readOnly) throws PersistenceException;
 }

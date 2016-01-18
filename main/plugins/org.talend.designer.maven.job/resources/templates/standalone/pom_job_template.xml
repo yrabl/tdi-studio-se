@@ -53,6 +53,14 @@
 
 	<build>
 		<finalName>${talend.job.finalName}</finalName>
+		<resources>
+            <resource>
+                <directory>${project.build.sourceDirectory}</directory>
+                <includes>                      
+                    <include>**/*.wsdl</include>
+                </includes>
+            </resource>
+        </resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -120,6 +128,7 @@
 							<includes>
 								<!-- only package the job classes -->
 								<include>${talend.job.path}/*.class</include>
+								<include>${talend.job.path}/**/*.wsdl</include>
 							</includes>
 						</configuration>
 					</execution>
@@ -214,12 +223,18 @@
 		</profile>
 		<profile>
 			<id>include-xmlMappings</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
 			<properties>
 				<xmlMappings.resources.dir>${current.resources.dir}/xmlMappings/</xmlMappings.resources.dir>
 			</properties>
 		</profile>
 		<profile>
 			<id>include-running-xmlMappings</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
 			<properties>
 				<xmlMappings.running.dir>
 					${current.resources.dir}/xmlMappings/
@@ -234,6 +249,9 @@
 		</profile>
 		<profile>
 			<id>include-log4j</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
 			<properties>
 				<log4j.resources.dir>${current.resources.dir}/</log4j.resources.dir>
 			</properties>
