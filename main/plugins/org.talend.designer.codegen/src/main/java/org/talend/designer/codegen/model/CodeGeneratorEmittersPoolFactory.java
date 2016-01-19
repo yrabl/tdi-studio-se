@@ -61,6 +61,7 @@ import org.talend.core.model.components.IComponent;
 import org.talend.core.model.components.IComponentFileNaming;
 import org.talend.core.model.components.IComponentsFactory;
 import org.talend.core.model.components.IComponentsService;
+import org.talend.core.model.components.IEmfComponent;
 import org.talend.core.model.temp.ECodePart;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.core.ui.services.IComponentsLocalProviderService;
@@ -74,7 +75,6 @@ import org.talend.designer.codegen.config.TalendJetEmitter;
 import org.talend.designer.codegen.config.TemplateUtil;
 import org.talend.designer.codegen.i18n.Messages;
 import org.talend.designer.core.IDesignerCoreService;
-import org.talend.designer.core.model.components.EmfComponent;
 
 /**
  * Pool of initialized Jet Emitters. There are as many Emitters in this pool as Templzte available. Used for generation
@@ -401,8 +401,8 @@ public final class CodeGeneratorEmittersPoolFactory {
             if (breaningService.isPoweredOnlyCamel()) {
                 componentsPath = IComponentsFactory.CAMEL_COMPONENTS_LOCATION;
             }
-            if (component instanceof EmfComponent) {
-                componentsPath = ((EmfComponent) component).getSourceBundleName();
+            if (component instanceof IEmfComponent) {
+                componentsPath = ((IEmfComponent) component).getSourceBundleName();
             }
             JetBean jetBean = new JetBean(componentsPath, templateURI, component.getName(), component.getVersion(),
                     codeLanguage.getName(), codePart.getName());

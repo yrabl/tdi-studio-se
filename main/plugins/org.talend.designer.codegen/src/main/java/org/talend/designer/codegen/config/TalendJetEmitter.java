@@ -64,8 +64,8 @@ import org.osgi.framework.Bundle;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.runtime.debug.TalendDebugHandler;
 import org.talend.commons.utils.generation.JavaUtils;
+import org.talend.core.runtime.component.ComponentBundleToPath;
 import org.talend.designer.codegen.i18n.Messages;
-import org.talend.designer.core.model.components.ComponentBundleToPath;
 
 /**
  * DOC mhirt class global comment. Detailled comment <br/>

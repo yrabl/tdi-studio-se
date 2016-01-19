@@ -71,6 +71,7 @@ import org.talend.core.model.components.EReadOnlyComlumnPosition;
 import org.talend.core.model.components.ExternalNodesFactory;
 import org.talend.core.model.components.IComponent;
 import org.talend.core.model.components.IComponentsFactory;
+import org.talend.core.model.components.IEmfComponent;
 import org.talend.core.model.components.IMultipleComponentItem;
 import org.talend.core.model.components.IMultipleComponentManager;
 import org.talend.core.model.general.InstallModule;
@@ -99,6 +100,7 @@ import org.talend.core.model.temp.ECodePart;
 import org.talend.core.model.utils.SQLPatternUtils;
 import org.talend.core.model.utils.TalendTextUtils;
 import org.talend.core.prefs.ITalendCorePrefConstants;
+import org.talend.core.runtime.component.ComponentBundleToPath;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.core.ui.component.settings.ComponentsSettingsHelper;
@@ -155,7 +157,7 @@ import org.talend.librariesmanager.prefs.LibrariesManagerUtils;
  * Component manager that read each information in a xml file with Emf. <br/>
  * $Id$
  */
-public class EmfComponent extends AbstractComponent {
+public class EmfComponent extends AbstractComponent implements IEmfComponent {
 
     private static Logger log = Logger.getLogger(EmfComponent.class);
 
