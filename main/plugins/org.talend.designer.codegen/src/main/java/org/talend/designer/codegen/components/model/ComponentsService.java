@@ -15,7 +15,7 @@ package org.talend.designer.codegen.components.model;
 import org.talend.core.model.components.IComponentFileNaming;
 import org.talend.core.model.components.IComponentsFactory;
 import org.talend.core.model.components.IComponentsService;
-import org.talend.designer.core.model.components.ComponentFilesNaming;
+import org.talend.core.runtime.component.ComponentFilesNaming;
 
 /**
  * DOC smallet class global comment. Detailled comment <br/>

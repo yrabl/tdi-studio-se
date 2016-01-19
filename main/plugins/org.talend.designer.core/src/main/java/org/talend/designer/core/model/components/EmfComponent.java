@@ -101,6 +101,7 @@ import org.talend.core.model.utils.SQLPatternUtils;
 import org.talend.core.model.utils.TalendTextUtils;
 import org.talend.core.prefs.ITalendCorePrefConstants;
 import org.talend.core.runtime.component.ComponentBundleToPath;
+import org.talend.core.runtime.component.ComponentFilesNaming;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.core.ui.component.settings.ComponentsSettingsHelper;

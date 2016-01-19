@@ -29,7 +29,7 @@ import org.talend.commons.exception.BusinessException;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.runtime.xml.XSDValidator;
 import org.talend.core.model.ModelPlugin;
-import org.talend.designer.core.model.components.ComponentFilesNaming;
+import org.talend.core.runtime.component.ComponentFilesNaming;
 import org.xml.sax.SAXException;
 
 /**

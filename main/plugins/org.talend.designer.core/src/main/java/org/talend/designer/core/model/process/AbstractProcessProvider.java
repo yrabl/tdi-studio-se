@@ -17,12 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.gef.palette.PaletteEntry;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.model.components.IComponent;
 import org.talend.core.model.process.INode;
 import org.talend.core.model.process.IProcess;
@@ -31,12 +27,14 @@ import org.talend.core.model.process.IReplaceNodeInProcess;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.JobletProcessItem;
 import org.talend.core.model.update.UpdateResult;
+import org.talend.core.runtime.component.ProcessProviderLoader;
+import org.talend.core.runtime.process.IProcessProvider;
 import org.talend.designer.core.ui.editor.process.Process;
 
 /**
  * DOC qzhang class global comment. Detailled comment
  */
-public abstract class AbstractProcessProvider implements IReplaceNodeInProcess {
+public abstract class AbstractProcessProvider implements IReplaceNodeInProcess, IProcessProvider {
 
     public static final String EXTENSION_ID = "org.talend.designer.core.process_provider"; //$NON-NLS-1$
 
@@ -59,15 +57,11 @@ public abstract class AbstractProcessProvider implements IReplaceNodeInProcess {
 
     public static Collection<AbstractProcessProvider> findAllProcessProviders() {
         if (providerMap.isEmpty()) {
-            IConfigurationElement[] elems = Platform.getExtensionRegistry().getConfigurationElementsFor(EXTENSION_ID);
-            for (IConfigurationElement elem : elems) {
-                String pid = elem.getAttribute(ATTR_PID);
-                try {
-                    AbstractProcessProvider createExecutableExtension = (AbstractProcessProvider) elem
-                            .createExecutableExtension(ATTR_CLASS);
-                    providerMap.put(pid, createExecutableExtension);
-                } catch (CoreException ex) {
-                    ExceptionHandler.process(ex);
+            final Map<String, IProcessProvider> providers = ProcessProviderLoader.findProcessProviders();
+            for (String id : providers.keySet()) {
+                IProcessProvider p = providers.get(id);
+                if (p instanceof AbstractProcessProvider) {
+                    providerMap.put(id, (AbstractProcessProvider) p);
                 }
             }
         }
@@ -109,10 +103,7 @@ public abstract class AbstractProcessProvider implements IReplaceNodeInProcess {
      * @return
      */
     public static void loadComponentsFromProviders() {
-
-        for (AbstractProcessProvider processProvider : findAllProcessProviders()) {
-            processProvider.loadComponentsFromExtensionPoint();
-        }
+        ProcessProviderLoader.loadComponentsFromProviders();
     }
 
     /**

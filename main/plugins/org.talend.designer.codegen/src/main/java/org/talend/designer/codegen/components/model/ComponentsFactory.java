@@ -53,6 +53,7 @@ import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.runtime.utils.io.SHA1Util;
 import org.talend.commons.utils.io.FilesUtils;
 import org.talend.core.GlobalServiceRegister;
+import org.talend.core.language.ECodeLanguage;
 import org.talend.core.language.LanguageManager;
 import org.talend.core.model.component_cache.ComponentCachePackage;
 import org.talend.core.model.component_cache.ComponentInfo;
@@ -66,6 +67,10 @@ import org.talend.core.model.components.ComponentUtilities;
 import org.talend.core.model.components.IComponent;
 import org.talend.core.model.components.IComponentsFactory;
 import org.talend.core.model.components.IComponentsHandler;
+import org.talend.core.model.components.IEmfComponent;
+import org.talend.core.runtime.component.ComponentBundleToPath;
+import org.talend.core.runtime.component.ComponentFilesNaming;
+import org.talend.core.runtime.component.ProcessProviderLoader;
 import org.talend.core.ui.IJobletProviderService;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.core.ui.services.IComponentsLocalProviderService;
@@ -73,12 +78,9 @@ import org.talend.core.utils.TalendCacheUtils;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.additionaljet.ComponentsFactoryProviderManager;
 import org.talend.designer.codegen.i18n.Messages;
+import org.talend.designer.core.IDesignerCoreService;
 import org.talend.designer.core.ITisLocalProviderService;
 import org.talend.designer.core.ITisLocalProviderService.ResClassLoader;
-import org.talend.designer.core.model.components.ComponentBundleToPath;
-import org.talend.designer.core.model.components.ComponentFilesNaming;
-import org.talend.designer.core.model.components.EmfComponent;
-import org.talend.designer.core.model.process.AbstractProcessProvider;
 
 /**
  * Component factory that look for each component and load their information. <br/>
@@ -331,7 +333,7 @@ public class ComponentsFactory implements IComponentsFactory {
      * DOC qzhang Comment method "loadComponentsFromExtensions".
      */
     private void loadComponentsFromExtensions() {
-        AbstractProcessProvider.loadComponentsFromProviders();
+        ProcessProviderLoader.loadComponentsFromProviders();
     }
 
     private void loadComponentsFromFolder(String pathSource, AbstractComponentsProvider provider) {
@@ -421,7 +423,7 @@ public class ComponentsFactory implements IComponentsFactory {
 
                     try {
                         File xmlMainFile = new File(currentFolder, ComponentFilesNaming.getInstance().getMainXMLFileName(
-                                currentFolder.getName(), getCodeLanguageSuffix()));
+                                currentFolder.getName(), ECodeLanguage.JAVA.getName()));
                         if (!xmlMainFile.exists()) {
                             // if not a component folder, ignore it.
                             continue;
@@ -456,8 +458,8 @@ public class ComponentsFactory implements IComponentsFactory {
                             if (componentsCache.containsKey(xmlMainFile.getAbsolutePath())) {
                                 IComponent componentFromThisProvider = null;
                                 for (IComponent component : componentsCache.get(xmlMainFile.getAbsolutePath()).values()) {
-                                    if (component instanceof EmfComponent) {
-                                        if (bundleName.equals(((EmfComponent) component).getSourceBundleName())) {
+                                    if (component instanceof IEmfComponent) {
+                                        if (bundleName.equals(((IEmfComponent) component).getSourceBundleName())) {
                                             componentFromThisProvider = component;
                                             break;
                                         }
@@ -474,7 +476,7 @@ public class ComponentsFactory implements IComponentsFactory {
                             }
                         }
                         if (!foundComponentIsSame) {
-                            ComponentFileChecker.checkComponentFolder(currentFolder, getCodeLanguageSuffix());
+                            ComponentFileChecker.checkComponentFolder(currentFolder, ECodeLanguage.JAVA.getName());
                         }
 
                         String pathName = xmlMainFile.getAbsolutePath();
@@ -490,19 +492,23 @@ public class ComponentsFactory implements IComponentsFactory {
                         // if not already in memory, just load the component from cache.
                         // if the component is already existing in cache and if it's the same, it won't reload all (cf
                         // flag: foundComponentIsSame)
-                        EmfComponent currentComp = new EmfComponent(pathName, bundleName, xmlMainFile.getParentFile().getName(),
-                                pathSource, cache, foundComponentIsSame, provider);
+
+                        // FIXME, need enhance more, and avoid using service.
+                        IEmfComponent emfComp = null;
+                        IComponent currentComp = null;
+                        if (GlobalServiceRegister.getDefault().isServiceRegistered(IDesignerCoreService.class)) {
+                            IDesignerCoreService designerCoreService = (IDesignerCoreService) GlobalServiceRegister.getDefault()
+                                    .getService(IDesignerCoreService.class);
+                            emfComp = designerCoreService.createEmfComponent(pathName, bundleName, xmlMainFile.getParentFile()
+                                    .getName(), pathSource, cache, foundComponentIsSame, provider);
+                            if (emfComp instanceof IComponent) {
+                                currentComp = (IComponent) emfComp;
+                            }
+                        }
+                        if (currentComp == null) {
+                            return;
+                        }
                         if (!foundComponentIsSame) {
-                            // force to call some functions to update the cache. (to improve)
-                            currentComp.isVisibleInComponentDefinition();
-                            currentComp.isTechnical();
-                            currentComp.getOriginalFamilyName();
-                            currentComp.getTranslatedFamilyName();
-                            currentComp.getPluginExtension();
-                            currentComp.getVersion();
-                            currentComp.getModulesNeeded();
-                            currentComp.getPluginDependencies();
-                            // end of force cache update.
 
                             EList<ComponentInfo> componentsInfo = cache.getComponentEntryMap().get(currentFolder.getName());
                             for (ComponentInfo cInfo : componentsInfo) {
@@ -540,8 +546,8 @@ public class ComponentsFactory implements IComponentsFactory {
                         // hide it
                         if (hiddenComponent
                                 && (currentComp.getOriginalFamilyName().contains("Technical") || currentComp.isTechnical())) {
-                            currentComp.setVisible(false);
-                            currentComp.setTechnical(true);
+                            emfComp.setVisible(false);
+                            emfComp.setTechnical(true);
                         }
                         if (provider.getId().contains("Camel")) {
                             currentComp.setPaletteType(ComponentCategory.CATEGORY_4_CAMEL.getName());
@@ -555,7 +561,7 @@ public class ComponentsFactory implements IComponentsFactory {
                             // currentComp.setResourceBundle(getComponentResourceBundle(currentComp, source.toString(),
                             // null,
                             // provider));
-                            currentComp.setProvider(provider);
+                            emfComp.setProvider(provider);
                             componentList.add(currentComp);
                             if (isCustom) {
                                 customComponentList.add(currentComp);
@@ -579,7 +585,7 @@ public class ComponentsFactory implements IComponentsFactory {
                         }
                         componentsCache.get(xmlMainFile.getAbsolutePath()).put(currentComp.getPaletteType(), currentComp);
                     } catch (MissingMainXMLComponentFileException e) {
-                        log.trace(currentFolder.getName() + " is not a " + getCodeLanguageSuffix() + " component", e); //$NON-NLS-1$ //$NON-NLS-2$
+                        log.trace(currentFolder.getName() + " is not a " + ECodeLanguage.JAVA.getName() + " component", e); //$NON-NLS-1$ //$NON-NLS-2$
                     } catch (BusinessException e) {
                         BusinessException ex = new BusinessException(
                                 "Cannot load component \"" + currentFolder.getName() + "\": " //$NON-NLS-1$ //$NON-NLS-2$
@@ -712,10 +718,6 @@ public class ComponentsFactory implements IComponentsFactory {
         }
 
         return null;
-    }
-
-    private String getCodeLanguageSuffix() {
-        return LanguageManager.getCurrentLanguage().getName();
     }
 
     @Override

@@ -35,11 +35,15 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.talend.commons.exception.BusinessException;
 import org.talend.commons.ui.runtime.exception.ExceptionHandler;
 import org.talend.core.CorePlugin;
+import org.talend.core.model.component_cache.ComponentsCache;
+import org.talend.core.model.components.AbstractComponentsProvider;
 import org.talend.core.model.components.ComponentCategory;
 import org.talend.core.model.components.IComponent;
 import org.talend.core.model.components.IComponentsFactory;
+import org.talend.core.model.components.IEmfComponent;
 import org.talend.core.model.general.ModuleNeeded;
 import org.talend.core.model.general.Project;
 import org.talend.core.model.genhtml.IJobSettingConstants;
@@ -690,11 +694,11 @@ public class DesignerCoreService implements IDesignerCoreService {
     @Override
     public void reloadParamFromProjectSettings(ParametersType processType, String paramName) {
         if (EParameterName.STATANDLOG_USE_PROJECT_SETTINGS.getName().equals(paramName)) {
-            ProjectSettingManager.reloadStatsAndLogFromProjectSettings(processType,
-                    ProjectManager.getInstance().getCurrentProject());
+            ProjectSettingManager.reloadStatsAndLogFromProjectSettings(processType, ProjectManager.getInstance()
+                    .getCurrentProject());
         } else if (EParameterName.IMPLICITCONTEXT_USE_PROJECT_SETTINGS.getName().equals(paramName)) {
-            ProjectSettingManager.reloadImplicitValuesFromProjectSettings(processType,
-                    ProjectManager.getInstance().getCurrentProject());
+            ProjectSettingManager.reloadImplicitValuesFromProjectSettings(processType, ProjectManager.getInstance()
+                    .getCurrentProject());
         }
 
     }
@@ -766,5 +770,22 @@ public class DesignerCoreService implements IDesignerCoreService {
             timeOut = 0;
         }
         return timeOut;
+    }
+
+    public IEmfComponent createEmfComponent(String pathName, String bundleId, String name, String pathSource,
+            ComponentsCache cache, boolean isload, AbstractComponentsProvider provider) throws BusinessException {
+        EmfComponent currentComp = new EmfComponent(pathName, bundleId, name, pathSource, cache, isload, provider);
+        if (!isload) {
+            // force to call some functions to update the cache. (to improve)
+            currentComp.isVisibleInComponentDefinition();
+            currentComp.isTechnical();
+            currentComp.getOriginalFamilyName();
+            currentComp.getTranslatedFamilyName();
+            currentComp.getPluginExtension();
+            currentComp.getVersion();
+            currentComp.getModulesNeeded();
+            currentComp.getPluginDependencies();
+        }
+        return currentComp;
     }
 }
