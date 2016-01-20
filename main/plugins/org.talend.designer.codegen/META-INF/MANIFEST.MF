@@ -23,7 +23,7 @@ Bundle-ClassPath: .
 Export-Package: org.talend.designer.codegen,
  org.talend.designer.codegen.additionaljet,
  org.talend.designer.codegen.components.model,
- org.talend.designer.codegen.components.ui,
+ org.talend.designer.codegen.components.prefs,
  org.talend.designer.codegen.config,
  org.talend.designer.codegen.exception,
  org.talend.designer.codegen.model,

@@ -34,7 +34,7 @@ import org.talend.core.ui.services.IComponentsLocalProviderService;
 import org.talend.core.views.IComponentSettingsView;
 import org.talend.designer.codegen.CodeGeneratorActivator;
 import org.talend.designer.codegen.components.model.ComponentFileChecker;
-import org.talend.designer.codegen.components.ui.IComponentPreferenceConstant;
+import org.talend.designer.codegen.components.prefs.IComponentPreferenceConstant;
 import org.talend.designer.codegen.ui.CodegenUiPlugin;
 import org.talend.designer.codegen.ui.i18n.Messages;
 

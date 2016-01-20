@@ -40,7 +40,7 @@ import org.talend.core.model.general.Project;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.designer.codegen.CodeGeneratorActivator;
-import org.talend.designer.codegen.components.ui.IComponentPreferenceConstant;
+import org.talend.designer.codegen.components.prefs.IComponentPreferenceConstant;
 import org.talend.designer.codegen.i18n.Messages;
 import org.talend.repository.ProjectManager;
 
