@@ -130,7 +130,7 @@ public final class JetSkeletonManager {
     }
 
     private File getSerializationFilePath() throws CoreException {
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(".JETEmitters"); //$NON-NLS-1$
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(ICodegenConstants.PROJECT_NAME);
         if (!project.exists()) {
             project.create(new NullProgressMonitor());
         }

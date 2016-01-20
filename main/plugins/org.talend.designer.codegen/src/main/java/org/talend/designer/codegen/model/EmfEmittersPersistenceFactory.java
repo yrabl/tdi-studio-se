@@ -42,12 +42,12 @@ public final class EmfEmittersPersistenceFactory {
     }
 
     public static EmfEmittersPersistence getInstance(ECodeLanguage language) {
-        if (singleton == null || !singleton.getLanguage().equals(language)) {
+        if (singleton == null) {
 
             final IProject project = getJetProject();
             IFile iFile = null;
             if (project != null) {
-                iFile = project.getFile("JetPersistence" + language); //$NON-NLS-1$
+                iFile = project.getFile(ICodegenConstants.PREFIX_JET_PERSISTENCE + language);
             }
             File file = iFile.getLocation().toFile();
 
@@ -70,7 +70,7 @@ public final class EmfEmittersPersistenceFactory {
             IProgressMonitor progressMonitor = new SubProgressMonitor(monitor, 1);
 
             IWorkspace workspace = ResourcesPlugin.getWorkspace();
-            project = workspace.getRoot().getProject(".JETEmitters"); //$NON-NLS-1$
+            project = workspace.getRoot().getProject(ICodegenConstants.PROJECT_NAME);
             if (!project.exists()) {
                 project.create(new SubProgressMonitor(progressMonitor, 1));
                 progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETCreatingProject_message", //$NON-NLS-1$

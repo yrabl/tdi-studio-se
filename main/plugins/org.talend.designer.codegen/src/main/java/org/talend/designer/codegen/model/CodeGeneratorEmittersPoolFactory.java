@@ -54,7 +54,6 @@ import org.talend.core.GlobalServiceRegister;
 import org.talend.core.IService;
 import org.talend.core.PluginChecker;
 import org.talend.core.language.ECodeLanguage;
-import org.talend.core.language.LanguageManager;
 import org.talend.core.model.components.EComponentType;
 import org.talend.core.model.components.ExternalNodesFactory;
 import org.talend.core.model.components.IComponent;
@@ -71,9 +70,10 @@ import org.talend.designer.codegen.components.model.ComponentCompilations;
 import org.talend.designer.codegen.config.EInternalTemplate;
 import org.talend.designer.codegen.config.JetBean;
 import org.talend.designer.codegen.config.LightJetBean;
-import org.talend.designer.codegen.config.TalendJetEmitter;
 import org.talend.designer.codegen.config.TemplateUtil;
 import org.talend.designer.codegen.i18n.Messages;
+import org.talend.designer.codegen.jet.DummyTalendJetEmitter;
+import org.talend.designer.codegen.jet.TalendJetEmitter;
 import org.talend.designer.core.IDesignerCoreService;
 
 /**
@@ -96,8 +96,6 @@ public final class CodeGeneratorEmittersPoolFactory {
     private static List<JetBean> jetFilesCompileFail = new ArrayList<JetBean>();
 
     private static String defaultTemplate = null;
-
-    public static final String JET_PROJECT = ".JETEmitters"; //$NON-NLS-1$
 
     /**
      * Default Constructor. Must not be used.
@@ -138,14 +136,12 @@ public final class CodeGeneratorEmittersPoolFactory {
 
                 IProgressMonitor monitorWrap = null;
                 monitorWrap = new NullProgressMonitor();
-                ECodeLanguage codeLanguage = LanguageManager.getCurrentLanguage();
 
                 initializeJetEmittersProject(monitorWrap);
 
                 TimeMeasure.step("initialize Jet Emitters", "initialize JET Project"); //$NON-NLS-1$ //$NON-NLS-2$
                 CodeGeneratorInternalTemplatesFactory templatesFactory = CodeGeneratorInternalTemplatesFactoryProvider
                         .getInstance();
-                templatesFactory.setCurrentLanguage(codeLanguage);
                 templatesFactory.init();
 
                 IComponentsFactory componentsFactory = ((IComponentsService) GlobalServiceRegister.getDefault().getService(
@@ -154,7 +150,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                 long startTime = System.currentTimeMillis();
 
                 defaultTemplate = TemplateUtil.RESOURCES_DIRECTORY + TemplateUtil.DIR_SEP + EInternalTemplate.DEFAULT_TEMPLATE
-                        + TemplateUtil.EXT_SEP + codeLanguage.getExtension() + TemplateUtil.TEMPLATE_EXT;
+                        + TemplateUtil.EXT_SEP + ECodeLanguage.JAVA.getExtension() + TemplateUtil.TEMPLATE_EXT;
 
                 List<JetBean> jetBeans = new ArrayList<JetBean>();
                 List<TemplateUtil> templates = templatesFactory.getTemplates();
@@ -167,7 +163,7 @@ public final class CodeGeneratorEmittersPoolFactory {
 
                 int monitorBuffer = 0;
                 for (TemplateUtil template : templates) {
-                    JetBean jetBean = initializeUtilTemplate(template, codeLanguage);
+                    JetBean jetBean = initializeUtilTemplate(template);
                     jetBeans.add(jetBean);
                     monitorBuffer++;
                     if (monitorBuffer % 100 == 0) {
@@ -186,7 +182,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                             continue;
                         }
                         if (component.getAvailableCodeParts().size() > 0) {
-                            initComponent(codeLanguage, jetBeans, codePart, component);
+                            initComponent(jetBeans, codePart, component);
                         }
                         monitorBuffer++;
                         if (monitorBuffer % 100 == 0) {
@@ -198,9 +194,9 @@ public final class CodeGeneratorEmittersPoolFactory {
 
                 // initialize generic component begin/main/end
                 for (IComponent genericComponent : genericComponents) {
-                    initGenericComponent(codeLanguage, jetBeans, ECodePart.BEGIN, genericComponent);
-                    initGenericComponent(codeLanguage, jetBeans, ECodePart.END, genericComponent);
-                    initGenericComponent(codeLanguage, jetBeans, ECodePart.MAIN, genericComponent);
+                    initGenericComponent(jetBeans, ECodePart.BEGIN, genericComponent);
+                    initGenericComponent(jetBeans, ECodePart.END, genericComponent);
+                    initGenericComponent(jetBeans, ECodePart.MAIN, genericComponent);
                     // TODO
                     break;
                 }
@@ -208,7 +204,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                 TimeMeasure.step("initialize Jet Emitters", "initialize jet beans from components"); //$NON-NLS-1$ //$NON-NLS-2$
                 monitorWrap.worked(monitorBuffer);
 
-                initializeEmittersPool(jetBeans, codeLanguage, monitorWrap);
+                initializeEmittersPool(jetBeans, monitorWrap);
                 monitorWrap.done();
                 TimeMeasure.step("initialize Jet Emitters", "initialize and generate each jet emitters"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -292,10 +288,10 @@ public final class CodeGeneratorEmittersPoolFactory {
         private void initializeJetEmittersProject(IProgressMonitor progressMonitor) throws CoreException {
             final IWorkspace workspace = ResourcesPlugin.getWorkspace();
 
-            IProject project = workspace.getRoot().getProject(JET_PROJECT);
+            IProject project = workspace.getRoot().getProject(ICodegenConstants.PROJECT_NAME);
             progressMonitor.subTask(CodeGenPlugin.getPlugin().getString("_UI_JETPreparingProject_message", //$NON-NLS-1$
                     new Object[] { project.getName() }));
-            File file = new File(workspace.getRoot().getLocation().append(JET_PROJECT).toPortableString());
+            File file = new File(workspace.getRoot().getLocation().append(ICodegenConstants.PROJECT_NAME).toPortableString());
             if (file.exists() && !project.isAccessible()) {
                 // .metadata missing, so need to reimport project to add it in the metadata.
                 progressMonitor.subTask("Reinitilializing project " + project.getName()); //$NON-NLS-1$
@@ -367,10 +363,10 @@ public final class CodeGeneratorEmittersPoolFactory {
      * @param codeLanguage
      * @return
      */
-    private static JetBean initializeUtilTemplate(TemplateUtil template, ECodeLanguage codeLanguage) {
+    private static JetBean initializeUtilTemplate(TemplateUtil template) {
         JetBean jetBean = new JetBean(CodeGeneratorActivator.PLUGIN_ID, TemplateUtil.RESOURCES_DIRECTORY + TemplateUtil.DIR_SEP
-                + template.getResourceName() + TemplateUtil.EXT_SEP + codeLanguage.getExtension() + TemplateUtil.TEMPLATE_EXT,
-                template.getResourceName(), template.getVersion(), codeLanguage.getName(), ""); //$NON-NLS-1$
+                + template.getResourceName() + TemplateUtil.EXT_SEP + ECodeLanguage.JAVA.getExtension()
+                + TemplateUtil.TEMPLATE_EXT, template.getResourceName(), template.getVersion(), ECodeLanguage.JAVA.getName(), ""); //$NON-NLS-1$
         jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
         jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
         jetBean.addClassPath("CORE_LIBRARIES", "org.talend.core"); //$NON-NLS-1$
@@ -388,13 +384,13 @@ public final class CodeGeneratorEmittersPoolFactory {
      * @param codePart
      * @param component
      */
-    private static void initComponent(ECodeLanguage codeLanguage, List<JetBean> jetBeans, ECodePart codePart, IComponent component) {
+    private static void initComponent(List<JetBean> jetBeans, ECodePart codePart, IComponent component) {
 
         if (component.getAvailableCodeParts().contains(codePart)) {
             IComponentFileNaming fileNamingInstance = ((IComponentsService) GlobalServiceRegister.getDefault().getService(
                     IComponentsService.class)).getComponentFileNaming();
             String templateURI = component.getPathSource() + TemplateUtil.DIR_SEP + component.getName() + TemplateUtil.DIR_SEP
-                    + fileNamingInstance.getJetFileName(component, codeLanguage.getExtension(), codePart);
+                    + fileNamingInstance.getJetFileName(component, ECodeLanguage.JAVA.getExtension(), codePart);
             String componentsPath = IComponentsFactory.COMPONENTS_LOCATION;
             IBrandingService breaningService = (IBrandingService) GlobalServiceRegister.getDefault().getService(
                     IBrandingService.class);
@@ -405,7 +401,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                 componentsPath = ((IEmfComponent) component).getSourceBundleName();
             }
             JetBean jetBean = new JetBean(componentsPath, templateURI, component.getName(), component.getVersion(),
-                    codeLanguage.getName(), codePart.getName());
+                    ECodeLanguage.JAVA.getName(), codePart.getName());
             jetBean.addClassPath("EMF_ECORE", "org.eclipse.emf.ecore"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("EMF_COMMON", "org.eclipse.emf.common"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -483,7 +479,7 @@ public final class CodeGeneratorEmittersPoolFactory {
         if (codePart.compareTo(ECodePart.MAIN) == 0) {
             for (ECodePart otherPart : ECodePart.values()) {
                 if (otherPart != ECodePart.MAIN && component.getAvailableCodeParts().contains(otherPart)) {
-                    initComponent(codeLanguage, jetBeans, otherPart, component);
+                    initComponent(jetBeans, otherPart, component);
                 }
             }
         }
@@ -498,12 +494,11 @@ public final class CodeGeneratorEmittersPoolFactory {
      * @param codePart
      * @param component
      */
-    private static void initGenericComponent(ECodeLanguage codeLanguage, List<JetBean> jetBeans, ECodePart codePart,
-            IComponent component) {
+    private static void initGenericComponent(List<JetBean> jetBeans, ECodePart codePart, IComponent component) {
         if (component.getAvailableCodeParts().contains(codePart)) {
             String templateURI = TemplateUtil.JET_STUB_DIRECTORY + TemplateUtil.DIR_SEP
                     + TemplateUtil.RESOURCES_DIRECTORY_GENERIC + TemplateUtil.DIR_SEP + "component_" + codePart.getName()//$NON-NLS-1$ 
-                    + TemplateUtil.EXT_SEP + codeLanguage.getExtension() + TemplateUtil.TEMPLATE_EXT;
+                    + TemplateUtil.EXT_SEP + ECodeLanguage.JAVA.getExtension() + TemplateUtil.TEMPLATE_EXT;
             String componentsPath = "org.talend.designer.codegen";//$NON-NLS-1$ 
             // TODO
             JetBean jetBean = new JetBean(componentsPath, templateURI, "component", component.getVersion(),//$NON-NLS-1$
@@ -548,7 +543,7 @@ public final class CodeGeneratorEmittersPoolFactory {
      * @return
      * @throws JETException
      */
-    private static void initializeEmittersPool(List<JetBean> components, ECodeLanguage codeLanguage, IProgressMonitor monitorWrap) {
+    private static void initializeEmittersPool(List<JetBean> components, IProgressMonitor monitorWrap) {
         IProgressMonitor monitor = new NullProgressMonitor();
         IProgressMonitor sub = new SubProgressMonitor(monitor, 1);
         int monitorBuffer = 0;
@@ -564,9 +559,9 @@ public final class CodeGeneratorEmittersPoolFactory {
         List<JetBean> alreadyCompiledEmitters = new ArrayList<JetBean>();
 
         // try {
-        TalendJetEmitter dummyEmitter = null;
+        DummyTalendJetEmitter dummyEmitter = null;
         try {
-            dummyEmitter = new TalendJetEmitter(null, null, sub, globalClasspath, !ComponentCompilations.getMarkers());
+            dummyEmitter = new DummyTalendJetEmitter(sub, globalClasspath, !ComponentCompilations.getMarkers());
         } catch (JETException e) {
             log.error(Messages.getString("CodeGeneratorEmittersPoolFactory.jetEmitterInitialException") + e.getMessage(), e); //$NON-NLS-1$
         }
@@ -577,10 +572,10 @@ public final class CodeGeneratorEmittersPoolFactory {
 
         if (!isSkeletonChanged) {
             try {
-                alreadyCompiledEmitters = loadEmfPersistentData(EmfEmittersPersistenceFactory.getInstance(codeLanguage)
+                alreadyCompiledEmitters = loadEmfPersistentData(EmfEmittersPersistenceFactory.getInstance(ECodeLanguage.JAVA)
                         .loadEmittersPool(), components, monitorWrap);
                 for (JetBean jetBean : alreadyCompiledEmitters) {
-                    TalendJetEmitter emitter = new TalendJetEmitter(jetBean, dummyEmitter.getTalendEclipseHelper());
+                    TalendJetEmitter emitter = new TalendJetEmitter(jetBean, dummyEmitter);
                     emitterPool.put(jetBean, emitter);
                     monitorBuffer++;
                     if (monitorBuffer % 100 == 0) {
@@ -600,7 +595,7 @@ public final class CodeGeneratorEmittersPoolFactory {
 
         monitorWrap.worked(monitorBuffer);
         try {
-            EmfEmittersPersistenceFactory.getInstance(codeLanguage).saveEmittersPool(
+            EmfEmittersPersistenceFactory.getInstance(ECodeLanguage.JAVA).saveEmittersPool(
                     extractEmfPersistenData(alreadyCompiledEmitters));
         } catch (BusinessException e) {
             log.error(Messages.getString("CodeGeneratorEmittersPoolFactory.PersitentData.Error") + e.getMessage(), e); //$NON-NLS-1$
@@ -608,13 +603,14 @@ public final class CodeGeneratorEmittersPoolFactory {
     }
 
     private static void synchronizedComponent(List<JetBean> components, IProgressMonitor sub,
-            List<JetBean> alreadyCompiledEmitters, TalendJetEmitter dummyEmitter, int monitorBuffer, IProgressMonitor monitorWrap) {
+            List<JetBean> alreadyCompiledEmitters, DummyTalendJetEmitter dummyEmitter, int monitorBuffer,
+            IProgressMonitor monitorWrap) {
         for (JetBean jetBean : components) {
             if (!emitterPool.containsKey(jetBean)) {
                 ComponentCompilations.deleteMarkers();
 
                 // System.out.println("The new file is not in JetPersistence* cache:" + getFullTemplatePath(jetBean));
-                TalendJetEmitter emitter = new TalendJetEmitter(jetBean, dummyEmitter.getTalendEclipseHelper());
+                TalendJetEmitter emitter = new TalendJetEmitter(jetBean, dummyEmitter);
                 // wzhang modified to fix bug 11439
                 if (monitorWrap.isCanceled()) {
                     if (GlobalServiceRegister.getDefault().isServiceRegistered(IComponentsLocalProviderService.class)) {
@@ -695,10 +691,10 @@ public final class CodeGeneratorEmittersPoolFactory {
             IProgressMonitor monitorWrap) throws BusinessException {
         List<JetBean> toReturn = new ArrayList<JetBean>();
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        IProject project = workspace.getRoot().getProject(".JETEmitters"); //$NON-NLS-1$
+        IProject project = workspace.getRoot().getProject(ICodegenConstants.PROJECT_NAME);
         URL url;
         try {
-            url = new File(project.getLocation() + "/runtime").toURL(); //$NON-NLS-1$
+            url = project.getLocation().append(ICodegenConstants.PATH_PROJECT_CLASSES).toFile().toURL(); //$NON-NLS-1$
             int lightBeanIndex = 0;
             LightJetBean lightBean = null;
             LightJetBean myLightJetBean = null;

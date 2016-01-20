@@ -178,7 +178,4 @@ public class EmfEmittersPersistence {
         }
     }
 
-    public ECodeLanguage getLanguage() {
-        return language;
-    }
 }

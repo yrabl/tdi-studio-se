@@ -14,7 +14,6 @@ Require-Bundle: org.talend.core.repository,
  org.talend.hadoop.distribution,
  org.talend.hadoop.distribution.custom,
  org.apache.xerces,
- org.talend.core,
  org.apache.log4j,
  org.talend.components.api,
  org.talend.component.core
@@ -30,5 +29,4 @@ Export-Package: org.talend.designer.codegen,
  org.talend.designer.codegen.proxy
 Bundle-Vendor: .Talend SA.
 Bundle-Activator: org.talend.designer.codegen.CodeGeneratorActivator
-Import-Package: org.apache.commons.lang
 Eclipse-BundleShape: dir

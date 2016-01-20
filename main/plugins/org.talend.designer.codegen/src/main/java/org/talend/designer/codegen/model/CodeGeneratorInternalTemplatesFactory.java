@@ -41,8 +41,6 @@ public class CodeGeneratorInternalTemplatesFactory {
 
     private List<TemplateUtil> templates;
 
-    private ECodeLanguage language;
-
     /**
      * Constructor.
      */
@@ -56,7 +54,8 @@ public class CodeGeneratorInternalTemplatesFactory {
         templates = new ArrayList<TemplateUtil>();
 
         File installationFolder = null;
-        URL url = FileLocator.find(Platform.getBundle(CodeGeneratorActivator.PLUGIN_ID), new Path("resources"), null); //$NON-NLS-1$
+        URL url = FileLocator.find(Platform.getBundle(CodeGeneratorActivator.PLUGIN_ID), new Path(
+                ICodegenConstants.PATH_RESOURCES), null);
         try {
             if (url != null) {
                 installationFolder = new File(FileLocator.toFileURL(url).getPath());
@@ -64,8 +63,8 @@ public class CodeGeneratorInternalTemplatesFactory {
                     org.talend.utils.io.FilesUtils.deleteFolder(installationFolder, true);
                 }
             } else {
-                url = Platform.getBundle(CodeGeneratorActivator.PLUGIN_ID).getEntry("/");
-                installationFolder = new File(FileLocator.toFileURL(url).getPath(), "resources");//$NON-NLS-1$
+                url = Platform.getBundle(CodeGeneratorActivator.PLUGIN_ID).getEntry("/");//$NON-NLS-1$
+                installationFolder = new File(FileLocator.toFileURL(url).getPath(), ICodegenConstants.PATH_RESOURCES);
             }
             installationFolder.mkdirs();
         } catch (IOException e) {
@@ -87,11 +86,13 @@ public class CodeGeneratorInternalTemplatesFactory {
         try {
             File stubForder = null;
             URL url = null;
-            url = FileLocator.find(Platform.getBundle(CodeGeneratorActivator.PLUGIN_ID), new Path("jet_stub"), null); //$NON-NLS-1$
+            url = FileLocator.find(Platform.getBundle(CodeGeneratorActivator.PLUGIN_ID),
+                    new Path(ICodegenConstants.PATH_JET_STUB), null); //$NON-NLS-1$
             stubForder = new File(FileLocator.toFileURL(url).getPath());
 
             File installationFolder = null;
-            url = FileLocator.find(Platform.getBundle(CodeGeneratorActivator.PLUGIN_ID), new Path("resources"), null); //$NON-NLS-1$
+            url = FileLocator.find(Platform.getBundle(CodeGeneratorActivator.PLUGIN_ID), new Path(
+                    ICodegenConstants.PATH_RESOURCES), null); //$NON-NLS-1$
             installationFolder = new File(FileLocator.toFileURL(url).getPath());
 
             final FileFilter sourceFolderFilter = new FileFilter() {
@@ -112,12 +113,13 @@ public class CodeGeneratorInternalTemplatesFactory {
 
     private void loadSystemFrame() {
         templates.clear();
-        URL url = FileLocator.find(Platform.getBundle(CodeGeneratorActivator.PLUGIN_ID), new Path("resources"), null);
+        URL url = FileLocator.find(Platform.getBundle(CodeGeneratorActivator.PLUGIN_ID), new Path(
+                ICodegenConstants.PATH_RESOURCES), null);
         File file;
         try {
             for (EInternalTemplate utilTemplate : EInternalTemplate.values()) {
                 file = new File(FileLocator.toFileURL(url).getPath() + utilTemplate.getTemplateName() + TemplateUtil.EXT_SEP
-                        + language.getExtension() + TemplateUtil.TEMPLATE_EXT);
+                        + ECodeLanguage.JAVA.getExtension() + TemplateUtil.TEMPLATE_EXT);
                 if (file.exists()) {
                     TemplateUtil template = new TemplateUtil(utilTemplate);
                     templates.add(template);
@@ -130,7 +132,7 @@ public class CodeGeneratorInternalTemplatesFactory {
                 @Override
                 public boolean accept(File pathname) {
                     if (pathname.getName().contains(EInternalTemplate.HEADER_ADDITIONAL.toString())) {
-                        if (pathname.getName().contains(language.getExtension() + TemplateUtil.TEMPLATE_EXT)) {
+                        if (pathname.getName().contains(ECodeLanguage.JAVA.getExtension() + TemplateUtil.TEMPLATE_EXT)) {
                             return true;
                         }
                     }
@@ -170,7 +172,4 @@ public class CodeGeneratorInternalTemplatesFactory {
         return templates;
     }
 
-    public void setCurrentLanguage(ECodeLanguage language) {
-        this.language = language;
-    }
 }
