@@ -4,7 +4,6 @@
         org.talend.core.model.process.IProcess
         org.talend.core.model.process.INode
         org.talend.designer.codegen.config.CodeGeneratorArgument
-        org.talend.core.CorePlugin
         org.talend.core.model.process.EConnectionType
         org.talend.core.model.process.IConnection
         org.talend.core.model.metadata.IMetadataTable
