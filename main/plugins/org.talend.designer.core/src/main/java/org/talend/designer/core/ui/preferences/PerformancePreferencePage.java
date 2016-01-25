@@ -131,6 +131,12 @@ public class PerformancePreferencePage extends FieldEditorPreferencePage impleme
             // getFieldEditorParent()));
             addSVNInforAutoCheckFiled();
         }
+        IntegerFieldEditor codeFormatTimeout = new IntegerFieldEditor(
+                ITalendCorePrefConstants.PERFORMANCE_JAVA_PROCESS_CODE_FORMATE_TIMEOUT,
+                Messages.getString("PerformancePreferencePage.CodeFormatTimeout"), //$NON-NLS-1$
+                getFieldEditorParent());
+        codeFormatTimeout.setValidRange(1, Short.MAX_VALUE);
+        addField(codeFormatTimeout);
     }
 
     private void addSVNInforAutoCheckFiled() {

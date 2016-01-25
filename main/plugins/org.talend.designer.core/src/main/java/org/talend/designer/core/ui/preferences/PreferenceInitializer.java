@@ -201,5 +201,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(TalendDesignerPrefConstants.PALETTE_SETTINGS_SEARCH_FROM_HELP, true);
         store.setDefault(TalendDesignerPrefConstants.PALETTE_SETTINGS_SEARCH_RESULT_LIMIT_FROM_HELP, 10);
 
+        store.setDefault(ITalendCorePrefConstants.PERFORMANCE_JAVA_PROCESS_CODE_FORMATE_TIMEOUT, 30);
     }
 }

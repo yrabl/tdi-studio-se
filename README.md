@@ -27,7 +27,7 @@ All Talend Studio repositories follow the same file structure:
 
 ## Download
 
-You can download this product from the [Talend website](http://www.talend.com/download/data-integration).
+You can download this product from the [Talend website](http://www.talend.com/download/talend-open-studio?qt-product_tos_download_new=1&utm_source=github&utm_campaign=tosdi).
 
 
 ## Usage and Documentation

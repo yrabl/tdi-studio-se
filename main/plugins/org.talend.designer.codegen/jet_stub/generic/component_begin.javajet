@@ -31,20 +31,25 @@ ComponentProperties componentProps = node.getComponentProperties();
 ComponentDefinition def = component.getComponentDefinition();
 
 List<IMetadataTable> metadatas = node.getMetadataList();
-IMetadataTable metadata = metadatas.get(0);
-if ((metadatas != null) && (metadatas.size() > 0) && (metadata = metadatas.get(0)) != null) { // metadata
-
-List<IMetadataColumn> columnList = metadata.getListColumns();
-int nbSchemaColumns = columnList.size();
-
+IMetadataTable metadata = null;
+List<IMetadataColumn> columnList = null;
 boolean hasDynamic = false;
-for (IMetadataColumn column : columnList) {
-	if (column.getTalendType().equals("id_Dynamic")) {
-		hasDynamic = true;
-		break;
-	}
-}
+if ((metadatas != null) && (metadatas.size() > 0)) { // metadata
 
+	metadata = metadatas.get(0);
+	if(metadata != null){
+		columnList = metadata.getListColumns();
+		int nbSchemaColumns = columnList.size();
+		
+		hasDynamic = false;
+		for (IMetadataColumn column : columnList) {
+			if (column.getTalendType().equals("id_Dynamic")) {
+				hasDynamic = true;
+				break;
+			}
+		}
+	}
+}	
 %>
 
 org.talend.components.api.component.ComponentDefinition def_<%=cid %> =
@@ -90,73 +95,84 @@ org.talend.components.api.runtime.ComponentRuntimeContainer container_<%=cid %> 
     public java.util.Map<String, Object> getGlobalMap() {
 		return globalMap;
     }
+    
+    public String getCurrentComponentName(){
+    	return "<%=cid %>";
+    }
 };
 
 org.talend.components.api.runtime.ComponentRuntime runtime_<%=cid %> = def_<%=cid %>.createRuntime();
 runtime_<%=cid %>.setContainer(container_<%=cid %>);
 
 <%
-if (component.canStart()) { // canStart
-// Input
+if(metadata != null){
+	if (component.canStart()) { // canStart
+	// Input
 %>
+		runtime_<%=cid %>.inputBegin(props_<%=cid %>);
+<%
+		List<? extends IConnection> outgoingConns = node.getOutgoingSortedConnections();
+		if (outgoingConns.size() > 0) { // outgoing size
+			// FIXME - multiple outgoing connections?
+			IConnection outgoingConn = outgoingConns.get(0);
+			if (outgoingConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) { // outgoingConn 
+%>
+		
+				java.util.Map<String, Object> row_<%=cid %>;
+				Object value_<%=cid %>;
+				while ((row_<%=cid %> = runtime_<%=cid %>.inputRow()) != null) { // while (ends in component_end)
+<%
+					for (IMetadataColumn column : columnList) { // column
+						String columnName = column.getLabel();
+		              	JavaType javaType = JavaTypesManager.getJavaTypeFromId(column.getTalendType());
+						String patternValue = column.getPattern() == null || column.getPattern().trim().length() == 0 ? null : column.getPattern();
+						String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getTalendType(), column.isNullable());
+		              	
+%>
+						value_<%=cid %> = row_<%=cid %>.get("<%=columnName %>");
+						if (value_<%=cid %> != null) {
+<%
+							if (javaType == JavaTypesManager.STRING) { 
+%>
+								<%=outgoingConn.getName()%>.<%=columnName%> = (String) value_<%=cid%>;
+<%
+							} else if (javaType == JavaTypesManager.OBJECT) {
+%>
+								<%=outgoingConn.getName()%>.<%=columnName%> = value_<%=cid%>;
+<%
+							} else if(javaType == JavaTypesManager.DATE) { 
+%>
+								<%=outgoingConn.getName()%>.<%=columnName%> = ParserUtils.parseTo_Date((String)value_<%=cid%>, <%= patternValue %>);
+<%
+							} else if(javaType == JavaTypesManager.BYTE_ARRAY) {
+%>
+								<%=outgoingConn.getName()%>.<%=columnName%> = value_<%=cid%>.getBytes();
+<%
+							} else  { // other
+%>
+								<%=outgoingConn.getName()%>.<%=columnName%> = ParserUtils.parseTo_<%= typeToGenerate %>((String)value_<%=cid%>);
+<%
+							}
+%>
+						} else {
+							<%=outgoingConn.getName()%>.<%=columnName%> = <%=JavaTypesManager.getDefaultValueFromJavaType(typeToGenerate)%>;
+						}	              	
+<%
+					} // column
+			} // outgoingConn
+		} // outgoing size
+	} else { // canStart
+	// Output
+%>
+		runtime_<%=cid %>.outputBegin(props_<%=cid %>);
+<%
+	} // canStart
+}else{
+%>
+	// This for "metadata == null", like connection component
+	// FIXME - this is a compromise 
 	runtime_<%=cid %>.inputBegin(props_<%=cid %>);
 <%
-	List<? extends IConnection> outgoingConns = node.getOutgoingSortedConnections();
-	if (outgoingConns.size() > 0) { // outgoing size
-		// FIXME - multiple outgoing connections?
-		IConnection outgoingConn = outgoingConns.get(0);
-		if (outgoingConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) { // outgoingConn 
-%>
-	
-			java.util.Map<String, Object> row_<%=cid %>;
-			Object value_<%=cid %>;
-			while ((row_<%=cid %> = runtime_<%=cid %>.inputRow()) != null) { // while (ends in component_end)
-<%
-				for (IMetadataColumn column : columnList) { // column
-					String columnName = column.getLabel();
-	              	JavaType javaType = JavaTypesManager.getJavaTypeFromId(column.getTalendType());
-					String patternValue = column.getPattern() == null || column.getPattern().trim().length() == 0 ? null : column.getPattern();
-					String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getTalendType(), column.isNullable());
-	              	
-%>
-					value_<%=cid %> = row_<%=cid %>.get("<%=columnName %>");
-					if (value_<%=cid %> != null) {
-<%
-						if (javaType == JavaTypesManager.STRING) { 
-%>
-							<%=outgoingConn.getName()%>.<%=columnName%> = (String) value_<%=cid%>;
-<%
-						} else if (javaType == JavaTypesManager.OBJECT) {
-%>
-							<%=outgoingConn.getName()%>.<%=columnName%> = value_<%=cid%>;
-<%
-						} else if(javaType == JavaTypesManager.DATE) { 
-%>
-							<%=outgoingConn.getName()%>.<%=columnName%> = ParserUtils.parseTo_Date((String)value_<%=cid%>, <%= patternValue %>);
-<%
-						} else if(javaType == JavaTypesManager.BYTE_ARRAY) {
-%>
-							<%=outgoingConn.getName()%>.<%=columnName%> = value_<%=cid%>.getBytes();
-<%
-						} else  { // other
-%>
-							<%=outgoingConn.getName()%>.<%=columnName%> = ParserUtils.parseTo_<%= typeToGenerate %>((String)value_<%=cid%>);
-<%
-						}
-%>
-					} else {
-						<%=outgoingConn.getName()%>.<%=columnName%> = <%=JavaTypesManager.getDefaultValueFromJavaType(typeToGenerate)%>;
-					}	              	
-<%
-				} // column
-		} // outgoingConn
-	} // outgoing size
-} else { // canStart
-// Output
-%>
-	runtime_<%=cid %>.outputBegin(props_<%=cid %>);
-<%
-} // canStart
 } // metadata
 %>
 
