@@ -368,7 +368,7 @@ public final class CodeGeneratorEmittersPoolFactory {
                 + template.getResourceName() + TemplateUtil.EXT_SEP + ECodeLanguage.JAVA.getExtension()
                 + TemplateUtil.TEMPLATE_EXT, template.getResourceName(), template.getVersion(), ECodeLanguage.JAVA.getName(), ""); //$NON-NLS-1$
         jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
-        jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
+        // jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
         jetBean.addClassPath("CORE_LIBRARIES", "org.talend.core"); //$NON-NLS-1$
         jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
         jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
@@ -405,7 +405,7 @@ public final class CodeGeneratorEmittersPoolFactory {
             jetBean.addClassPath("EMF_ECORE", "org.eclipse.emf.ecore"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("EMF_COMMON", "org.eclipse.emf.common"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
-            jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
+            // jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("CORE_LIBRARIES", "org.talend.core"); //$NON-NLS-1$
             jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
             jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
@@ -506,7 +506,7 @@ public final class CodeGeneratorEmittersPoolFactory {
             jetBean.addClassPath("EMF_ECORE", "org.eclipse.emf.ecore"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("EMF_COMMON", "org.eclipse.emf.common"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("CORERUNTIME_LIBRARIES", "org.talend.core.runtime"); //$NON-NLS-1$ //$NON-NLS-2$
-            jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
+            // jetBean.addClassPath("MANAGEMENT_LIBRARIES", "org.talend.metadata.managment"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("CORE_LIBRARIES", "org.talend.core"); //$NON-NLS-1$
             jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
             jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
