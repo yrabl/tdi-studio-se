@@ -585,7 +585,8 @@ public class MainComposite extends AbstractTabComposite {
                         if (!originalDescription.equals(StringUtils.trimToEmpty(repositoryObject.getDescription()))) {
                             property.setDescription(originalDescription);
                         }
-                        if (ConvertJobsUtil.isNeedConvert(jobTypeValue, frameworkValue, originalJobType, originalFramework)) {
+                        Item originalItem = repositoryObject.getProperty().getItem();
+                        if (ConvertJobsUtil.isNeedConvert(originalItem, originalJobType, originalFramework, true)) {
                             boolean hasTestCase = ConvertJobsUtil.hasTestCase(repositoryObject.getProperty());
                             if (hasTestCase && !MessageDialogWithToggle.openConfirm(null, "Warning",
                                     "Warning: You will lost all the testcases when you do converting, do you want to continue?")) {
