@@ -76,7 +76,6 @@ import org.talend.core.PluginChecker;
 import org.talend.core.context.Context;
 import org.talend.core.context.RepositoryContext;
 import org.talend.core.hadoop.IHadoopClusterService;
-import org.talend.core.language.ECodeLanguage;
 import org.talend.core.model.general.ILibrariesService;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.ConnectionPackage;
@@ -117,8 +116,6 @@ import org.talend.core.ui.IJobletProviderService;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.designer.business.model.business.BusinessPackage;
 import org.talend.designer.business.model.business.BusinessProcess;
-import org.talend.designer.codegen.ICodeGeneratorService;
-import org.talend.designer.codegen.ITalendSynchronizer;
 import org.talend.designer.core.model.utils.emf.component.IMPORTType;
 import org.talend.designer.core.model.utils.emf.talendfile.ElementParameterType;
 import org.talend.designer.core.model.utils.emf.talendfile.ParametersType;
@@ -1139,29 +1136,6 @@ public class ImportItemUtil {
     // logError(e);
     // }
     // }
-
-    private ITalendSynchronizer getRoutineSynchronizer() {
-
-        ICodeGeneratorService service = (ICodeGeneratorService) GlobalServiceRegister.getDefault().getService(
-                ICodeGeneratorService.class);
-
-        ECodeLanguage lang = ((RepositoryContext) CorePlugin.getContext().getProperty(Context.REPOSITORY_CONTEXT_KEY))
-                .getProject().getLanguage();
-        ITalendSynchronizer routineSynchronizer = null;
-        switch (lang) {
-        case JAVA:
-            routineSynchronizer = service.createJavaRoutineSynchronizer();
-            break;
-        case PERL:
-            routineSynchronizer = service.createPerlRoutineSynchronizer();
-            break;
-        default:
-            throw new UnsupportedOperationException(Messages.getString("ImportItemUtil.unknowException", lang)); //$NON-NLS-1$
-        }
-
-        return routineSynchronizer;
-
-    }
 
     private void logError(Exception e) {
         hasErrors = true;

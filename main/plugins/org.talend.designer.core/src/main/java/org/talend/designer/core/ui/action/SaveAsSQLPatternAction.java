@@ -24,11 +24,11 @@ import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.talend.commons.ui.runtime.exception.ExceptionHandler;
 import org.talend.core.GlobalServiceRegister;
+import org.talend.core.ICoreService;
 import org.talend.core.model.properties.ByteArray;
 import org.talend.core.model.properties.SQLPatternItem;
 import org.talend.core.repository.ui.editor.RepositoryEditorInput;
-import org.talend.designer.codegen.ICodeGeneratorService;
-import org.talend.designer.codegen.ISQLPatternSynchronizer;
+import org.talend.designer.codegen.ISQLTemplateSynchronizer;
 import org.talend.designer.core.DesignerPlugin;
 import org.talend.designer.core.ui.editor.StandAloneTalendJavaEditor;
 import org.talend.designer.core.ui.wizards.SaveAsSQLPatternWizard;
@@ -59,11 +59,15 @@ public class SaveAsSQLPatternAction extends Action {
                 SQLPatternItem sqlpatternItem = processWizard.getSQLPatternItem();
 
                 // get the IFile
-                ICodeGeneratorService service = (ICodeGeneratorService) GlobalServiceRegister.getDefault().getService(
-                        ICodeGeneratorService.class);
-                // only for talend java version
-                ISQLPatternSynchronizer sqlPatternSynchronizer = service.getSQLPatternSynchronizer();
-                IFile file = sqlPatternSynchronizer.getSQLPatternFile(sqlpatternItem);
+                if (!GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+                    return;
+                }
+                ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+                ISQLTemplateSynchronizer sqlPatternSynchronizer = coreService.createSQLTemplateSynchronizer();
+                if (sqlPatternSynchronizer == null) {
+                    return;
+                }
+                IFile file = sqlPatternSynchronizer.getSQLTemplateFile(sqlpatternItem);
                 if (file == null) {
                     return;
                 }

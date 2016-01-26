@@ -47,6 +47,7 @@ import org.talend.commons.ui.runtime.exception.MessageBoxExceptionHandler;
 import org.talend.commons.utils.workbench.resources.ResourceUtils;
 import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
+import org.talend.core.ICoreService;
 import org.talend.core.context.Context;
 import org.talend.core.context.RepositoryContext;
 import org.talend.core.language.ECodeLanguage;
@@ -63,8 +64,7 @@ import org.talend.core.model.repository.RepositoryManager;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.repository.ui.editor.RepositoryEditorInput;
 import org.talend.core.ui.services.IOpenJobScriptActionService;
-import org.talend.designer.codegen.ICodeGeneratorService;
-import org.talend.designer.codegen.ISQLPatternSynchronizer;
+import org.talend.designer.codegen.ISQLTemplateSynchronizer;
 import org.talend.designer.codegen.ITalendSynchronizer;
 import org.talend.designer.core.i18n.Messages;
 import org.talend.designer.core.ui.MultiPageTalendEditor;
@@ -294,41 +294,47 @@ public class OpenExistVersionProcessWizard extends Wizard {
     }
 
     protected RepositoryEditorInput getEditorInput(final Item item, final boolean readonly, final IWorkbenchPage page)
-        throws SystemException {
+            throws SystemException {
         if (item instanceof ProcessItem) {
             ProcessItem processItem = (ProcessItem) item;
             return new ProcessEditorInput(processItem, true, false, readonly);
         } else if (item instanceof BusinessProcessItem) {
             BusinessProcessItem businessProcessItem = (BusinessProcessItem) item;
             IFile file = CorePlugin.getDefault().getDiagramModelService()
-                .getDiagramFileAndUpdateResource(page, businessProcessItem);
+                    .getDiagramFileAndUpdateResource(page, businessProcessItem);
             return new RepositoryEditorInput(file, businessProcessItem);
         } else if (item instanceof RoutineItem) {
             final RoutineItem routineItem = (RoutineItem) item;
-            final ICodeGeneratorService codeGenService = (ICodeGeneratorService) GlobalServiceRegister.getDefault()
-                .getService(ICodeGeneratorService.class);
-            ITalendSynchronizer routineSynchronizer = codeGenService.createRoutineSynchronizer();
-            ProxyRepositoryFactory factory = ProxyRepositoryFactory.getInstance();
-            String lastVersion = factory.getLastVersion(routineItem.getProperty().getId()).getVersion();
-            String curVersion = routineItem.getProperty().getVersion();
-            final IFile file;
-            if (curVersion != null && curVersion.equals(lastVersion)) {
-                file = routineSynchronizer.getFile(routineItem);
-            } else {
-                file = routineSynchronizer.getRoutinesFile(routineItem);
-            }
-            if (file != null) {
-                return new RoutineEditorInput(file, routineItem);
+            if (GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+                ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+                ITalendSynchronizer synchronizer = coreService.createCodesSynchronizer();
+                if (synchronizer != null) {
+                    ProxyRepositoryFactory factory = ProxyRepositoryFactory.getInstance();
+                    String lastVersion = factory.getLastVersion(routineItem.getProperty().getId()).getVersion();
+                    String curVersion = routineItem.getProperty().getVersion();
+                    final IFile file;
+                    if (curVersion != null && curVersion.equals(lastVersion)) {
+                        file = synchronizer.getFile(routineItem);
+                    } else {
+                        file = synchronizer.getRoutinesFile(routineItem);
+                    }
+                    if (file != null) {
+                        return new RoutineEditorInput(file, routineItem);
+                    }
+                }
             }
         } else if (item instanceof SQLPatternItem) {
             SQLPatternItem patternItem = (SQLPatternItem) item;
-            final ICodeGeneratorService codeGenService = (ICodeGeneratorService) GlobalServiceRegister.getDefault()
-                .getService(ICodeGeneratorService.class);
-            ISQLPatternSynchronizer SQLPatternSynchronizer = codeGenService.getSQLPatternSynchronizer();
-            SQLPatternSynchronizer.syncSQLPattern(patternItem, true);
-            IFile file = SQLPatternSynchronizer.getSQLPatternFile(patternItem);
-            if (file != null) {
-                return new RepositoryEditorInput(file, patternItem);
+            if (GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+                ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+                ISQLTemplateSynchronizer sqlPatternSynchronizer = coreService.createSQLTemplateSynchronizer();
+                if (sqlPatternSynchronizer != null) {
+                    sqlPatternSynchronizer.syncSQLTemplate(patternItem, true);
+                    IFile file = sqlPatternSynchronizer.getSQLTemplateFile(patternItem);
+                    if (file != null) {
+                        return new RepositoryEditorInput(file, patternItem);
+                    }
+                }
             }
         }
         return null;

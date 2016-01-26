@@ -31,6 +31,8 @@ import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.exception.SystemException;
 import org.talend.commons.ui.runtime.exception.MessageBoxExceptionHandler;
 import org.talend.core.CorePlugin;
+import org.talend.core.GlobalServiceRegister;
+import org.talend.core.ICoreService;
 import org.talend.core.model.process.IContainerEntry;
 import org.talend.core.model.process.IProcess;
 import org.talend.core.model.process.IProcess2;
@@ -63,8 +65,14 @@ public class JobErrorsChecker {
             Item item = null;
             IProxyRepositoryFactory proxyRepositoryFactory = CorePlugin.getDefault().getRepositoryService()
                     .getProxyRepositoryFactory();
-            ITalendSynchronizer synchronizer = CorePlugin.getDefault().getCodeGeneratorService().createRoutineSynchronizer();
-
+            if (!GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+                return input;
+            }
+            ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+            ITalendSynchronizer synchronizer = coreService.createCodesSynchronizer();
+            if (synchronizer == null) {
+                return input;
+            }
             Set<String> jobIds = new HashSet<String>();
             for (JobInfo jobInfo : LastGenerationInfo.getInstance().getLastGeneratedjobs()) {
                 // TDI-28198:get right process item no matter the job open or close
@@ -127,8 +135,14 @@ public class JobErrorsChecker {
 
     public static boolean checkExportErrors(IStructuredSelection selection, boolean isJob) {
         if (!selection.isEmpty()) {
-            final ITalendSynchronizer synchronizer = CorePlugin.getDefault().getCodeGeneratorService()
-                    .createRoutineSynchronizer();
+            if (!GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+                return false;
+            }
+            ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+            ITalendSynchronizer synchronizer = coreService.createCodesSynchronizer();
+            if (synchronizer == null) {
+                return false;
+            }
             Set<String> jobIds = new HashSet<String>();
 
             List<RepositoryNode> nodes = selection.toList();
@@ -239,7 +253,14 @@ public class JobErrorsChecker {
         Item item = null;
         final IProxyRepositoryFactory proxyRepositoryFactory = CorePlugin.getDefault().getRepositoryService()
                 .getProxyRepositoryFactory();
-        final ITalendSynchronizer synchronizer = CorePlugin.getDefault().getCodeGeneratorService().createRoutineSynchronizer();
+        if (!GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+            return;
+        }
+        ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+        ITalendSynchronizer synchronizer = coreService.createCodesSynchronizer();
+        if (synchronizer == null) {
+            return;
+        }
         Integer line = null;
         String errorMessage = null;
         try {
@@ -345,8 +366,14 @@ public class JobErrorsChecker {
 
         // if can't find the routines problem, try to check the file directly(mainly for commandline)
         try {
-            final ITalendSynchronizer synchronizer = CorePlugin.getDefault().getCodeGeneratorService()
-                    .createRoutineSynchronizer();
+            if (!GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+                return;
+            }
+            ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+            ITalendSynchronizer synchronizer = coreService.createCodesSynchronizer();
+            if (synchronizer == null) {
+                return;
+            }
             IProxyRepositoryFactory factory = CorePlugin.getDefault().getProxyRepositoryFactory();
             List<IRepositoryViewObject> routinesObjects = factory.getAll(ERepositoryObjectType.ROUTINES, false);
             if (routinesObjects != null) {

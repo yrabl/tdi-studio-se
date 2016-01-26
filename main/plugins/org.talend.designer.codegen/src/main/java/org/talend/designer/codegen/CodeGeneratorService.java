@@ -83,36 +83,6 @@ public class CodeGeneratorService implements ICodeGeneratorService {
     /*
      * (non-Javadoc)
      * 
-     * @see org.talend.designer.codegen.ICodeGeneratorService#getRoutineSynchronizer()
-     */
-    @Override
-    public ITalendSynchronizer createPerlRoutineSynchronizer() {
-        return null; // no perl
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.talend.designer.codegen.ICodeGeneratorService#createJavaRoutineSynchronizer()
-     */
-    @Override
-    public ITalendSynchronizer createJavaRoutineSynchronizer() {
-        return new JavaRoutineSynchronizer();
-    }
-
-    @Override
-    public ITalendSynchronizer createRoutineSynchronizer() {
-        return createJavaRoutineSynchronizer();
-    }
-
-    @Override
-    public ISQLPatternSynchronizer getSQLPatternSynchronizer() {
-        return new JavaSQLPatternSynchronizer();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see
      * org.talend.designer.codegen.ICodeGeneratorService#initializeTemplates(org.eclipse.core.runtime.IProgressMonitor)
      */

@@ -27,6 +27,8 @@ import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.exception.SystemException;
 import org.talend.commons.utils.generation.JavaUtils;
 import org.talend.core.CorePlugin;
+import org.talend.core.GlobalServiceRegister;
+import org.talend.core.ICoreService;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.repository.ERepositoryObjectType;
@@ -112,8 +114,14 @@ public class JavaCompilationParticipant extends CompilationParticipant {
             if (talendProcessJavaProject == null) {
                 return;
             }
-            final ITalendSynchronizer synchronizer = CorePlugin.getDefault().getCodeGeneratorService()
-                    .createRoutineSynchronizer();
+            if (!GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+                return;
+            }
+            ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+            ITalendSynchronizer synchronizer = coreService.createCodesSynchronizer();
+            if (synchronizer == null) {
+                return;
+            }
             IProject javaProject = talendProcessJavaProject.getProject();
             IFile file = javaProject.getFile(filePath);
             String fileName = file.getName();

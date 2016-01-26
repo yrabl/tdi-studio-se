@@ -52,6 +52,7 @@ import org.talend.commons.ui.runtime.exception.ExceptionHandler;
 import org.talend.commons.ui.runtime.exception.MessageBoxExceptionHandler;
 import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
+import org.talend.core.ICoreService;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.language.LanguageManager;
 import org.talend.core.model.process.BasicJobInfo;
@@ -61,7 +62,6 @@ import org.talend.core.model.properties.RoutineItem;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryObject;
 import org.talend.core.model.repository.IRepositoryViewObject;
-import org.talend.designer.codegen.ICodeGeneratorService;
 import org.talend.designer.codegen.ITalendSynchronizer;
 import org.talend.designer.core.DesignerPlugin;
 import org.talend.designer.core.i18n.Messages;
@@ -453,22 +453,15 @@ public class ProblemsView extends ViewPart implements PropertyChangeListener {
      * when restore the item, check the problem.
      */
     private void restoreProblem(RoutineItem item) {
-        ICodeGeneratorService service = (ICodeGeneratorService) GlobalServiceRegister.getDefault().getService(
-                ICodeGeneratorService.class);
-        ITalendSynchronizer routineSynchronizer = null;
-        switch (LanguageManager.getCurrentLanguage()) {
-        case JAVA:
-            routineSynchronizer = service.createJavaRoutineSynchronizer();
-            break;
-        case PERL:
-            routineSynchronizer = service.createPerlRoutineSynchronizer();
-            break;
-        default:
+        if (!GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+            return;
         }
-        if (routineSynchronizer != null) {
+        ICoreService service = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+        ITalendSynchronizer synchronizer = service.createCodesSynchronizer();
+        if (synchronizer != null) {
             try {
-                routineSynchronizer.syncRoutine(item, true);
-                IFile file = routineSynchronizer.getFile(item);
+                synchronizer.syncRoutine(item, true);
+                IFile file = synchronizer.getFile(item);
                 if (file == null) {
                     return;
                 }

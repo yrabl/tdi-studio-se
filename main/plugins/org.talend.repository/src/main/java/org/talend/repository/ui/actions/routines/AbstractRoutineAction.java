@@ -20,18 +20,14 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.talend.commons.exception.SystemException;
-import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
-import org.talend.core.context.Context;
-import org.talend.core.context.RepositoryContext;
+import org.talend.core.ICoreService;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.model.properties.RoutineItem;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.repository.ui.editor.RepositoryEditorInput;
-import org.talend.designer.codegen.ICodeGeneratorService;
 import org.talend.designer.codegen.ITalendSynchronizer;
 import org.talend.repository.ProjectManager;
-import org.talend.repository.i18n.Messages;
 import org.talend.repository.model.RepositoryNode;
 import org.talend.repository.ui.actions.AContextualAction;
 
@@ -56,28 +52,19 @@ public abstract class AbstractRoutineAction extends AContextualAction {
         if (routineItem == null) {
             return null;
         }
-        ICodeGeneratorService service = (ICodeGeneratorService) GlobalServiceRegister.getDefault().getService(
-                ICodeGeneratorService.class);
-
-        ECodeLanguage lang = ((RepositoryContext) CorePlugin.getContext().getProperty(Context.REPOSITORY_CONTEXT_KEY))
-                .getProject().getLanguage();
-        ITalendSynchronizer routineSynchronizer;
-        switch (lang) {
-        case JAVA:
-            routineSynchronizer = service.createJavaRoutineSynchronizer();
-            break;
-        case PERL:
-            routineSynchronizer = service.createPerlRoutineSynchronizer();
-            break;
-        default:
-            throw new UnsupportedOperationException(Messages.getString("AbstractRoutineAction.unknowLanguage") + lang); //$NON-NLS-1$
+        if (!GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+            return null;
         }
-
+        ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+        ITalendSynchronizer synchronizer = coreService.createCodesSynchronizer();
+        if (synchronizer == null) {
+            return null;
+        }
         // check if the related editor is open.
         IWorkbenchPage page = getActivePage();
 
         IEditorReference[] editorParts = page.getEditorReferences();
-        String talendEditorID = "org.talend.designer.core.ui.editor.StandAloneTalend" + lang.getCaseName() + "Editor"; //$NON-NLS-1$ //$NON-NLS-2$
+        String talendEditorID = "org.talend.designer.core.ui.editor.StandAloneTalend" + ECodeLanguage.JAVA.getCaseName() + "Editor"; //$NON-NLS-1$ //$NON-NLS-2$
         boolean found = false;
         IEditorPart talendEditor = null;
         for (IEditorReference reference : editorParts) {
@@ -99,16 +86,16 @@ public abstract class AbstractRoutineAction extends AContextualAction {
             ProjectManager projectManager = ProjectManager.getInstance();
             boolean flag = projectManager.isInCurrentMainProject(routineItem);
             if (!flag) { // is ref project
-                file = routineSynchronizer.getRoutinesFile(routineItem);
+                file = synchronizer.getRoutinesFile(routineItem);
             } else {// need open from item file with multiple version
-                routineSynchronizer.syncRoutine(routineItem, true);
+                synchronizer.syncRoutine(routineItem, true);
                 ProxyRepositoryFactory factory = ProxyRepositoryFactory.getInstance();
                 String lastVersion = factory.getLastVersion(routineItem.getProperty().getId()).getVersion();
                 String curVersion = routineItem.getProperty().getVersion();
                 if (curVersion != null && curVersion.equals(lastVersion)) {
-                    file = routineSynchronizer.getFile(routineItem);
+                    file = synchronizer.getFile(routineItem);
                 } else {
-                    file = routineSynchronizer.getRoutinesFile(routineItem);
+                    file = synchronizer.getRoutinesFile(routineItem);
                 }
             }
             if (file == null) {

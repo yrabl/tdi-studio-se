@@ -14,11 +14,6 @@ package org.talend.designer.codegen;
 
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
-import org.talend.core.GlobalServiceRegister;
-import org.talend.core.IService;
-import org.talend.designer.core.IDesignerCoreService;
-import org.talend.designer.runprocess.IRunProcessService;
-import org.talend.repository.model.IRepositoryService;
 
 /**
  * Activator for Code Generator.
@@ -49,35 +44,4 @@ public class CodeGeneratorActivator extends Plugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
     }
-
-    /**
-     * DOC get a implement of RunProcessService.
-     * 
-     * @return
-     */
-    public IRunProcessService getRunProcessService() {
-        IService service = GlobalServiceRegister.getDefault().getService(IRunProcessService.class);
-        return (IRunProcessService) service;
-    }
-
-    /**
-     * DOC qian Gets the RepositoryService.
-     * 
-     * @return IRepositoryService
-     */
-    public IRepositoryService getRepositoryService() {
-        IService service = GlobalServiceRegister.getDefault().getService(IRepositoryService.class);
-        return (IRepositoryService) service;
-    }
-
-    /**
-     * DOC Gets the DesignerCoreService.
-     * 
-     * @return IDesignerCoreService
-     */
-    public IDesignerCoreService getDesignerCoreService() {
-        IService service = GlobalServiceRegister.getDefault().getService(IDesignerCoreService.class);
-        return (IDesignerCoreService) service;
-    }
-
 }

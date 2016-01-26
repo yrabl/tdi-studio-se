@@ -73,6 +73,7 @@ import org.talend.commons.ui.runtime.image.ImageProvider;
 import org.talend.commons.utils.VersionUtils;
 import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
+import org.talend.core.ICoreService;
 import org.talend.core.model.general.Project;
 import org.talend.core.model.properties.ByteArray;
 import org.talend.core.model.properties.FileItem;
@@ -93,8 +94,7 @@ import org.talend.core.runtime.process.ITalendProcessJavaProject;
 import org.talend.core.services.IUIRefresher;
 import org.talend.core.ui.ILastVersionChecker;
 import org.talend.core.ui.branding.IBrandingService;
-import org.talend.designer.codegen.ICodeGeneratorService;
-import org.talend.designer.codegen.ISQLPatternSynchronizer;
+import org.talend.designer.codegen.ISQLTemplateSynchronizer;
 import org.talend.designer.codegen.ITalendSynchronizer;
 import org.talend.designer.core.DesignerPlugin;
 import org.talend.designer.core.i18n.Messages;
@@ -160,60 +160,72 @@ public class StandAloneTalendJavaEditor extends CompilationUnitEditor implements
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         super.init(site, input);
         Bundle bundle = FrameworkUtil.getBundle(StandAloneTalendJavaEditor.class);
-        lockService = bundle.getBundleContext().registerService(EventHandler.class.getName(), new EventHandler() {
+        lockService = bundle.getBundleContext().registerService(
+                EventHandler.class.getName(),
+                new EventHandler() {
 
-            @Override
-            public void handleEvent(Event event) {
-                String lockTopic = Constant.REPOSITORY_ITEM_EVENT_PREFIX + Constant.ITEM_LOCK_EVENT_SUFFIX;
-                if (lockTopic.equals(event.getTopic())) {
-                    if (!isEditable) {
-                        Object o = event.getProperty(Constant.ITEM_EVENT_PROPERTY_KEY);
-                        if (o instanceof FileItem) {
-                            item.getProperty().eAdapters().remove(dirtyListener);
-                            item = (FileItem) o;
-                            item.getProperty().eAdapters().add(dirtyListener);
-                            if (isEditable()) {
-                                isEditable = true;
-                                rEditorInput.getFile().setReadOnly(false);
-                                getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void handleEvent(Event event) {
+                        String lockTopic = Constant.REPOSITORY_ITEM_EVENT_PREFIX + Constant.ITEM_LOCK_EVENT_SUFFIX;
+                        if (lockTopic.equals(event.getTopic())) {
+                            if (!isEditable) {
+                                Object o = event.getProperty(Constant.ITEM_EVENT_PROPERTY_KEY);
+                                if (o instanceof FileItem) {
+                                    item.getProperty().eAdapters().remove(dirtyListener);
+                                    item = (FileItem) o;
+                                    item.getProperty().eAdapters().add(dirtyListener);
+                                    if (isEditable()) {
+                                        isEditable = true;
+                                        rEditorInput.getFile().setReadOnly(false);
+                                        getSite().getShell().getDisplay().asyncExec(new Runnable() {
 
-                                    @Override
-                                    public void run() {
-                                        setFocus();
-                                        ISourceViewer viewer = getViewer();
-                                        if (viewer != null) {
-                                            StyledText styledText = viewer.getTextWidget();
-                                            if (styledText != null) {
-                                                styledText.setBackground(bgColorForEditabeItem);
-                                                styledText.setDragDetect(true);
+                                            @Override
+                                            public void run() {
+                                                setFocus();
+                                                ISourceViewer viewer = getViewer();
+                                                if (viewer != null) {
+                                                    StyledText styledText = viewer.getTextWidget();
+                                                    if (styledText != null) {
+                                                        styledText.setBackground(bgColorForEditabeItem);
+                                                        styledText.setDragDetect(true);
+                                                    }
+                                                }
                                             }
+                                        });
+
+                                        try {
+                                            if (!GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+                                                return;
+                                            }
+                                            ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault()
+                                                    .getService(ICoreService.class);
+                                            if (o instanceof RoutineItem) {
+                                                ITalendSynchronizer synchronizer = coreService.createCodesSynchronizer();
+                                                if (synchronizer != null) {
+                                                    synchronizer.syncRoutine((RoutineItem) o, true);
+                                                }
+                                            } else if (o instanceof SQLPatternItem) {
+                                                ISQLTemplateSynchronizer sqlPatternSynchronizer = coreService
+                                                        .createSQLTemplateSynchronizer();
+                                                if (sqlPatternSynchronizer != null) {
+                                                    sqlPatternSynchronizer.syncSQLTemplate((SQLPatternItem) o, true);
+                                                }
+                                            } else {
+                                                org.talend.commons.exception.ExceptionHandler.process(new Exception(
+                                                        "Uncatched case")); //$NON-NLS-1$
+                                            }
+                                            setName();
+                                        } catch (Exception e) {
+                                            org.talend.commons.exception.ExceptionHandler.process(e);
                                         }
                                     }
-                                });
-
-                                try {
-                                    ICodeGeneratorService service = (ICodeGeneratorService) GlobalServiceRegister.getDefault()
-                                            .getService(ICodeGeneratorService.class);
-                                    if (o instanceof RoutineItem) {
-                                        ITalendSynchronizer routineSynchronizer = service.createJavaRoutineSynchronizer();
-                                        routineSynchronizer.syncRoutine((RoutineItem) o, true);
-                                    } else if (o instanceof SQLPatternItem) {
-                                        ISQLPatternSynchronizer sqlPatternSynchronizer = service.getSQLPatternSynchronizer();
-                                        sqlPatternSynchronizer.syncSQLPattern((SQLPatternItem) o, true);
-                                    } else {
-                                        org.talend.commons.exception.ExceptionHandler.process(new Exception("Uncatched case")); //$NON-NLS-1$
-                                    }
-                                    setName();
-                                } catch (Exception e) {
-                                    org.talend.commons.exception.ExceptionHandler.process(e);
                                 }
                             }
                         }
                     }
-                }
-            }
-        }, new Hashtable<String, String>(
-                Collections.singletonMap(EventConstants.EVENT_TOPIC, Constant.REPOSITORY_ITEM_EVENT_PREFIX + "*"))); //$NON-NLS-1$
+                },
+                new Hashtable<String, String>(Collections.singletonMap(EventConstants.EVENT_TOPIC,
+                        Constant.REPOSITORY_ITEM_EVENT_PREFIX + "*"))); //$NON-NLS-1$
     }
 
     @Override
@@ -270,8 +282,8 @@ public class StandAloneTalendJavaEditor extends CompilationUnitEditor implements
     private String getTitleText(IRepositoryViewObject object) {
         StringBuffer string = new StringBuffer();
         string.append(object.getLabel());
-        IBrandingService brandingService = (IBrandingService) GlobalServiceRegister.getDefault()
-                .getService(IBrandingService.class);
+        IBrandingService brandingService = (IBrandingService) GlobalServiceRegister.getDefault().getService(
+                IBrandingService.class);
         boolean allowVerchange = brandingService.getBrandingConfiguration().isAllowChengeVersion();
         if (!(object instanceof Folder) && allowVerchange) {
             string.append(" " + object.getVersion()); //$NON-NLS-1$
@@ -427,9 +439,8 @@ public class StandAloneTalendJavaEditor extends CompilationUnitEditor implements
             Property updatedProperty = null;
             try {
                 factory.initialize();
-                IRepositoryViewObject repositoryViewObject = factory.getLastVersion(
-                        new Project(ProjectManager.getInstance().getProject(item.getProperty().getItem())),
-                        item.getProperty().getId());
+                IRepositoryViewObject repositoryViewObject = factory.getLastVersion(new Project(ProjectManager.getInstance()
+                        .getProject(item.getProperty().getItem())), item.getProperty().getId());
                 if (repositoryViewObject != null) {
                     updatedProperty = repositoryViewObject.getProperty();
                     item = (FileItem) updatedProperty.getItem();
@@ -655,8 +666,8 @@ public class StandAloneTalendJavaEditor extends CompilationUnitEditor implements
     public boolean isLastVersion(Item item) {
         if (item.getProperty() != null) {
             try {
-                List<IRepositoryViewObject> allVersion = ProxyRepositoryFactory.getInstance()
-                        .getAllVersion(item.getProperty().getId());
+                List<IRepositoryViewObject> allVersion = ProxyRepositoryFactory.getInstance().getAllVersion(
+                        item.getProperty().getId());
 
                 if (allVersion == null || allVersion.isEmpty()) {
                     return false;

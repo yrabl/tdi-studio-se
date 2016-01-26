@@ -30,8 +30,8 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.talend.commons.exception.SystemException;
 import org.talend.commons.ui.runtime.exception.ExceptionHandler;
-import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
+import org.talend.core.ICoreService;
 import org.talend.core.model.components.ComponentCategory;
 import org.talend.core.model.process.IProcess2;
 import org.talend.core.model.properties.Information;
@@ -116,10 +116,14 @@ public class TalendJavaEditor extends CompilationUnitEditor implements ISyntaxCh
                 public void run() {
                     placeCursorToSelection();
                     Property property = process.getProperty();
-
-                    final ITalendSynchronizer synchronizer = CorePlugin.getDefault().getCodeGeneratorService()
-                            .createRoutineSynchronizer();
-
+                    if (!GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+                        return;
+                    }
+                    ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+                    ITalendSynchronizer synchronizer = coreService.createCodesSynchronizer();
+                    if (synchronizer == null) {
+                        return;
+                    }
                     try {
                         Item item = property.getItem();
                         List<Information> informations = Problems.addRoutineFile(synchronizer.getFile(item), property, true);

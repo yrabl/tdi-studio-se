@@ -25,10 +25,10 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.talend.commons.ui.runtime.exception.ExceptionHandler;
 import org.talend.core.GlobalServiceRegister;
+import org.talend.core.ICoreService;
 import org.talend.core.language.LanguageManager;
 import org.talend.core.model.properties.ByteArray;
 import org.talend.core.model.properties.RoutineItem;
-import org.talend.designer.codegen.ICodeGeneratorService;
 import org.talend.designer.codegen.ITalendSynchronizer;
 import org.talend.designer.core.DesignerPlugin;
 import org.talend.designer.core.ui.editor.StandAloneTalendJavaEditor;
@@ -59,21 +59,16 @@ public class SaveAsRoutineAction extends Action {
             try {
 
                 RoutineItem routineItem = processWizard.getRoutineItem();
-
-                // get the IFile
-                ICodeGeneratorService service = (ICodeGeneratorService) GlobalServiceRegister.getDefault().getService(
-                        ICodeGeneratorService.class);
-                ITalendSynchronizer routineSynchronizer = null;
-                switch (LanguageManager.getCurrentLanguage()) {
-                case JAVA:
-                    routineSynchronizer = service.createJavaRoutineSynchronizer();
-                    break;
-                case PERL:
-                    routineSynchronizer = service.createPerlRoutineSynchronizer();
-                    break;
-                default:
+                if (!GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+                    return;
                 }
-                IFile file = routineSynchronizer.getFile(routineItem);
+                // get the IFile
+                ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+                ITalendSynchronizer synchronizer = coreService.createCodesSynchronizer();
+                if (synchronizer == null) {
+                    return;
+                }
+                IFile file = synchronizer.getFile(routineItem);
                 if (file == null) {
                     return;
                 }

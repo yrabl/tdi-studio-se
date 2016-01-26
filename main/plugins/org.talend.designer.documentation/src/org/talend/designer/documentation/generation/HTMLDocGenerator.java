@@ -70,6 +70,7 @@ import org.talend.commons.utils.VersionUtils;
 import org.talend.commons.utils.io.FilesUtils;
 import org.talend.core.CorePlugin;
 import org.talend.core.GlobalServiceRegister;
+import org.talend.core.ICoreService;
 import org.talend.core.PluginChecker;
 import org.talend.core.model.context.ContextUtils;
 import org.talend.core.model.general.Project;
@@ -758,8 +759,14 @@ public class HTMLDocGenerator implements IDocumentationGenerator {
                 ExceptionHandler.process(e);
             }
             Element sourceCodeInfoElement = DocumentHelper.createElement("sourcecodes"); //$NON-NLS-1$
-            ITalendSynchronizer synchronizer = CorePlugin.getDefault().getCodeGeneratorService().createRoutineSynchronizer();
-            // StringBuffer componentsCode = new StringBuffer();
+            if (!GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
+                return;
+            }
+            ICoreService coreService = (ICoreService) GlobalServiceRegister.getDefault().getService(ICoreService.class);
+            ITalendSynchronizer synchronizer = coreService.createCodesSynchronizer();
+            if (synchronizer == null) {
+                return;
+            }
             try {
                 IFile codeFile = synchronizer.getFile(item);
                 if (codeFile == null) {
