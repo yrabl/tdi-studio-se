@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2015 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -60,8 +60,8 @@ public class ComponentCompilations {
     private static void initFile() {
         try {
             if (f == null) {
-                IPath filePath = ResourcesPlugin.getWorkspace().getRoot().getLocation()
-                        .append(ICodegenConstants.PROJECT_NAME).append("FirstCompilationMarker"); //$NON-NLS-1$ //$NON-NLS-2$
+                IPath filePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().append(ICodegenConstants.PROJECT_NAME)
+                        .append("FirstCompilationMarker"); //$NON-NLS-1$ //$NON-NLS-2$
                 f = filePath.toFile();
             }
         } catch (Exception e) {
