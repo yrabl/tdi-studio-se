@@ -1118,6 +1118,10 @@ public class JobSettingsManager {
                     }
                     table.setTableName(tableName);
                     table.setAttachedConnector(currentParam.getContext());
+                    // fix for TUP-3972: set defult value
+                    for (IMetadataColumn column : table.getListColumns()) {
+                        column.setDefault("\"\"");
+                    }
                     return table;
                 }
 

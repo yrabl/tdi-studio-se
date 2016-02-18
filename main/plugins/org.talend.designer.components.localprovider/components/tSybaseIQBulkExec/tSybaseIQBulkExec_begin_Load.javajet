@@ -108,9 +108,14 @@ if(columnList != null && columnList.size() > 0) {
 %>
     	loadingCols_<%=cid%>.append("(");
 <%
+	boolean blank_as_null = "true".equals(ElementParameterParser.getValue(node, "__BLANK_AS_NULL__"));
+	
     int sizeColumns = columnList.size();
     for (int i = 0; i < sizeColumns; i++) {
         IMetadataColumn column = columnList.get(i);
+        
+        JavaType javaType = JavaTypesManager.getJavaTypeFromId(column.getTalendType());
+        boolean blankAsNull = blank_as_null && ((javaType == JavaTypesManager.STRING) || (javaType == JavaTypesManager.CHARACTER)) && column.isNullable();
 %>
         loadingCols_<%=cid%>.append("<%=column.getOriginalDbColumnName()%>" + " ");
 <%
@@ -120,14 +125,14 @@ if(columnList != null && columnList.size() > 0) {
 %>
 		loadingCols_<%=cid%>.append("ASCII(" + <%=column.getLength()%> + "),");
 <%			}else{%>
-        loadingCols_<%=cid%>.append("'" + <%=field_separator.replaceAll("\\\\", "\\\\\\\\") %> + "'" + ",");
+        loadingCols_<%=cid%>.append("'" + <%=field_separator.replaceAll("\\\\", "\\\\\\\\") %> + "' <%if(blankAsNull){%>NULL(BLANKS)<%}%>" + ",");
 <%        	}
 		}else{
 			if(useFixedLength==true){
 %>
 		loadingCols_<%=cid%>.append("ASCII(" + <%=column.getLength()%> + ")");
 <%			}else{ %>
-        	loadingCols_<%=cid%>.append("'" + <%=lines_separator.replaceAll("\\\\", "\\\\\\\\") %> + "'");
+        	loadingCols_<%=cid%>.append("'" + <%=lines_separator.replaceAll("\\\\", "\\\\\\\\") %> + "' <%if(blankAsNull){%>NULL(BLANKS)<%}%>");
 <%			}
       	}
     }
@@ -139,6 +144,7 @@ if(columnList != null && columnList.size() > 0) {
 
     java.sql.Statement stmt_<%=cid %>=conn_<%=cid %>.createStatement();
     stmt_<%=cid %>.execute("SET TEMPORARY OPTION ESCAPE_CHARACTER='ON'");
+    stmt_<%=cid %>.execute("SET TEMPORARY OPTION LOAD_ZEROLENGTH_ASNULL='ON'");
 
     //stmt_<%=cid %>.execute("SET TEMPORARY OPTION ALLOW_READ_CLIENT_FILE='ON'");//sybaseIQ 15 whether is set?
 

@@ -28,10 +28,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.talend.component.core.model.GenericElementParameter;
-import org.talend.components.api.properties.NameAndLabel;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.ui.composite.ElementsSelectionComposite;
 import org.talend.core.ui.properties.tab.IDynamicProperty;
+import org.talend.daikon.NamedThing;
 import org.talend.designer.core.ui.editor.properties.controllers.AbstractElementPropertySectionController;
 
 /**
@@ -64,7 +64,7 @@ public class NameAndLabelsTreeController extends AbstractElementPropertySectionC
         Composite parentComp = new Composite(subComposite, SWT.NONE);
         parentComp.setLayoutData(data);
         parentComp.setLayout(new GridLayout());
-        ElementsSelectionComposite<NameAndLabel> selectionComposite = new ElementsSelectionComposite<NameAndLabel>(parentComp) {
+        ElementsSelectionComposite<NamedThing> selectionComposite = new ElementsSelectionComposite<NamedThing>(parentComp) {
 
             @Override
             protected IBaseLabelProvider getLabelProvider() {
@@ -72,8 +72,8 @@ public class NameAndLabelsTreeController extends AbstractElementPropertySectionC
 
                     @Override
                     public String getText(Object obj) {
-                        NameAndLabel nal = (NameAndLabel) obj;
-                        return nal.getLabel();
+                        NamedThing nal = (NamedThing) obj;
+                        return nal.getDisplayName();
                     }
 
                     @Override
@@ -91,7 +91,7 @@ public class NameAndLabelsTreeController extends AbstractElementPropertySectionC
         };
         selectionComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         if (param instanceof GenericElementParameter) {
-            List<NameAndLabel> possibleValues = (List<NameAndLabel>) ((GenericElementParameter) param).getPossibleValues();
+            List<NamedThing> possibleValues = (List<NamedThing>) ((GenericElementParameter) param).getPossibleValues();
             selectionComposite.setViewerData(possibleValues);
         }
         return parentComp;

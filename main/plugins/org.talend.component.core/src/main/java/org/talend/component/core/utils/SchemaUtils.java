@@ -17,10 +17,6 @@ import java.util.Map;
 
 import org.talend.component.core.constants.IGenericConstants;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.api.properties.ComponentProperties.Deserialized;
-import org.talend.components.api.schema.Schema;
-import org.talend.components.api.schema.SchemaElement;
-import org.talend.components.api.schema.SchemaElement.Type;
 import org.talend.core.model.metadata.IMetadataTable;
 import org.talend.core.model.metadata.builder.connection.ConnectionFactory;
 import org.talend.core.model.metadata.builder.connection.MetadataColumn;
@@ -28,7 +24,12 @@ import org.talend.core.model.metadata.builder.connection.MetadataTable;
 import org.talend.core.model.metadata.types.JavaTypesManager;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.repository.model.repositoryObject.MetadataTableRepositoryObject;
+import org.talend.daikon.properties.Properties.Deserialized;
+import org.talend.daikon.schema.Schema;
+import org.talend.daikon.schema.SchemaElement;
+import org.talend.daikon.schema.SchemaElement.Type;
 import org.talend.repository.model.IProxyRepositoryFactory;
+
 import orgomg.cwm.objectmodel.core.CoreFactory;
 import orgomg.cwm.objectmodel.core.TaggedValue;
 
@@ -121,7 +122,8 @@ public class SchemaUtils {
                 serializedProperties = additionalProperties.get(IGenericConstants.COMPONENT_PROPERTIES_TAG);
             }
             if (serializedProperties != null) {
-                Deserialized fromSerializedProperties = ComponentProperties.fromSerialized(serializedProperties);
+                Deserialized<ComponentProperties> fromSerializedProperties = ComponentProperties
+                        .fromSerialized(serializedProperties, ComponentProperties.class);
                 if (fromSerializedProperties != null) {
                     return fromSerializedProperties.properties;
                 }

@@ -310,8 +310,8 @@
         </ITEMS>
     </PARAMETER>
    </PARAMETERS>
+   
    <ADVANCED_PARAMETERS>
-
    <PARAMETER
         NAME="PROPERTIES"
         FIELD="TEXT"
@@ -366,6 +366,15 @@
         SHOW_IF="USE_INSERT_LOCATION_SYNTAX == 'false'"
     >
       <DEFAULT>false</DEFAULT>
+    </PARAMETER>
+    
+    <PARAMETER
+       NAME="BLANK_AS_NULL"
+       FIELD="CHECK"
+       NUM_ROW="100"
+       SHOW_IF="(FIXED_LENGTH=='false') AND (USE_INSERT_LOCATION_SYNTAX == 'false')"
+    >
+        <DEFAULT>false</DEFAULT>
     </PARAMETER>
 
     <PARAMETER
@@ -627,6 +636,7 @@
             <ITEM NAME="WORD" VALUE="word" />
         </ITEMS>
     </PARAMETER>
+    
    </ADVANCED_PARAMETERS>
 
    <CODEGENERATION>

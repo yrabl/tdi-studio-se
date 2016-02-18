@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.ui,
  org.talend.core.ui,
  org.talend.commons.ui,
  org.talend.librariesmanager,
- org.talend.core.repository
+ org.talend.core.repository,
+ org.talend.daikon
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: .Talend SA.

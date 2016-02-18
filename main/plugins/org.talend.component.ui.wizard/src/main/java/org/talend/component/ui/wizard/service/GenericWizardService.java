@@ -30,7 +30,7 @@ import org.talend.component.ui.wizard.internal.service.GenericWizardInternalServ
 import org.talend.component.ui.wizard.persistence.SchemaUtils;
 import org.talend.component.ui.wizard.ui.DynamicComposite;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.api.properties.presentation.Form;
+import org.talend.daikon.properties.presentation.Form;
 import org.talend.components.api.wizard.ComponentWizardDefinition;
 import org.talend.components.api.wizard.WizardImageType;
 import org.talend.core.model.metadata.builder.connection.Connection;

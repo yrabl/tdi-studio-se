@@ -21,13 +21,13 @@ import org.talend.component.ui.wizard.util.GenericContextUtil;
 import org.talend.components.api.component.ComponentDefinition;
 import org.talend.components.api.component.ComponentImageType;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.api.properties.ComponentProperties.Deserialized;
-import org.talend.components.api.properties.Repository;
-import org.talend.components.api.schema.Schema;
 import org.talend.components.api.service.ComponentService;
 import org.talend.components.api.wizard.ComponentWizard;
 import org.talend.components.api.wizard.ComponentWizardDefinition;
 import org.talend.components.api.wizard.WizardImageType;
+import org.talend.daikon.properties.Properties.Deserialized;
+import org.talend.daikon.properties.service.Repository;
+import org.talend.daikon.schema.Schema;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
 import org.talend.metadata.managment.ui.utils.ConnectionContextHelper;
 
@@ -100,7 +100,8 @@ public class GenericComponentServiceImpl implements ComponentService {
         }
         String compPropertiesStr = properties.toSerialized();
         if (compPropertiesStr != null) {
-            Deserialized fromSerialized = ComponentProperties.fromSerialized(compPropertiesStr);
+            Deserialized<ComponentProperties> fromSerialized = ComponentProperties.fromSerialized(compPropertiesStr,
+                    ComponentProperties.class);
             if (fromSerialized != null) {
                 return fromSerialized.properties;
             }
@@ -120,13 +121,8 @@ public class GenericComponentServiceImpl implements ComponentService {
     }
 
     @Override
-    public ComponentProperties getPropertiesForComponent(String componentId) {
-        return componentService.getPropertiesForComponent(componentId);
-    }
-
-    @Override
-    public String storeComponentProperties(ComponentProperties properties, String name, String repositoryLocation, Schema schema) {
-        return componentService.storeComponentProperties(properties, name, repositoryLocation, schema);
+    public String storeProperties(ComponentProperties properties, String name, String repositoryLocation, Schema schema) {
+        return componentService.storeProperties(properties, name, repositoryLocation, schema);
     }
 
     @Override

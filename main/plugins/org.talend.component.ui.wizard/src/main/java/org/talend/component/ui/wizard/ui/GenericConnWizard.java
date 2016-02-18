@@ -50,8 +50,6 @@ import org.talend.component.ui.wizard.ui.common.GenericWizardPage;
 import org.talend.component.ui.wizard.update.GenericUpdateManager;
 import org.talend.component.ui.wizard.util.GenericWizardServiceFactory;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.api.properties.ComponentProperties.Deserialized;
-import org.talend.components.api.properties.presentation.Form;
 import org.talend.components.api.service.ComponentService;
 import org.talend.components.api.wizard.ComponentWizard;
 import org.talend.core.context.Context;
@@ -64,6 +62,8 @@ import org.talend.core.model.repository.RepositoryObject;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.core.runtime.services.IGenericWizardService;
+import org.talend.daikon.properties.Properties.Deserialized;
+import org.talend.daikon.properties.presentation.Form;
 import org.talend.designer.core.model.components.ElementParameter;
 import org.talend.metadata.managment.ui.utils.ConnectionContextHelper;
 import org.talend.metadata.managment.ui.wizard.CheckLastVersionRepositoryWizard;
@@ -127,8 +127,9 @@ public class GenericConnWizard extends CheckLastVersionRepositoryWizard {
             connectionProperty = PropertiesFactory.eINSTANCE.createProperty();
             // ses the id to be used for persistence lookup
             connectionProperty.setId(ProxyRepositoryFactory.getInstance().getNextId());
-            connectionProperty.setAuthor(((RepositoryContext) CoreRuntimePlugin.getInstance().getContext()
-                    .getProperty(Context.REPOSITORY_CONTEXT_KEY)).getUser());
+            connectionProperty.setAuthor(
+                    ((RepositoryContext) CoreRuntimePlugin.getInstance().getContext().getProperty(Context.REPOSITORY_CONTEXT_KEY))
+                            .getUser());
             connectionProperty.setVersion(VersionUtils.DEFAULT_VERSION);
             connectionProperty.setStatusCode(""); //$NON-NLS-1$
 
@@ -182,7 +183,8 @@ public class GenericConnWizard extends CheckLastVersionRepositoryWizard {
         } else {
             String compPropertiesStr = connection.getCompProperties();
             if (compPropertiesStr != null) {
-                Deserialized fromSerialized = ComponentProperties.fromSerialized(compPropertiesStr);
+                Deserialized<ComponentProperties> fromSerialized = ComponentProperties.fromSerialized(compPropertiesStr,
+                        ComponentProperties.class);
                 if (fromSerialized != null) {
                     componentWizard = internalService.getTopLevelComponentWizard(fromSerialized.properties, repNode.getId());
                 }
@@ -229,7 +231,7 @@ public class GenericConnWizard extends CheckLastVersionRepositoryWizard {
                     if (creation) {
                         createConnectionItem();
                     }
-                    compService.afterFormFinish(form.getName(), form.getComponentProperties());
+                    compService.afterFormFinish(form.getName(), (ComponentProperties) form.getProperties());
                 }
                 if (!creation) {
                     GenericUpdateManager.updateGenericConnection(connectionItem);
@@ -256,7 +258,7 @@ public class GenericConnWizard extends CheckLastVersionRepositoryWizard {
             @Override
             public void run(IProgressMonitor monitor) throws CoreException {
                 try {
-                    factory.create(connectionItem, new Path("")); //$NON-NLS-1$;
+                    factory.create(connectionItem, new Path("")); //$NON-NLS-1$ ;
                 } catch (PersistenceException e) {
                     throw new CoreException(new Status(IStatus.ERROR, "org.talend.metadata.management.ui",
                             "Error when create the connection", e));

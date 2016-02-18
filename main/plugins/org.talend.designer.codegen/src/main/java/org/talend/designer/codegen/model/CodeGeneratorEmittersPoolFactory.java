@@ -357,6 +357,28 @@ public final class CodeGeneratorEmittersPoolFactory {
     }
 
     /**
+     * 
+     * Utility method that create a {@link DelegateClassLoader} made of a given parent {@link ClassLoader} and a
+     * delegate one given a bundle name and a class name.
+     * 
+     * @param baseClassLoader the parent ClassLoader
+     * @param bundleName the name of the bundle to load the className from.
+     * @param className the className to load in order to get its ClassLoader
+     * @return the {@link DelegateClassLoader} made of the parent ClassLoader and the new created secondary ClassLoader.
+     */
+    private static ClassLoader createDelegateClassLoader(ClassLoader baseClassLoader, String bundleName, String className) {
+        try {
+            // This secondary class loader is used to find other classes in the given bundle. None of the classes in the
+            // parent can depend on these classes, but these can depend on the parent.
+            ClassLoader secondaryClassLoader = Platform.getBundle(bundleName).loadClass(className).getClassLoader();
+            return new DelegateClassLoader(baseClassLoader, secondaryClassLoader);
+        } catch (ClassNotFoundException e) {
+            ExceptionHandler.process(e);
+        }
+        return baseClassLoader;
+    }
+
+    /**
      * initialization of available templates.
      * 
      * @param template
@@ -373,6 +395,12 @@ public final class CodeGeneratorEmittersPoolFactory {
         jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
         jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
         jetBean.setClassLoader(new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader());
+        String sparkUtilsPluginName = "org.talend.designer.spark"; //$NON-NLS-1$
+        if (PluginChecker.isPluginLoaded(sparkUtilsPluginName)) {
+            jetBean.addClassPath("SPARK_LIBRARIES", sparkUtilsPluginName); //$NON-NLS-1$ 
+            jetBean.setClassLoader(createDelegateClassLoader(jetBean.getClassLoader(), sparkUtilsPluginName,
+                    "org.talend.designer.spark.SparkPlugin")); //$NON-NLS-1$ 
+        }
         return jetBean;
     }
 
@@ -409,9 +437,10 @@ public final class CodeGeneratorEmittersPoolFactory {
             jetBean.addClassPath("CORE_LIBRARIES", "org.talend.core"); //$NON-NLS-1$
             jetBean.addClassPath("CODEGEN_LIBRARIES", CodeGeneratorActivator.PLUGIN_ID); //$NON-NLS-1$
             jetBean.addClassPath("COMMON_LIBRARIES", CommonsPlugin.PLUGIN_ID); //$NON-NLS-1$
-            jetBean.addClassPath("COMPONENT_FRAMEWORK", "org.talend.components.api"); //$NON-NLS-1$
-            jetBean.addClassPath("COMPONENT_CORE", "org.talend.component.core"); //$NON-NLS-1$
-            jetBean.addClassPath("DESIGNER_CORE", "org.talend.designer.core"); //$NON-NLS-1$
+            jetBean.addClassPath("COMPONENT_FRAMEWORK", "org.talend.components.api"); //$NON-NLS-1$ //$NON-NLS-2$
+            jetBean.addClassPath("DAIKON", "org.talend.daikon"); //$NON-NLS-1$ //$NON-NLS-2$
+            jetBean.addClassPath("COMPONENT_CORE", "org.talend.component.core"); //$NON-NLS-1$ //$NON-NLS-2$
+            jetBean.addClassPath("DESIGNER_CORE", "org.talend.designer.core"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("HADOOP_DISTRIBUTIONS", "org.talend.hadoop.distribution"); //$NON-NLS-1$ //$NON-NLS-2$
             jetBean.addClassPath("HADOOP_CUSTOM_DISTRIBUTIONS", "org.talend.hadoop.distribution.custom"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -431,27 +460,17 @@ public final class CodeGeneratorEmittersPoolFactory {
 
             // Spark, M/R and Storm requires the plugin org.talend.designer.spark to be in the classpath in order to
             // generate the code.
-            if (PluginChecker.isPluginLoaded("org.talend.designer.spark") && ("SPARK".equals(component.getPaletteType()) || "MR".equals(component.getPaletteType()) || "STORM".equals(component.getPaletteType()) || "SPARKSTREAMING".equals(component.getPaletteType()))) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-                jetBean.addClassPath("BIGDATA_LIBRARIES", "org.talend.designer.bigdata"); //$NON-NLS-1$ //$NON-NLS-2$
-                jetBean.addClassPath("SPARK_LIBRARIES", "org.talend.designer.spark"); //$NON-NLS-1$ //$NON-NLS-2$
-                try {
-                    // The parent class loader is used first to find all of the classes that a javajet code generator
-                    // can use.
-                    ClassLoader baseClassLoader = new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader();
-                    // This secondary class loader is used to find big data utility classes. None of the classes in the
-                    // parent can depend on these classes, but these can depend on the parent.
-                    ClassLoader bigDataUtilsClassLoader = Platform.getBundle("org.talend.designer.bigdata") //$NON-NLS-1$
-                            .loadClass("org.talend.designer.bigdata.common.BigDataDataProcess").getClassLoader(); //$NON-NLS-1$
-                    ClassLoader delegateClassLoader = new DelegateClassLoader(baseClassLoader, bigDataUtilsClassLoader);
-                    // Add another class loader for spark utilities. This can depend on classes already in the delegate,
-                    // but they can't depend on its classes.
-                    ClassLoader sparkUtilsClassLoader = Platform.getBundle("org.talend.designer.spark") //$NON-NLS-1$
-                            .loadClass("org.talend.designer.spark.SparkPlugin").getClassLoader(); //$NON-NLS-1$
-                    delegateClassLoader = new DelegateClassLoader(delegateClassLoader, sparkUtilsClassLoader);
-                    jetBean.setClassLoader(delegateClassLoader);
-                } catch (ClassNotFoundException e) {
-                    ExceptionHandler.process(e);
-                }
+            String sparkUtilsPluginName = "org.talend.designer.spark"; //$NON-NLS-1$
+            String bigDataUtilsPluginName = "org.talend.designer.bigdata"; //$NON-NLS-1$
+            if (PluginChecker.isPluginLoaded(sparkUtilsPluginName) && ("SPARK".equals(component.getPaletteType()) //$NON-NLS-1$ 
+                    || "MR".equals(component.getPaletteType()) || "STORM".equals(component.getPaletteType()) //$NON-NLS-1$ //$NON-NLS-2$
+            || "SPARKSTREAMING".equals(component.getPaletteType()))) { //$NON-NLS-1$
+                jetBean.addClassPath("BIGDATA_LIBRARIES", bigDataUtilsPluginName); //$NON-NLS-1$ 
+                jetBean.addClassPath("SPARK_LIBRARIES", sparkUtilsPluginName); //$NON-NLS-1$ 
+                jetBean.setClassLoader(createDelegateClassLoader(
+                        createDelegateClassLoader(new CodeGeneratorEmittersPoolFactory().getClass().getClassLoader(),
+                                bigDataUtilsPluginName, "org.talend.designer.bigdata.common.BigDataDataProcess"), //$NON-NLS-1$
+                        sparkUtilsPluginName, "org.talend.designer.spark.SparkPlugin")); //$NON-NLS-1$
 
                 // If Spark AND with an external component, use the external component as the parent classloader and
                 // spark as a secondary, delegate classloader.

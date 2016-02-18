@@ -29,14 +29,7 @@ import org.talend.component.core.constants.IElementParameterEventProperties;
 import org.talend.component.core.constants.IGenericConstants;
 import org.talend.component.core.utils.ComponentsUtils;
 import org.talend.component.core.utils.SchemaUtils;
-import org.talend.components.api.NamedThing;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.api.properties.PresentationItem;
-import org.talend.components.api.properties.Property;
-import org.talend.components.api.properties.presentation.Form;
-import org.talend.components.api.properties.presentation.Widget;
-import org.talend.components.api.schema.Schema;
-import org.talend.components.api.schema.SchemaElement;
 import org.talend.components.api.service.ComponentService;
 import org.talend.core.model.metadata.IMetadataTable;
 import org.talend.core.model.metadata.MetadataToolHelper;
@@ -45,6 +38,13 @@ import org.talend.core.model.process.EParameterFieldType;
 import org.talend.core.model.process.IElement;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.IProcess;
+import org.talend.daikon.NamedThing;
+import org.talend.daikon.properties.PresentationItem;
+import org.talend.daikon.properties.Property;
+import org.talend.daikon.properties.presentation.Form;
+import org.talend.daikon.properties.presentation.Widget;
+import org.talend.daikon.schema.Schema;
+import org.talend.daikon.schema.SchemaElement;
 import org.talend.designer.core.model.components.ElementParameter;
 import org.talend.designer.core.ui.editor.cmd.ChangeMetadataCommand;
 import org.talend.designer.core.ui.editor.nodes.Node;
@@ -77,8 +77,7 @@ public class GenericElementParameter extends ElementParameter {
         this.componentService = componentService;
         isFirstCall = true;
 
-        NamedThing[] widgetProperties = widget.getProperties();
-        NamedThing widgetProperty = widgetProperties[0];
+        NamedThing widgetProperty = widget.getContent();
         setName(widgetProperty.getName());
         setDisplayName(widgetProperty.getDisplayName());
     }
@@ -112,8 +111,7 @@ public class GenericElementParameter extends ElementParameter {
         if (componentProperties == null) {
             return;
         }
-        NamedThing[] widgetProperties = widget.getProperties();
-        NamedThing widgetProperty = widgetProperties[0];
+        NamedThing widgetProperty = widget.getContent();
         if (widgetProperty instanceof Property) {
             Property se = (Property) widgetProperty;
             Object oldValue = se.getValue();
@@ -204,7 +202,7 @@ public class GenericElementParameter extends ElementParameter {
     private boolean callValidate() {
         if (widget.isCallValidate()) {
             if (widget.isLongRunning()) {
-                return new RunWithProgress(widget.getProperties()[0].getDisplayName()) {
+                return new RunWithProgress(widget.getContent().getDisplayName()) {
 
                     @Override
                     protected void toDo() throws Throwable {

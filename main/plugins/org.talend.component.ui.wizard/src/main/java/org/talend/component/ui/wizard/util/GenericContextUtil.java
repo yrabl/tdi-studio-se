@@ -20,10 +20,7 @@ import java.util.Set;
 
 import org.talend.component.core.utils.ComponentsUtils;
 import org.talend.component.ui.model.genericMetadata.GenericConnection;
-import org.talend.components.api.NamedThing;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.api.properties.ComponentProperties.Deserialized;
-import org.talend.components.api.properties.Property;
 import org.talend.core.language.ECodeLanguage;
 import org.talend.core.model.context.ContextUtils;
 import org.talend.core.model.metadata.builder.connection.Connection;
@@ -32,6 +29,9 @@ import org.talend.core.model.properties.ContextItem;
 import org.talend.core.model.utils.ContextParameterUtils;
 import org.talend.core.ui.context.model.table.ConectionAdaptContextVariableModel;
 import org.talend.core.utils.TalendQuoteUtils;
+import org.talend.daikon.NamedThing;
+import org.talend.daikon.properties.Properties.Deserialized;
+import org.talend.daikon.properties.Property;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
 import org.talend.metadata.managment.ui.model.IConnParamName;
 import org.talend.metadata.managment.ui.utils.ConnectionContextHelper;
@@ -70,7 +70,8 @@ public class GenericContextUtil {
     private static ComponentProperties getComponentProperties(GenericConnection connection) {
         String compPropertiesStr = connection.getCompProperties();
         if (compPropertiesStr != null) {
-            Deserialized fromSerialized = ComponentProperties.fromSerialized(compPropertiesStr);
+            Deserialized<ComponentProperties> fromSerialized = ComponentProperties.fromSerialized(compPropertiesStr,
+                    ComponentProperties.class);
             if (fromSerialized != null) {
                 return fromSerialized.properties;
             }

@@ -363,7 +363,7 @@ public abstract class AbstractJavaProcessor extends Processor implements IJavaPr
     protected String buildExportZip(ProcessItem processItem, IProgressMonitor progressMonitor) throws ProcessorException {
         Map<ExportChoice, Object> exportChoiceMap = JobScriptsManagerFactory.getDefaultExportChoiceMap();
         exportChoiceMap.put(ExportChoice.needLauncher, false);
-        exportChoiceMap.put(ExportChoice.needJobItem, false);
+        exportChoiceMap.put(ExportChoice.needJobItem, true);
         // exportChoiceMap.put(ExportChoice.needJobScript, true); //?? for old build? no need
         if (CommonsPlugin.isDebugMode()) {
             exportChoiceMap.put(ExportChoice.needSourceCode, true);

@@ -26,8 +26,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.talend.components.api.properties.NameAndLabel;
 import org.talend.core.ui.composite.ElementsSelectionComposite;
+import org.talend.daikon.NamedThing;
 
 /**
  * created by ycbai on 2015年10月12日 Detailled comment
@@ -35,13 +35,13 @@ import org.talend.core.ui.composite.ElementsSelectionComposite;
  */
 public class NameAndLabelsDialog extends Dialog {
 
-    private List<NameAndLabel> nameAndLabels;
+    private List<NamedThing> nameAndLabels;
 
     private String result;
 
-    private ElementsSelectionComposite<NameAndLabel> selectionComposite;
+    private ElementsSelectionComposite<NamedThing> selectionComposite;
 
-    public NameAndLabelsDialog(Shell parentShell, List<NameAndLabel> nameAndLabels) {
+    public NameAndLabelsDialog(Shell parentShell, List<NamedThing> nameAndLabels) {
         super(parentShell);
         setShellStyle(getShellStyle() | SWT.RESIZE | SWT.MIN | SWT.APPLICATION_MODAL);
         this.nameAndLabels = nameAndLabels;
@@ -60,7 +60,7 @@ public class NameAndLabelsDialog extends Dialog {
         comp.setLayoutData(new GridData(GridData.FILL_BOTH));
         comp.setLayout(new GridLayout());
 
-        selectionComposite = new ElementsSelectionComposite<NameAndLabel>(comp, false) {
+        selectionComposite = new ElementsSelectionComposite<NamedThing>(comp, false) {
 
             @Override
             protected IBaseLabelProvider getLabelProvider() {
@@ -68,8 +68,8 @@ public class NameAndLabelsDialog extends Dialog {
 
                     @Override
                     public String getText(Object obj) {
-                        NameAndLabel nal = (NameAndLabel) obj;
-                        return nal.getLabel();
+                        NamedThing nal = (NamedThing) obj;
+                        return nal.getDisplayName();
                     }
 
                     @Override
@@ -100,7 +100,7 @@ public class NameAndLabelsDialog extends Dialog {
     }
 
     private String getSelectedName() {
-        List<NameAndLabel> selectedElements = selectionComposite.getSelectedElements();
+        List<NamedThing> selectedElements = selectionComposite.getSelectedElements();
         if (selectedElements.size() > 0) {
             return selectedElements.get(0).getName();
         }

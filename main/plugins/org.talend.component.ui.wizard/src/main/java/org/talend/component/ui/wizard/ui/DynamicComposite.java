@@ -37,9 +37,6 @@ import org.talend.component.ui.wizard.internal.service.GenericComponentServiceIm
 import org.talend.component.ui.wizard.internal.service.GenericWizardInternalService;
 import org.talend.component.ui.wizard.model.FakeElement;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.api.properties.ValidationResult;
-import org.talend.components.api.properties.ValidationResult.Result;
-import org.talend.components.api.properties.presentation.Form;
 import org.talend.components.api.service.ComponentService;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.process.EComponentCategory;
@@ -51,6 +48,9 @@ import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.model.properties.Property;
 import org.talend.core.ui.check.Checker;
 import org.talend.core.ui.check.IChecker;
+import org.talend.daikon.properties.ValidationResult;
+import org.talend.daikon.properties.ValidationResult.Result;
+import org.talend.daikon.properties.presentation.Form;
 import org.talend.designer.core.model.components.EParameterName;
 import org.talend.designer.core.model.components.ElementParameter;
 import org.talend.designer.core.model.components.EmfComponent;
@@ -95,7 +95,7 @@ public class DynamicComposite extends MultipleThreadDynamicComposite implements 
             Connection connection = connectionItem.getConnection();
             if (connection instanceof GenericConnection) {
                 GenericConnection genericConnection = (GenericConnection) connection;
-                genericConnection.setCompProperties(form.getComponentProperties().toSerialized());
+                genericConnection.setCompProperties(form.getProperties().toSerialized());
             }
         }
     }
@@ -127,8 +127,8 @@ public class DynamicComposite extends MultipleThreadDynamicComposite implements 
                 props = node.getComponentProperties();
             }
         }
-        List<ElementParameter> parameters = ComponentsUtils
-                .getParametersFromForm(element, section, props, null, form, null, null);
+        List<ElementParameter> parameters = ComponentsUtils.getParametersFromForm(element, section, props, null, form, null,
+                null);
         for (ElementParameter parameter : parameters) {
             if (parameter instanceof GenericElementParameter) {
                 ((GenericElementParameter) parameter).callBeforePresent();
@@ -148,7 +148,8 @@ public class DynamicComposite extends MultipleThreadDynamicComposite implements 
                             ComponentProperties oldProperties = ((GenericElementParameter) oldParameter).getComponentProperties();
                             ComponentProperties newProperties = ((GenericElementParameter) parameter).getComponentProperties();
                             if (oldProperties != null && oldProperties.getName() != null && newProperties != null
-                                    && newProperties.getName() != null && oldProperties.getName().equals(newProperties.getName())) {
+                                    && newProperties.getName() != null
+                                    && oldProperties.getName().equals(newProperties.getName())) {
                                 if (parameter.getChildParameters().size() == 0) {
                                     parameter.getChildParameters().putAll(oldParameter.getChildParameters());
                                 }
@@ -257,7 +258,7 @@ public class DynamicComposite extends MultipleThreadDynamicComposite implements 
             Object newValue = event.getNewValue();
             if (newValue instanceof ComponentProperties) {
                 ComponentProperties newComponentProperties = (ComponentProperties) newValue;
-                form.getComponentProperties().copyValuesFrom(newComponentProperties);
+                form.getProperties().copyValuesFrom(newComponentProperties);
                 reset(true);
             }
         }

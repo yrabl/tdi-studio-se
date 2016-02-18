@@ -22,13 +22,13 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.talend.commons.ui.swt.formtools.LabelledText;
-import org.talend.components.api.NamedThing;
-import org.talend.components.api.properties.PresentationItem;
-import org.talend.components.api.properties.presentation.Form;
-import org.talend.components.api.properties.presentation.Widget;
-import org.talend.components.api.properties.presentation.Widget.WidgetType;
-import org.talend.components.api.schema.SchemaElement;
-import org.talend.components.api.schema.SchemaElement.Type;
+import org.talend.daikon.NamedThing;
+import org.talend.daikon.properties.PresentationItem;
+import org.talend.daikon.properties.presentation.Form;
+import org.talend.daikon.properties.presentation.Widget;
+import org.talend.daikon.properties.presentation.Widget.WidgetType;
+import org.talend.daikon.schema.SchemaElement;
+import org.talend.daikon.schema.SchemaElement.Type;
 
 /**
  * created by ycbai on 2015年9月18日 Detailled comment
@@ -134,12 +134,7 @@ public class GenericUIBuilder {
     }
 
     private NamedThing getProperty(Widget widget) {
-        NamedThing[] properties = widget.getProperties();
-        NamedThing property = null;
-        if (properties != null && properties.length > 0) {
-            property = properties[0];
-        }
-        return property;
+        return widget.getContent();
     }
 
 }

@@ -299,17 +299,9 @@
 
 	<CODEGENERATION>
 		<IMPORTS>
-			<IMPORT NAME="aws-java-sdk-emr-1.10.20.jar" MODULE="aws-java-sdk-emr-1.10.20.jar"
-				MVN="mvn:org.talend.libraries/aws-java-sdk-emr-1.10.20/6.0.0"
-				REQUIRED="true" />
-			<IMPORT NAME="aws-java-sdk-support-1.10.20.jar" MODULE="aws-java-sdk-support-1.10.20.jar"
-				MVN="mvn:org.talend.libraries/aws-java-sdk-support-1.10.20/6.0.0"
-				REQUIRED="true" />
-			<IMPORT NAME="aws-java-sdk-1.10.20.jar" MODULE="aws-java-sdk-1.10.20.jar"
-				MVN="mvn:org.talend.libraries/aws-java-sdk-1.10.20/6.0.0"
-				REQUIRED="true" />
-			<IMPORT NAME="aws-java-sdk-core-1.10.20.jar" MODULE="aws-java-sdk-core-1.10.20.jar"
-				MVN="mvn:org.talend.libraries/aws-java-sdk-core-1.10.20/6.0.0"
+			<IMPORT NAME="aws-java-sdk-1.10.52.jar" MODULE="aws-java-sdk-1.10.52.jar"
+				MVN="mvn:org.talend.libraries/aws-java-sdk-1.10.52/6.0.0"
+				UrlPath="platform:/plugin/org.talend.libraries.s3/lib/aws-java-sdk-1.10.52.jar"
 				REQUIRED="true" />
 			<IMPORT NAME="jackson-core-2.5.3.jar" MODULE="jackson-core-2.5.3.jar"
 				MVN="mvn:org.talend.libraries/jackson-core-2.5.3/6.0.0"

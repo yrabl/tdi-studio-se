@@ -19,10 +19,10 @@ import org.talend.component.core.constants.IGenericConstants;
 import org.talend.component.ui.model.genericMetadata.GenericConnection;
 import org.talend.component.ui.model.genericMetadata.GenericConnectionItem;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.api.properties.ComponentProperties.Deserialized;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
+import org.talend.daikon.properties.Properties.Deserialized;
 import org.talend.metadata.managment.ui.wizard.PropertiesWizard;
 
 /**
@@ -44,10 +44,11 @@ public class GenericConnPropertiesWizard extends PropertiesWizard {
             GenericConnection connection = (GenericConnection) gcItem.getConnection();
             String compPropertiesStr = connection.getCompProperties();
             if (compPropertiesStr != null) {
-                Deserialized fromSerialized = ComponentProperties.fromSerialized(compPropertiesStr);
+                Deserialized<ComponentProperties> fromSerialized = ComponentProperties.fromSerialized(compPropertiesStr,
+                        ComponentProperties.class);
                 if (fromSerialized != null) {
                     ComponentProperties componentProperties = fromSerialized.properties;
-                    org.talend.components.api.properties.Property nameProperty = (org.talend.components.api.properties.Property) componentProperties
+                    org.talend.daikon.properties.Property nameProperty = (org.talend.daikon.properties.Property) componentProperties
                             .getProperty(IGenericConstants.NAME_PROPERTY);
                     Object namePropertyVal = nameProperty.getValue();
                     String newName = property.getLabel();

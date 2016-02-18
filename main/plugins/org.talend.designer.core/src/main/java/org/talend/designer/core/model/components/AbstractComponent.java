@@ -222,4 +222,7 @@ public abstract class AbstractComponent implements IComponent {
         return null;
     }
 
+    public Object getElementParameterValueFromComponentProperties(INode iNode, IElementParameter param) {
+        return null;
+    }
 }

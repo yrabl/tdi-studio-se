@@ -23,12 +23,13 @@ import org.talend.component.ui.model.genericMetadata.GenericConnection;
 import org.talend.component.ui.wizard.handler.IContextHandler;
 import org.talend.component.ui.wizard.ui.context.ContextComposite;
 import org.talend.component.ui.wizard.ui.context.handler.GenericContextHandler;
-import org.talend.components.api.properties.presentation.Form;
-import org.talend.components.api.properties.presentation.Widget;
+import org.talend.components.api.properties.ComponentProperties;
 import org.talend.components.api.service.ComponentService;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.ui.check.ICheckListener;
 import org.talend.core.ui.check.IChecker;
+import org.talend.daikon.properties.presentation.Form;
+import org.talend.daikon.properties.presentation.Widget;
 import org.talend.designer.core.model.components.ElementParameter;
 
 /**
@@ -77,7 +78,7 @@ public abstract class GenericWizardPage extends WizardPage {
     private boolean callBefore() {
         if (form.isCallBeforeFormPresent()) {
             try {
-                compService.beforeFormPresent(form.getName(), form.getComponentProperties());
+                compService.beforeFormPresent(form.getName(), (ComponentProperties) form.getProperties());
                 return true;
             } catch (Throwable e) {
                 ExceptionHandler.process(e);

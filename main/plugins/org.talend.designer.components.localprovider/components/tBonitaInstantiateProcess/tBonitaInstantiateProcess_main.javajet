@@ -50,12 +50,12 @@ imports="
 									String pattern = columns.get(i).getPattern() == null || columns.get(i).getPattern().trim().length() == 0 ? null : columns.get(i).getPattern();
 									if(javaType == JavaTypesManager.DATE){
 									%>
-										vars_<%=cid%>.put("<%=columns.get(i).getLabel()%>",routines.system.FormatterUtils.format_Date(<%=conn.getName()%>.<%=columns.get(i).getLabel()%>, <%= pattern %>));
+										vars_<%=cid%>.put("<%=columns.get(i).getLabel()%>",org.apache.commons.lang3.StringEscapeUtils.escapeJson(routines.system.FormatterUtils.format_Date(<%=conn.getName()%>.<%=columns.get(i).getLabel()%>, <%= pattern %>)));
 									<%
 									} else {
 									%>
 										
-										vars_<%=cid%>.put("<%=columns.get(i).getLabel()%>",java.net.URLEncoder.encode(java.net.URLEncoder.encode(String.valueOf(<%=conn.getName()%>.<%=(columns.get(i)).getLabel()%>), utf8Charset),utf8Charset));
+										vars_<%=cid%>.put("<%=columns.get(i).getLabel()%>",org.apache.commons.lang3.StringEscapeUtils.escapeJson(String.valueOf(<%=conn.getName()%>.<%=(columns.get(i)).getLabel()%>)));
 									<%
 									}
 									

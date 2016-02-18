@@ -37,10 +37,10 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.views.properties.tabbed.ITabbedPropertyConstants;
 import org.talend.commons.ui.runtime.image.ImageProvider;
 import org.talend.component.core.model.GenericElementParameter;
-import org.talend.components.api.properties.NameAndLabel;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.ui.CoreUIPlugin;
 import org.talend.core.ui.properties.tab.IDynamicProperty;
+import org.talend.daikon.NamedThing;
 import org.talend.designer.core.i18n.Messages;
 import org.talend.designer.core.ui.editor.nodes.Node;
 import org.talend.designer.core.ui.editor.properties.controllers.AbstractElementPropertySectionController;
@@ -64,7 +64,7 @@ public class NameAndLabelsReferenceController extends AbstractElementPropertySec
     }
 
     public Command createCommand(Button button) {
-        List<NameAndLabel> nals = new ArrayList<>();
+        List<NamedThing> nals = new ArrayList<>();
         if (curParameter instanceof GenericElementParameter) {
             GenericElementParameter gParam = (GenericElementParameter) curParameter;
             if (gParam != null) {
@@ -72,8 +72,8 @@ public class NameAndLabelsReferenceController extends AbstractElementPropertySec
                 List<?> possibleValues = gParam.getPossibleValues();
                 if (possibleValues != null) {
                     for (Object object : possibleValues) {
-                        if (object instanceof NameAndLabel) {
-                            nals.add((NameAndLabel) object);
+                        if (object instanceof NamedThing) {
+                            nals.add((NamedThing) object);
                         }
                     }
                 }
@@ -131,13 +131,13 @@ public class NameAndLabelsReferenceController extends AbstractElementPropertySec
 
         DecoratedField dField = new DecoratedField(subComposite, SWT.BORDER, new SelectAllTextControlCreator());
         if (param.isRequired()) {
-            FieldDecoration decoration = FieldDecorationRegistry.getDefault().getFieldDecoration(
-                    FieldDecorationRegistry.DEC_REQUIRED);
+            FieldDecoration decoration = FieldDecorationRegistry.getDefault()
+                    .getFieldDecoration(FieldDecorationRegistry.DEC_REQUIRED);
             dField.addFieldDecoration(decoration, SWT.RIGHT | SWT.TOP, false);
         }
         if (param.isRepositoryValueUsed()) {
-            FieldDecoration decoration = FieldDecorationRegistry.getDefault().getFieldDecoration(
-                    FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
+            FieldDecoration decoration = FieldDecorationRegistry.getDefault()
+                    .getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
             decoration.setDescription(Messages.getString("FileController.decoration.description")); //$NON-NLS-1$
             dField.addFieldDecoration(decoration, SWT.RIGHT | SWT.BOTTOM, false);
         }

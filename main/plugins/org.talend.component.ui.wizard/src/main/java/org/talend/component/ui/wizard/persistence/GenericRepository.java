@@ -23,14 +23,15 @@ import org.talend.component.ui.model.genericMetadata.GenericConnectionItem;
 import org.talend.component.ui.model.genericMetadata.GenericMetadataFactory;
 import org.talend.component.ui.model.genericMetadata.SubContainer;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.api.properties.Repository;
-import org.talend.components.api.schema.Schema;
 import org.talend.core.model.metadata.builder.connection.MetadataTable;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.cwm.helper.PackageHelper;
+import org.talend.daikon.properties.Properties;
+import org.talend.daikon.properties.service.Repository;
+import org.talend.daikon.schema.Schema;
 
 /**
  * created by ycbai on 2015年9月29日 Detailled comment
@@ -39,11 +40,11 @@ import org.talend.cwm.helper.PackageHelper;
 public class GenericRepository implements Repository {
 
     @Override
-    public String storeComponentProperties(ComponentProperties properties, String name, String repositoryLocation, Schema schema) {
+    public String storeProperties(Properties properties, String name, String repositoryLocation, Schema schema) {
         String serializedProperties = properties.toSerialized();
         if (repositoryLocation.contains(IGenericConstants.REPOSITORY_LOCATION_SEPARATOR)) {// nested properties to be
-            GenericConnectionItem item = getGenericConnectionItem(repositoryLocation.substring(0,
-                    repositoryLocation.indexOf(IGenericConstants.REPOSITORY_LOCATION_SEPARATOR)));
+            GenericConnectionItem item = getGenericConnectionItem(
+                    repositoryLocation.substring(0, repositoryLocation.indexOf(IGenericConstants.REPOSITORY_LOCATION_SEPARATOR)));
             if (item == null) {
                 throw new RuntimeException("Failed to find the GenericConnectionItem for location:" + repositoryLocation); //$NON-NLS-1$
             }
@@ -139,7 +140,6 @@ public class GenericRepository implements Repository {
         return genItem;
     }
 
-    @Override
     public ComponentProperties getPropertiesForComponent(String componentId) {
         return null;// FIXME
     }

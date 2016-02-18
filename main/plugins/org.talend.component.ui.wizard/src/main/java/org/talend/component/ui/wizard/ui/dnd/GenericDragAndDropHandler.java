@@ -25,11 +25,7 @@ import org.talend.component.core.utils.ComponentsUtils;
 import org.talend.component.core.utils.SchemaUtils;
 import org.talend.component.ui.model.genericMetadata.GenericConnection;
 import org.talend.component.ui.model.genericMetadata.GenericConnectionItem;
-import org.talend.components.api.NamedThing;
 import org.talend.components.api.properties.ComponentProperties;
-import org.talend.components.api.properties.ComponentProperties.Deserialized;
-import org.talend.components.api.properties.Property;
-import org.talend.components.api.schema.SchemaElement.Type;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.model.components.EComponentType;
 import org.talend.core.model.components.IComponent;
@@ -43,6 +39,10 @@ import org.talend.core.model.properties.Item;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.utils.IComponentName;
 import org.talend.core.repository.RepositoryComponentSetting;
+import org.talend.daikon.NamedThing;
+import org.talend.daikon.properties.Properties.Deserialized;
+import org.talend.daikon.properties.Property;
+import org.talend.daikon.schema.SchemaElement.Type;
 import org.talend.repository.model.RepositoryNode;
 
 /**
@@ -83,7 +83,8 @@ public class GenericDragAndDropHandler extends AbstractComponentDragAndDropHandl
         }
         String serialized = connection.getCompProperties();
         if (serialized != null) {
-            Deserialized fromSerialized = ComponentProperties.fromSerialized(serialized);
+            Deserialized<ComponentProperties> fromSerialized = ComponentProperties.fromSerialized(serialized,
+                    ComponentProperties.class);
             if (fromSerialized != null) {
                 ComponentProperties componentProperties = fromSerialized.properties;
                 String paramName = ComponentsUtils.getPropertyName(value);

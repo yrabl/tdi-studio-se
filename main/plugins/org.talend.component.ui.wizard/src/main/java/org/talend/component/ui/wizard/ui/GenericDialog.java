@@ -26,10 +26,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.component.ui.wizard.internal.service.GenericWizardInternalService;
 import org.talend.component.ui.wizard.model.FakeElement;
-import org.talend.components.api.properties.presentation.Form;
+import org.talend.components.api.properties.ComponentProperties;
 import org.talend.components.api.service.ComponentService;
 import org.talend.core.model.process.EComponentCategory;
 import org.talend.core.model.process.Element;
+import org.talend.daikon.properties.presentation.Form;
 
 /**
  * created by ycbai on 2015年10月12日 Detailled comment
@@ -89,7 +90,7 @@ public class GenericDialog extends TitleAreaDialog {
     private void init() {
         if (form.isCallBeforeFormPresent()) {
             try {
-                componentService.beforeFormPresent(form.getName(), form.getComponentProperties());
+                componentService.beforeFormPresent(form.getName(), (ComponentProperties) form.getProperties());
             } catch (Throwable e) {
                 ExceptionHandler.process(e);
             }
@@ -110,7 +111,7 @@ public class GenericDialog extends TitleAreaDialog {
     protected void okPressed() {
         if (form.isCallAfterFormFinish()) {
             try {
-                componentService.afterFormFinish(form.getName(), form.getComponentProperties());
+                componentService.afterFormFinish(form.getName(), (ComponentProperties) form.getProperties());
             } catch (Throwable e) {
                 ExceptionHandler.process(e);
             }

@@ -36,10 +36,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.properties.tabbed.ITabbedPropertyConstants;
 import org.talend.component.core.model.GenericElementParameter;
-import org.talend.components.api.NamedThing;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.INode;
 import org.talend.core.ui.properties.tab.IDynamicProperty;
+import org.talend.daikon.NamedThing;
 import org.talend.designer.core.i18n.Messages;
 import org.talend.designer.core.model.components.EParameterName;
 import org.talend.designer.core.ui.editor.cmd.PropertyChangeCommand;
@@ -118,13 +118,13 @@ public class ComponentRefController extends AbstractElementPropertySectionContro
 
         DecoratedField dField = new DecoratedField(subComposite, SWT.BORDER, cbCtrl);
         if (param.isRequired()) {
-            FieldDecoration decoration = FieldDecorationRegistry.getDefault().getFieldDecoration(
-                    FieldDecorationRegistry.DEC_REQUIRED);
+            FieldDecoration decoration = FieldDecorationRegistry.getDefault()
+                    .getFieldDecoration(FieldDecorationRegistry.DEC_REQUIRED);
             dField.addFieldDecoration(decoration, SWT.RIGHT | SWT.TOP, false);
         }
         if (param.isRepositoryValueUsed()) {
-            FieldDecoration decoration = FieldDecorationRegistry.getDefault().getFieldDecoration(
-                    FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
+            FieldDecoration decoration = FieldDecorationRegistry.getDefault()
+                    .getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
             decoration.setDescription(Messages.getString("ComboController.valueFromRepository")); //$NON-NLS-1$
             dField.addFieldDecoration(decoration, SWT.RIGHT | SWT.BOTTOM, false);
         }
@@ -249,10 +249,9 @@ public class ComponentRefController extends AbstractElementPropertySectionContro
         }
         if (param instanceof GenericElementParameter) {
             GenericElementParameter gParam = (GenericElementParameter) param;
-            NamedThing[] properties = gParam.getWidget().getProperties();
-            if (properties != null && properties.length > 0) {
-                NamedThing nt = properties[0];
-                itemsLabel.add(nt.getDisplayName());
+            NamedThing namedThing = gParam.getWidget().getContent();
+            if (namedThing != null) {
+                itemsLabel.add(namedThing.getDisplayName());
                 itemsValue.add(currentNode.getUniqueName());
             }
         }
