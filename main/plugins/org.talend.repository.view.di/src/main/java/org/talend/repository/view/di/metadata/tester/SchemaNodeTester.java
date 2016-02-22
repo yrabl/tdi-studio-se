@@ -13,6 +13,7 @@
 package org.talend.repository.view.di.metadata.tester;
 
 import org.talend.core.model.repository.ERepositoryObjectType;
+import org.talend.core.repository.model.repositoryObject.MetadataTableRepositoryObject;
 import org.talend.repository.model.RepositoryNode;
 import org.talend.repository.tester.SubNodeTester;
 
@@ -48,17 +49,18 @@ public class SchemaNodeTester extends SubNodeTester {
     public ERepositoryObjectType findParentItemType(RepositoryNode repositoryNode) {
         final ERepositoryObjectType objectType = repositoryNode.getObjectType();
         if (objectType == ERepositoryObjectType.METADATA_CON_TABLE) {
-            // RepositoryNode parent = repositoryNode.getParent();
-            // if (parent != null) {
-            // parent = parent.getParent();
-            // }
-            // if (parent != null) {
-            // return parent.getObjectType();
-            // }
             if (repositoryNode.getObject() != null) {
-                // FIXME there should be a problem for the performance, when getProperty() for IRepositoryViewObject
-                ERepositoryObjectType parentType = ERepositoryObjectType.getItemType(repositoryNode.getObject().getProperty()
-                        .getItem());
+                ERepositoryObjectType parentType = null;
+                if (repositoryNode.getObject() instanceof MetadataTableRepositoryObject) {
+                    MetadataTableRepositoryObject object = (MetadataTableRepositoryObject) repositoryNode.getObject();
+                    String itemId = object.getViewObject().getId();
+                    parentType = ERepositoryObjectType.getTypeCacheById().get(itemId);
+                    if (parentType == null) {
+                        parentType = ERepositoryObjectType.getType(object.getViewObject().getProperty());
+                    }
+                } else {
+                    parentType = ERepositoryObjectType.getType(repositoryNode.getObject().getProperty());
+                }
                 return parentType;
             }
         }

@@ -39,7 +39,6 @@ import org.talend.core.model.process.IElement;
 import org.talend.core.model.process.INode;
 import org.talend.core.ui.component.ComponentsFactoryProvider;
 import org.talend.daikon.NamedThing;
-import org.talend.daikon.NamedThing;
 import org.talend.daikon.properties.Property;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.presentation.Widget;
@@ -151,6 +150,9 @@ public class ComponentsUtils {
             }
         }
 
+        // Dont use Value Evaluator here.
+        componentProperties.setValueEvaluator(null);
+
         // Have to initialize for the messages
         componentProperties.getProperties();
         List<Widget> formWidgets = form.getWidgets();
@@ -166,8 +168,8 @@ public class ComponentsUtils {
                 if (!isSameComponentProperties(componentProperties, widgetProperty)) {
                     propertiesPath = getPropertiesPath(parentPropertiesPath, subProperties.getName());
                 }
-                elementParameters.addAll(
-                        getParametersFromForm(element, compCategory, subProperties, propertiesPath, subForm, widget, lastRN));
+                elementParameters.addAll(getParametersFromForm(element, compCategory, subProperties, propertiesPath, subForm,
+                        widget, lastRN));
                 continue;
             }
 

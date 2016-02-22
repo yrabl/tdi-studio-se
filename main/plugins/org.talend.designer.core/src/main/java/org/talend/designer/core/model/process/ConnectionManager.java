@@ -439,12 +439,12 @@ public class ConnectionManager {
         }
         if ((source.getDesignSubjobStartNode().getOutgoingConnections(EConnectionType.ON_SUBJOB_OK).size() != 0 || source
                 .getDesignSubjobStartNode().getOutgoingConnections(EConnectionType.ON_SUBJOB_ERROR).size() != 0)
-                && newTarget.getDesignSubjobStartNode() != newTarget && !((Node) newTarget).isJoblet()) {
+                && !newTarget.checkIfCanBeStart() && !((Node) newTarget).isJoblet()) {
             return false;
         }
         if ((source.getDesignSubjobStartNode().getIncomingConnections(EConnectionType.ON_SUBJOB_OK).size() != 0 || source
                 .getDesignSubjobStartNode().getIncomingConnections(EConnectionType.ON_SUBJOB_ERROR).size() != 0)
-                && newTarget.getDesignSubjobStartNode() != newTarget && !((Node) newTarget).isJoblet()) {
+                && !newTarget.checkIfCanBeStart() && !((Node) newTarget).isJoblet()) {
             return false;
         }
         if (newTarget.getJobletNode() != null) {

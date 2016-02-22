@@ -74,12 +74,12 @@ public class NodeContainerUtilsTest {
     @Test
     public void testformatTimeNotNumeric() {
         String result = NodeContainerUtils.formatTime("abc"); //$NON-NLS-1$
-        assertEquals(result, "abc"); //$NON-NLS-1$
+        assertEquals(result, ""); //$NON-NLS-1$
     }
 
     @Test
     public void testformatTimeNull() {
         String result = NodeContainerUtils.formatTime(null);
-        assertNull(result);
+        assertEquals(result, ""); //$NON-NLS-1$
     }
 }

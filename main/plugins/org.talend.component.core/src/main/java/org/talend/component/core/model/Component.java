@@ -27,6 +27,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.ImageData;
 import org.talend.commons.exception.BusinessException;
 import org.talend.component.core.constants.IComponentConstants;
+import org.talend.component.core.context.ComponentContextPropertyValueEvaluator;
 import org.talend.component.core.utils.ComponentsUtils;
 import org.talend.components.api.component.ComponentDefinition;
 import org.talend.components.api.component.ComponentImageType;
@@ -52,6 +53,7 @@ import org.talend.core.model.process.IProcess;
 import org.talend.core.model.temp.ECodePart;
 import org.talend.core.model.utils.TalendTextUtils;
 import org.talend.core.prefs.ITalendCorePrefConstants;
+import org.talend.core.runtime.services.ComponentServiceWithValueEvaluator;
 import org.talend.core.ui.services.IComponentsLocalProviderService;
 import org.talend.daikon.NamedThing;
 import org.talend.daikon.properties.Properties.Deserialized;
@@ -747,8 +749,17 @@ public class Component extends AbstractComponent {
             props = node.getComponentProperties();
             form = props.getForm(advanced ? IComponentConstants.FORM_ADVANCED : IComponentConstants.FORM_MAIN);
         }
-        listParam.addAll(
-                ComponentsUtils.getParametersFromForm(node, category, node.getComponentProperties(), null, form, null, null));
+        List<ElementParameter> parameters = ComponentsUtils.getParametersFromForm(node, category, node.getComponentProperties(),
+                null, form, null, null);
+        ComponentService componentService = new ComponentServiceWithValueEvaluator(ComponentsUtils.getComponentService(),
+                new ComponentContextPropertyValueEvaluator(node));
+        for (ElementParameter parameter : parameters) {
+            if (parameter instanceof GenericElementParameter) {
+                GenericElementParameter genericElementParameter = (GenericElementParameter) parameter;
+                genericElementParameter.setComponentService(componentService);
+            }
+        }
+        listParam.addAll(parameters);
     }
 
     private void initializePropertyParameters(List<ElementParameter> listParam, final INode node) {
@@ -790,8 +801,8 @@ public class Component extends AbstractComponent {
                             param.setValue(defaultValue);
                             if (param.getFieldType() == EParameterFieldType.ENCODING_TYPE) {
                                 String encodingType = TalendTextUtils.removeQuotes((String) defaultValue);
-                                IElementParameter elementParameter = param.getChildParameters()
-                                        .get(EParameterName.ENCODING_TYPE.getName());
+                                IElementParameter elementParameter = param.getChildParameters().get(
+                                        EParameterName.ENCODING_TYPE.getName());
                                 if (elementParameter != null) {
                                     elementParameter.setValue(encodingType);
                                 }
@@ -1688,8 +1699,8 @@ public class Component extends AbstractComponent {
                     ComponentProperties.class);
             if (fromSerialized != null) {
                 ComponentProperties componentProperties = fromSerialized.properties;
-                ((GenericElementParameter) param).setComponentProperties(
-                        ComponentsUtils.getCurrentComponentProperties(componentProperties, param.getName()));
+                ((GenericElementParameter) param).setComponentProperties(ComponentsUtils.getCurrentComponentProperties(
+                        componentProperties, param.getName()));
             }
         }
     }
@@ -1729,8 +1740,8 @@ public class Component extends AbstractComponent {
         if (iNode != null) {
             ComponentProperties iNodeComponentProperties = iNode.getComponentProperties();
             if (iNodeComponentProperties != null && param instanceof GenericElementParameter) {
-                ComponentProperties paramComponentProperties = ComponentsUtils
-                        .getCurrentComponentProperties(iNodeComponentProperties, param.getName());
+                ComponentProperties paramComponentProperties = ComponentsUtils.getCurrentComponentProperties(
+                        iNodeComponentProperties, param.getName());
                 if (paramComponentProperties != null) {
                     ((GenericElementParameter) param).setComponentProperties(paramComponentProperties);
                     return ComponentsUtils.getGenericPropertyValue(iNodeComponentProperties, param.getName());

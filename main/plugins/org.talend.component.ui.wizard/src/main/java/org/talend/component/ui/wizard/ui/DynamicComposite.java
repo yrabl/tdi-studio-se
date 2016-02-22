@@ -27,13 +27,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.talend.component.core.constants.IContextEventProperties;
 import org.talend.component.core.constants.IElementParameterEventProperties;
+import org.talend.component.core.context.ComponentContextPropertyValueEvaluator;
 import org.talend.component.core.model.GenericElementParameter;
 import org.talend.component.core.utils.ComponentsUtils;
 import org.talend.component.ui.model.genericMetadata.GenericConnection;
-import org.talend.component.ui.model.genericMetadata.GenericConnectionItem;
 import org.talend.component.ui.wizard.i18n.Messages;
 import org.talend.component.ui.wizard.internal.IGenericWizardInternalService;
-import org.talend.component.ui.wizard.internal.service.GenericComponentServiceImpl;
 import org.talend.component.ui.wizard.internal.service.GenericWizardInternalService;
 import org.talend.component.ui.wizard.model.FakeElement;
 import org.talend.components.api.properties.ComponentProperties;
@@ -46,6 +45,7 @@ import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.INode;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.model.properties.Property;
+import org.talend.core.runtime.services.ComponentServiceWithValueEvaluator;
 import org.talend.core.ui.check.Checker;
 import org.talend.core.ui.check.IChecker;
 import org.talend.daikon.properties.ValidationResult;
@@ -55,6 +55,7 @@ import org.talend.designer.core.model.components.EParameterName;
 import org.talend.designer.core.model.components.ElementParameter;
 import org.talend.designer.core.model.components.EmfComponent;
 import org.talend.designer.core.ui.views.properties.MultipleThreadDynamicComposite;
+import org.talend.metadata.managment.ui.wizard.context.MetadataContextPropertyValueEvaluator;
 
 /**
  * 
@@ -101,13 +102,17 @@ public class DynamicComposite extends MultipleThreadDynamicComposite implements 
     }
 
     public List<ElementParameter> resetParameters() {
-        ComponentService genericComponentService = new GenericComponentServiceImpl(internalService.getComponentService(),
-                (GenericConnectionItem) connectionItem);
+        Connection connection = null;
+        if (connectionItem != null) {
+            connection = connectionItem.getConnection();
+        }
+        ComponentService componentService = new ComponentServiceWithValueEvaluator(internalService.getComponentService(),
+                new MetadataContextPropertyValueEvaluator(connection));
         List<ElementParameter> parameters = ComponentsUtils.getParametersFromForm(element, null, form, null, null);
         for (ElementParameter parameter : parameters) {
             if (parameter instanceof GenericElementParameter) {
                 GenericElementParameter genericElementParameter = (GenericElementParameter) parameter;
-                genericElementParameter.setComponentService(genericComponentService);
+                genericElementParameter.setComponentService(componentService);
                 genericElementParameter.callBeforePresent();
                 genericElementParameter.addPropertyChangeListener(this);
             }
@@ -118,6 +123,7 @@ public class DynamicComposite extends MultipleThreadDynamicComposite implements 
     }
 
     public List<ElementParameter> resetElementParameters() {
+        ComponentService componentService = null;
         List<ElementParameter> oldParameters = (List<ElementParameter>) element.getElementParameters();
         final List<ElementParameter> newParameters = new ArrayList<ElementParameter>();
         ComponentProperties props = null;
@@ -126,6 +132,8 @@ public class DynamicComposite extends MultipleThreadDynamicComposite implements 
             if (node.getComponentProperties() != null) {
                 props = node.getComponentProperties();
             }
+            componentService = new ComponentServiceWithValueEvaluator(internalService.getComponentService(),
+                    new ComponentContextPropertyValueEvaluator(node));
         }
         List<ElementParameter> parameters = ComponentsUtils.getParametersFromForm(element, section, props, null, form, null,
                 null);
@@ -173,11 +181,17 @@ public class DynamicComposite extends MultipleThreadDynamicComposite implements 
                             }
                         }
                     }
+                    if (componentService != null && parameter instanceof GenericElementParameter) {
+                        ((GenericElementParameter) parameter).setComponentService(componentService);
+                    }
                     newParameters.add(parameter);
                     added = true;
                 }
             }
             if (!added) {
+                if (componentService != null && oldParameter instanceof GenericElementParameter) {
+                    ((GenericElementParameter) oldParameter).setComponentService(componentService);
+                }
                 newParameters.add(oldParameter);
             }
         }

@@ -20,6 +20,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: .Talend SA.
 Export-Package: org.talend.component.core.constants,
+ org.talend.component.core.context,
  org.talend.component.core.dnd,
  org.talend.component.core.model,
  org.talend.component.core.utils

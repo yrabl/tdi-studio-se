@@ -157,6 +157,7 @@
 		<module>test/plugins/org.talend.designer.runprocess.test</module>
 		<module>test/plugins/org.talend.designer.xmlmap.test</module>
 		<module>test/plugins/org.talend.repository.test</module>
+		<module>test/plugins/org.talend.component.ui.wizard.test</module>
 	</modules>
 	<build>
 		<plugins>

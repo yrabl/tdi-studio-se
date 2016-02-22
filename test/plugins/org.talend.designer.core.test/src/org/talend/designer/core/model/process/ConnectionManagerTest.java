@@ -161,6 +161,31 @@ public class ConnectionManagerTest {
             fail("Test CanConnectToSource() method failure.");
         }
     }
+    
+    /**
+     * Test method for
+     * {@link org.talend.designer.core.model.process.ConnectionManager#canConnectToTarget(org.talend.designer.core.ui.editor.nodes.Node, org.talend.designer.core.ui.editor.nodes.Node, org.talend.designer.core.ui.editor.nodes.Node, org.talend.core.model.process.EConnectionType, java.lang.String, java.lang.String)}
+     * .
+     */
+    @Test
+    public void testCanConnectToTargetELTMap() {
+        try {
+            IComponent component = ComponentsFactoryProvider.getInstance().get("tELTMysqlMap",
+                    ComponentCategory.CATEGORY_4_DI.getName());
+            
+            Node targetELT = new Node(component, targetProcess);
+            targetELT.setLocation(new Point(200, 2));
+            
+            // First time, check the situation of creating the connection.
+            boolean canConnect = ConnectionManager.canConnectToTarget(source, null, targetELT, EConnectionType.ON_SUBJOB_OK,
+                    EConnectionType.ON_SUBJOB_OK.getName(), "test");
+            assertTrue(canConnect);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Test CanConnectToSource() method failure.");
+        }
+    }
+
 
     /**
      * Test method for
@@ -175,7 +200,7 @@ public class ConnectionManagerTest {
             boolean canRename = ConnectionManager.canRename(source, target, EConnectionType.FLOW_MAIN, "test1");
             assertTrue(canRename);
             canRename = ConnectionManager.canRename(source, target, EConnectionType.FLOW_MAIN, "test");
-            assertTrue(!canRename);
+            assertTrue(canRename);
         } catch (Exception e) {
             e.printStackTrace();
             fail("Test CanConnectToSource() method failure.");

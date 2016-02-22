@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Component Wizard Plugin Test
+Bundle-SymbolicName: org.talend.component.ui.wizard.test
+Bundle-Version: 6.2.0.qualifier
+Bundle-Vendor: .Talend SA.
+Fragment-Host: org.talend.component.ui.wizard
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.junit,
+ org.talend.testutils,
+ com.cedarsoftware.json-io

@@ -36,6 +36,7 @@ import org.talend.core.model.process.EConnectionType;
 import org.talend.core.model.process.EParameterFieldType;
 import org.talend.core.model.process.Element;
 import org.talend.core.model.process.IConnection;
+import org.talend.core.model.process.IConnectionCategory;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.INode;
 import org.talend.core.model.process.INodeConnector;
@@ -449,6 +450,9 @@ public class ChangeMetadataCommand extends Command {
                     relativeNewOutputMetadata = oldOutputMetadata;
                 }
                 for (IConnection outgoingConnection : node.getOutgoingConnections()) {
+                    if (!outgoingConnection.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+                        continue;
+                    }
                     final Node target = (Node) outgoingConnection.getTarget();
                     if (target != null && target.getExternalNode() != null) {
                         List<IMetadataColumn> oldListColumns = relativeOldOutputMetadata.getListColumns();

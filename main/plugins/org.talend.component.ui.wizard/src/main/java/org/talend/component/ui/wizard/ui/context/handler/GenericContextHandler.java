@@ -23,7 +23,6 @@ import org.talend.component.core.constants.IComponentConstants;
 import org.talend.component.core.model.GenericElementParameter;
 import org.talend.component.ui.wizard.handler.IContextHandler;
 import org.talend.core.model.context.JobContextManager;
-import org.talend.core.model.process.IContextManager;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.properties.ConnectionItem;
 import org.talend.core.model.properties.ContextItem;
@@ -42,12 +41,6 @@ public class GenericContextHandler implements IContextHandler {
 
     private List<ElementParameter> parameters;
 
-    public IContextManager contextManager;
-
-    public GenericContextHandler() {
-        contextManager = ConnectionContextHelper.contextManager;
-    }
-
     @Override
     public boolean exportContext(ConnectionItem connectionItem) {
         boolean isContextMode = connectionItem.getConnection().isContextMode();
@@ -64,8 +57,8 @@ public class GenericContextHandler implements IContextHandler {
                     ContextItem contextItem = contextItor.next();
                     List<ConectionAdaptContextVariableModel> apaptModels = variableModels.get(contextItem);
                     if (contextItem != null && apaptModels.size() == 0) { // create
-                        if (contextManager instanceof JobContextManager) {
-                            Map<String, String> map = ((JobContextManager) contextManager).getNameMap();
+                        if (ConnectionContextHelper.contextManager instanceof JobContextManager) {
+                            Map<String, String> map = ((JobContextManager) ConnectionContextHelper.contextManager).getNameMap();
                             // set properties for context mode
                             ConnectionContextHelper.setPropertiesForContextMode(defaultContextName, connectionItem, contextItem,
                                     contextParams, map);
