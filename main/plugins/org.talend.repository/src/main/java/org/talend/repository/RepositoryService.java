@@ -854,4 +854,14 @@ public class RepositoryService implements IRepositoryService, IRepositoryContext
         new ProjectSettingDialog().open(pageId);
     }
 
+    @Override
+    public IProxyRepositoryFactory getLocalRepositoryFactory() {
+        final IProxyRepositoryFactory proxyRepositoryFactory = this.getProxyRepositoryFactory();
+        if (proxyRepositoryFactory instanceof ProxyRepositoryFactory) {
+            ((ProxyRepositoryFactory) proxyRepositoryFactory).setRepositoryFactoryFromProvider(RepositoryFactoryProvider
+                    .getRepositoriyById(RepositoryConstants.REPOSITORY_LOCAL_ID));
+        }
+        return proxyRepositoryFactory;
+    }
+
 }
