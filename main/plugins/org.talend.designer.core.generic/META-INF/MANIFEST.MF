@@ -19,7 +19,8 @@ Require-Bundle: org.eclipse.ui,
  org.talend.commons.ui,
  org.talend.components.api,
  org.talend.repository,
- jackson-core-asl
+ jackson-core-asl,
+ org.apache.servicemix.bundles.avro
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: .Talend SA.
 Export-Package: org.talend.designer.core.generic.constants,

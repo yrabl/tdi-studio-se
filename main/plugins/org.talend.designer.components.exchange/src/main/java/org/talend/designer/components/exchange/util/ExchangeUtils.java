@@ -37,7 +37,7 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.map.JavaTypeMapper;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
@@ -135,7 +135,7 @@ public class ExchangeUtils {
             return objList;
         }
         JsonFactory jf = new JsonFactory();
-        List result = (List) new JavaTypeMapper().read(jf.createJsonParser(new StringReader(jsonContent)));
+        List result = (List) new ObjectMapper().reader().readTree(jf.createJsonParser(new StringReader(jsonContent)));
         for (int i = 0; i < result.size(); i++) {
             Object obj = clazz.newInstance();
             Object source = result.get(i);
@@ -150,8 +150,9 @@ public class ExchangeUtils {
         GetMethod getMethod = new GetMethod(urlAddress);
         TransportClientProperties tcp = TransportClientPropertiesFactory.create("http");
         if (tcp.getProxyHost().length() != 0) {
-            UsernamePasswordCredentials creds = new UsernamePasswordCredentials(tcp.getProxyUser() != null ? tcp.getProxyUser()
-                    : "", tcp.getProxyPassword() != null ? tcp.getProxyUser() : "");
+            UsernamePasswordCredentials creds = new UsernamePasswordCredentials(
+                    tcp.getProxyUser() != null ? tcp.getProxyUser() : "",
+                    tcp.getProxyPassword() != null ? tcp.getProxyUser() : "");
             httpclient.getState().setProxyCredentials(AuthScope.ANY, creds);
             HostConfiguration hcf = new HostConfiguration();
             hcf.setProxy(tcp.getProxyHost(), Integer.parseInt(tcp.getProxyPort()));
@@ -375,7 +376,7 @@ public class ExchangeUtils {
 
     public static List<RevisionInfo> getRevisionList(String version, int language, String type) throws Exception {
         StringBuffer url = new StringBuffer();
-        url.append(REVISION_LIST_URL).append("?categories=").append(type).append("&version="); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        url.append(REVISION_LIST_URL).append("?categories=").append(type).append("&version="); //$NON-NLS-1$ //$NON-NLS-2$
         String[] branch = getBranch(version);
         url.append(StringUtils.join(branch, ",")); //$NON-NLS-1$
         String jsonContent = sendGetRequest(url.toString());

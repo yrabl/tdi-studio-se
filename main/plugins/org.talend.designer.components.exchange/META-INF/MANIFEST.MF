@@ -25,7 +25,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.talend.repository,
  org.talend.core.repository,
  org.apache.axis,
- org.talend.libraries.jackson,
  org.eclipse.ui.intro,
  org.eclipse.ui.forms,
  org.eclipse.jface.text
@@ -36,4 +35,6 @@ Export-Package: org.talend.designer.components.exchange,
  org.talend.designer.components.exchange.ui,
  org.talend.designer.components.exchange.ui.views
 Eclipse-BundleShape: dir
-Import-Package: org.talend.registration.wizards.register
+Import-Package: org.codehaus.jackson,
+ org.codehaus.jackson.map,
+ org.talend.registration.wizards.register

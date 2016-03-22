@@ -27,7 +27,8 @@ Require-Bundle: org.eclipse.ui,
  org.apache.commons.collections,
  org.talend.repository.items.importexport,
  org.talend.daikon,
- org.talend.designer.core.generic
+ org.talend.designer.core.generic,
+ org.apache.servicemix.bundles.avro
 Eclipse-LazyStart: true
 Export-Package: org.talend.repository.generic.model.genericMetadata,
  org.talend.repository.generic.model.genericMetadata.impl,
