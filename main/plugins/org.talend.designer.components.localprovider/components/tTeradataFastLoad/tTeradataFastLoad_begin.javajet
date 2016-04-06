@@ -38,12 +38,14 @@ if(dbProperties_<%=cid%> != null && dbProperties_<%=cid%>.trim().length() > 0) {
 }
 
 <%
+boolean isDynamic = false;
 List<IMetadataColumn> columnList = null;
 List<IMetadataTable> metadatas = node.getMetadataList();
 if(metadatas !=null && metadatas.size()>0){
 	IMetadataTable metadata = metadatas.get(0);
 	if(metadata != null){
 		columnList = metadata.getListColumns();
+		isDynamic = metadata.isDynamicSchema();
 	}
 }
 %>
@@ -61,7 +63,7 @@ java.sql.Connection conn_<%=cid%> = null;
 
 java.sql.PreparedStatement pstmt_<%=cid %> =null;
 <%
-if(columnList != null && columnList.size()>0){
+if(isDynamic == false && columnList != null && columnList.size()>0){
 class Column{
 	IMetadataColumn column;
 	String name;
@@ -141,12 +143,19 @@ class Column{
 
 StringBuilder insertColName = new StringBuilder();
 StringBuilder insertValueStmt = new StringBuilder();
-StringBuilder updateSetStmt = new StringBuilder();
-StringBuilder updateWhereStmt = new StringBuilder();
+// StringBuilder updateSetStmt = new StringBuilder();
+// StringBuilder updateWhereStmt = new StringBuilder();
 List<Column> stmtStructure =  new LinkedList<Column>();
 
-for(IMetadataColumn column:columnList){
-	stmtStructure.add(new Column(column));
+boolean hasDynamic = false;
+String dynamicColName = "";
+for(IMetadataColumn column:columnList) {
+	if (column.getTalendType().equals("id_Dynamic")) {
+		hasDynamic = true;
+		dynamicColName = column.getLabel();
+	} else {
+		stmtStructure.add(new Column(column));
+	}
 }
 
 int counterOuter =0;
@@ -191,28 +200,28 @@ for(Column colStmt:stmtStructure){
 		if(colStmt.isAddCol()){
 			insertColName.append(colStmt.getName()+suffix);
 			insertValueStmt.append(colStmt.getSqlStmt()+suffix);
-			updateSetStmt.append(colStmt.getName());
-			updateSetStmt.append("=" + colStmt.getSqlStmt()+suffix);
+//			updateSetStmt.append(colStmt.getName());
+//			updateSetStmt.append("=" + colStmt.getSqlStmt()+suffix);
 		}else{
 			insertColName.append(colStmt.getName()+suffix);
 			insertValueStmt.append(colStmt.getValue()+suffix);
-			if(!colStmt.getColumn().isKey()){
-				if(!firstNoneKey){
-					updateSetStmt.append(",");
-				}else{
-					firstNoneKey = false;
-				}
-				updateSetStmt.append(colStmt.getName());
-				updateSetStmt.append(colStmt.getSqlStmt());
-			}else{
-				if(!firstKey){
-					updateWhereStmt.append(" AND ");
-				}else{
-					firstKey = false;
-				}
-				updateWhereStmt.append(colStmt.getName());
-				updateWhereStmt.append(colStmt.getSqlStmt());
-			}
+//			if(!colStmt.getColumn().isKey()){
+//				if(!firstNoneKey){
+//					updateSetStmt.append(",");
+//				}else{
+//					firstNoneKey = false;
+//				}
+//				updateSetStmt.append(colStmt.getName());
+//				updateSetStmt.append(colStmt.getSqlStmt());
+//			}else{
+//				if(!firstKey){
+//					updateWhereStmt.append(" AND ");
+//				}else{
+//					firstKey = false;
+//				}
+//				updateWhereStmt.append(colStmt.getName());
+//				updateWhereStmt.append(colStmt.getSqlStmt());
+//			}
 		}
 	}
 	counterOuter ++;

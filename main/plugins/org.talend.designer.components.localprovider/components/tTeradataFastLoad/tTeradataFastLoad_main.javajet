@@ -29,12 +29,15 @@ imports="
 		IConnection conn = conns.get(0);
 		incomingConnName = conn.getName();
 	}
-	
+
+	// Manager manager = null;
+	boolean isDynamic = false;
 	List<IMetadataTable> metadatas = node.getMetadataList();
 	if(metadatas != null && metadatas.size()>0){
 		IMetadataTable metadata = metadatas.get(0);
 		if(metadata != null){
 			columnList = metadata.getListColumns();
+			isDynamic = metadata.isDynamicSchema();
 		}
 	}
 	
@@ -129,12 +132,15 @@ class Column{
 	public String getValue(){
 		return this.value;
 	}
+	public boolean isDynamic() {
+		return this.column.getTalendType().equals("is_Dynamic");
+	}
 }
 
 	StringBuilder insertColName = new StringBuilder();
 	StringBuilder insertValueStmt = new StringBuilder();
-	StringBuilder updateSetStmt = new StringBuilder();
-	StringBuilder updateWhereStmt = new StringBuilder();
+//	StringBuilder updateSetStmt = new StringBuilder();
+//	StringBuilder updateWhereStmt = new StringBuilder();
 	List<Column> stmtStructure =  new LinkedList<Column>();
 	
 for(IMetadataColumn column:columnList){
@@ -143,7 +149,7 @@ for(IMetadataColumn column:columnList){
 
 List<Column> colStruct =  new ArrayList();
 for(Column colStmt:stmtStructure){
-	if(!colStmt.isReplaced()&&!colStmt.isAddCol()){
+	if(!colStmt.isReplaced() && !colStmt.isAddCol() && !colStmt.isDynamic()){
 		colStruct.add(colStmt);
 	}
 }
@@ -310,8 +316,15 @@ Operation operation = new Operation();
 if(incomingConnName != null && columnList != null){
 		int counter = 1;
 		for(Column column:colStruct){
-			String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getColumn().getTalendType(), column.getColumn().isNullable());
-			operation.generateSetStmt(typeToGenerate,column,counter,incomingConnName,cid,0);
+			if (!column.isDynamic()) {
+				String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getColumn().getTalendType(), column.getColumn().isNullable());
+				operation.generateSetStmt(typeToGenerate,column,counter,incomingConnName,cid,0);
+			} else {
+				%>
+				String insert_<%=cid%> = "INSERT INTO " + tableName_<%=cid%> + " ( "+DynamicUtils.getInsertIntoStmtColumnsList(<%=conn.getName()%>.<%=getDynamicColumn()%>, "<%=dbname%>")+") VALUES (<%=insertValueStmt.toString()%>, "+DynamicUtils.getInsertIntoStmtValuesList(<%=conn.getName()%>.<%=getDynamicColumn()%>)+")";
+				pstmt_<%=cid %> = conn_<%=cid%>.prepareStatement(insert_<%=cid%>);
+				<%
+			}
 	    	counter++;
 		}
 		%>
