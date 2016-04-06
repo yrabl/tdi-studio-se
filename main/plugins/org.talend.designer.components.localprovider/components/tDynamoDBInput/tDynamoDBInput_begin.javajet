@@ -1,0 +1,183 @@
+<%@ jet 
+	imports="
+		org.talend.core.model.process.INode 
+		org.talend.core.model.process.ElementParameterParser 
+		org.talend.core.model.metadata.IMetadataTable 
+		org.talend.core.model.metadata.IMetadataColumn 
+		org.talend.core.model.process.IConnection
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+		org.talend.core.model.metadata.types.JavaTypesManager
+		org.talend.core.model.metadata.types.JavaType
+		org.talend.core.model.process.IConnectionCategory
+		java.util.List 
+    	java.util.Map		
+	" 
+%>
+<%@ include file="@{org.talend.designer.components.localprovider}/components/templates/Log4j/Log4jFileUtil.javajet"%>
+<%
+  	CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+  	INode node = (INode)codeGenArgument.getArgument();
+  	String cid = node.getUniqueName();
+
+	String accessKey   = ElementParameterParser.getValue(node, "__ACCESS_KEY__");
+	String secretKey   = ElementParameterParser.getValue(node, "__SECRET_KEY__");
+	
+	String region = ElementParameterParser.getValue(node, "__REGION__");
+
+	boolean useEndPoint = "true".equalsIgnoreCase(ElementParameterParser.getValue(node, "__USE_ENDPOINT__"));
+	
+    String endPoint   = ElementParameterParser.getValue(node, "__ENDPOINT__");
+    String table   = ElementParameterParser.getValue(node, "__TABLE__");
+    String query = ElementParameterParser.getValue(node,"__QUERY__");
+    query = query.replaceAll("\n","");
+    query = query.replaceAll("\r","");
+
+  	List<IMetadataTable> metadatas = node.getMetadataList();
+  	List<IMetadataColumn> columnList = null;
+  	List<? extends IConnection> outputs = node.getOutgoingSortedConnections();
+  	String firstConnName = "";
+  	if (outputs.size() > 0){
+		IConnection out = outputs.get(0);
+		if(out!=null && out.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)){
+			firstConnName = out.getName();
+		}
+    }
+	%>
+	int nb_line_<%=cid %> = 0;
+
+
+	<%
+  	if(metadatas != null && metadatas.size() > 0){
+      	IMetadataTable metadata = metadatas.get(0);
+      	if(metadata != null){
+		%>
+
+			com.amazonaws.auth.AWSCredentials credentials_tAmazonEMRManage_1 = new com.amazonaws.auth.BasicAWSCredentials(
+				<%=accessKey%>,
+				<%=secretKey%>);		
+			
+			com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient dynamoDBClient_<%=cid%> = new com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient(credentials_tAmazonEMRManage_1);
+   
+			if(<%=useEndPoint%>)
+			{
+				dynamoDBClient_<%=cid%> = dynamoDBClient_<%=cid%>.withEndpoint(<%=endPoint%>);
+			}
+			
+		<%
+			if(region!=null && !region.isEmpty() && !"DEFAULT".equalsIgnoreCase(region)){
+			%>
+				dynamoDBClient_<%=cid%>.setRegion(com.amazonaws.regions.RegionUtils.getRegion(<%=region%>));
+			<%
+			}
+		%>
+							
+			com.amazonaws.services.dynamodbv2.document.DynamoDB dynamoDB = new com.amazonaws.services.dynamodbv2.document.DynamoDB(dynamoDBClient_<%=cid%>);
+			com.amazonaws.services.dynamodbv2.document.Table table = dynamoDB.getTable(<%=table%>);
+						
+			String jsonStr = com.jayway.jsonpath.JsonPath.parse(<%=query%>).read("$.KeyConditionExpression");
+			
+			java.util.LinkedHashMap<String,Object> valueMap = com.jayway.jsonpath.JsonPath.parse(<%=query%>).read("$.ExpressionAttributeValues");			
+			java.util.LinkedHashMap<String,String> nameMap = com.jayway.jsonpath.JsonPath.parse(<%=query%>).read("$.ExpressionAttributeNames");
+			
+			com.amazonaws.services.dynamodbv2.document.spec.QuerySpec querySpec = new com.amazonaws.services.dynamodbv2.document.spec.QuerySpec()
+			.withKeyConditionExpression(jsonStr)
+			.withNameMap(nameMap)
+			.withValueMap(valueMap);
+
+      com.amazonaws.services.dynamodbv2.document.ItemCollection<com.amazonaws.services.dynamodbv2.document.QueryOutcome> items = null;
+      java.util.Iterator<com.amazonaws.services.dynamodbv2.document.Item> iterator = null;
+      com.amazonaws.services.dynamodbv2.document.Item item = null;
+
+      items = table.query(querySpec);
+
+       iterator = items.iterator();
+       while (iterator.hasNext()) {
+  
+<%  
+          columnList = metadata.getListColumns();
+          int sizeColumns = columnList.size();
+%>
+          nb_line_<%=cid %>++;
+          item = iterator.next();
+          //System.out.println(item.getNumber("year") + ": "+ item.getString("title"));
+          
+<%
+			if(firstConnName.length()>0){
+%>
+				Object valueObj_<%=cid%>=null;
+<%
+				for (int i = 0; i < sizeColumns; i++) {
+					IMetadataColumn column = columnList.get(i);
+					String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getTalendType(), column.isNullable());
+					JavaType javaType = JavaTypesManager.getJavaTypeFromId(column.getTalendType());
+					String patternValue = column.getPattern() == null || column.getPattern().trim().length() == 0 ? null : column.getPattern();
+%>
+                   // valueObj_<%=cid%>=dbObjectInputUtil_<%=cid%>.getValue(pathMap_<%=cid%>.get("<%=column.getLabel() %>"),"<%=column.getOriginalDbColumnName() %>",o_<%=cid%>);
+
+					valueObj_<%=cid%>=item.get("<%=column.getLabel() %>");
+
+<%
+          			if(javaType == JavaTypesManager.OBJECT) {
+%>
+						<%=firstConnName %>.<%=column.getLabel() %> = valueObj_<%=cid%>;
+<%
+          			}else{
+%>
+						if(valueObj_<%=cid%>!=null && valueObj_<%=cid%>.toString().length() > 0) {
+<%
+							if(javaType == JavaTypesManager.DATE) {
+%>
+								<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_Date((java.util.Date)valueObj_<%=cid%>, <%= patternValue %>);
+<%
+							}else if(javaType == JavaTypesManager.BYTE_ARRAY) {
+%>
+								<%=firstConnName %>.<%=column.getLabel() %> = java.nio.charset.Charset.defaultCharset().decode(java.nio.ByteBuffer.wrap((byte[])valueObj_<%=cid%>)).toString().getBytes(utf8Charset);
+<%
+							} else if(javaType == JavaTypesManager.STRING){
+%>
+								<%=firstConnName %>.<%=column.getLabel() %> = valueObj_<%=cid%>.toString();
+<%
+							} else if (javaType == JavaTypesManager.INTEGER){
+%>
+								if (valueObj_<%=cid%>.getClass().equals(Double.class)) {
+									<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_Double(valueObj_<%=cid%>.toString()).intValue();
+								} else {
+									<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_<%=typeToGenerate %>(valueObj_<%=cid%>.toString());
+								}
+<%
+							} else if (javaType == JavaTypesManager.LONG){
+%>	
+								if (valueObj_<%=cid%>.getClass().equals(Double.class)) {
+									<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_Double(valueObj_<%=cid%>.toString()).longValue();
+								} else {
+									<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_<%=typeToGenerate %>(valueObj_<%=cid%>.toString());
+								}
+<%
+							} else if (javaType == JavaTypesManager.SHORT){
+%>
+								if (valueObj_<%=cid%>.getClass().equals(Double.class)) {
+									<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_Double(valueObj_<%=cid%>.toString()).shortValue();
+								} else {
+									<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_<%=typeToGenerate %>(valueObj_<%=cid%>.toString());
+								}
+<%
+							} else {
+%>
+								<%=firstConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_<%=typeToGenerate %>(valueObj_<%=cid%>.toString());
+<%
+							}
+%>
+						}else{
+							<%=firstConnName %>.<%=column.getLabel() %> = <%=JavaTypesManager.getDefaultValueFromJavaType(typeToGenerate)%>;
+						}
+          
+<%
+					}
+				}
+			}
+
+	}
+
+} 
+%>
+
