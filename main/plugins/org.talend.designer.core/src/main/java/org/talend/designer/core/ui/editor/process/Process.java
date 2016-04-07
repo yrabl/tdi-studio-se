@@ -1232,7 +1232,7 @@ public class Process extends Element implements IProcess2, IGEFProcess, ILastVer
                                     }
                                     Object object = comp
                                             .getElementParameterValueFromComponentProperties((INode) elemParam, param);
-                                    loadElementParameters(elemParam, pType, param, param.getName(), object, false);
+                                    param.setValue(object);
                                 }
                             }
                         }

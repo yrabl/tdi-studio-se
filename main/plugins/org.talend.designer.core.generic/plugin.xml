@@ -149,6 +149,11 @@
             name="HIDDEN_TEXT"
             widgetType="HIDDEN_TEXT">
       </Mapping>
+       <Mapping
+             mapFieldType="TABLE"
+             name="TABLE"
+             widgetType="TABLE">
+       </Mapping>
    </extension>
    <extension
          point="org.talend.designer.core.generators">
@@ -181,6 +186,11 @@
             class="org.talend.designer.core.generic.controller.generator.SchemaReferenceGenerator"
             mapping="SCHEMA_REFERENCE"
             name="Schema Reference">
+      </generator>
+      <generator
+            class="org.talend.designer.core.generic.controller.generator.GenericTableGenerator"
+            mapping="GENERIC_TABLE"
+            name="Generic Table">
       </generator>
       
    </extension>

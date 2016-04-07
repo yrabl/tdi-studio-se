@@ -2,6 +2,8 @@
 imports="
         java.util.List
         java.util.ArrayList
+        java.util.Map
+        java.util.HashMap
         java.util.Stack
         org.talend.components.api.component.ComponentDefinition
         org.talend.components.api.component.InputComponentDefinition
@@ -77,7 +79,30 @@ for (Component.CodegenPropInfo propInfo : propsToProcess) { // propInfo
             if (property.getFlags() != null && property.getFlags().contains(Property.Flags.DESIGN_TIME_ONLY))
             	continue;
 		    Object value = property.getValue();
-		    if (value != null && (!(value instanceof String) || !((String)value).equals(""))) { // if
+            if (value != null && (value instanceof List)) { // if
+                    // added for the support of tables
+                    %>
+                    java.util.List<java.util.Map<String, Object>> table_<%=cid %><%=propInfo.fieldName%> = new java.util.ArrayList<java.util.Map<String, Object>>();
+                    java.util.Map<String, Object> line_<%=cid %><%=propInfo.fieldName%>;
+                    <%
+                    List<Map<String, Object>> tableContent = (List<Map<String, Object>>) value;
+                    for (Map<String, Object> line : tableContent) {
+                        %>
+                        line_<%=cid %><%=propInfo.fieldName%> = new java.util.HashMap<String, Object>();
+                        <%
+                        for (String key : line.keySet()) {
+                        %>
+                            line_<%=cid %><%=propInfo.fieldName%>.put("<%=key%>", <%=component.getTableValue(property,key,line.get(key))%>);
+                        <%
+                        }
+                        %>
+                        table_<%=cid %><%=propInfo.fieldName%>.add(line_<%=cid %><%=propInfo.fieldName%>);
+                        <%
+                    }
+                    %>
+                    props_<%=cid %><%=propInfo.fieldName%>.setValue("<%=property.getName()%>",table_<%=cid %><%=propInfo.fieldName%>);                    
+                    <%
+            } else if (value != null && (!(value instanceof String) || !((String)value).equals(""))) { // if
 					%>
                     props_<%=cid %><%=propInfo.fieldName%>.setValue("<%=property.getName()%>",
                     <%=component.getCodegenValue(property, property.getStringValue())%>);

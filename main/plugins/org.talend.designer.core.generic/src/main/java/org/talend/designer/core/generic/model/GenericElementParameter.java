@@ -16,6 +16,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.avro.Schema;
@@ -32,6 +33,7 @@ import org.talend.core.model.metadata.IMetadataTable;
 import org.talend.core.model.metadata.MetadataToolHelper;
 import org.talend.core.model.metadata.builder.connection.MetadataTable;
 import org.talend.core.model.process.EParameterFieldType;
+import org.talend.core.model.process.ElementParameterParser;
 import org.talend.core.model.process.IElement;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.IProcess;
@@ -40,6 +42,7 @@ import org.talend.daikon.properties.PresentationItem;
 import org.talend.daikon.properties.Property;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.presentation.Widget;
+import org.talend.daikon.properties.presentation.Widget.WidgetType;
 import org.talend.designer.core.generic.constants.IElementParameterEventProperties;
 import org.talend.designer.core.generic.constants.IGenericConstants;
 import org.talend.designer.core.generic.utils.ComponentsUtils;
@@ -47,6 +50,10 @@ import org.talend.designer.core.generic.utils.SchemaUtils;
 import org.talend.designer.core.model.components.ElementParameter;
 import org.talend.designer.core.ui.editor.cmd.ChangeMetadataCommand;
 import org.talend.designer.core.ui.editor.nodes.Node;
+
+import us.monoid.json.JSONArray;
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
 
 /**
  * created by ycbai on 2015年9月24日 Detailled comment
@@ -115,6 +122,7 @@ public class GenericElementParameter extends ElementParameter {
         if (componentProperties == null) {
             return;
         }
+
         NamedThing widgetProperty = widget.getContent();
         if (widgetProperty instanceof Property) {
             Property se = (Property) widgetProperty;
@@ -124,7 +132,11 @@ public class GenericElementParameter extends ElementParameter {
                 if (isDrivedByForm()) {
                     form.setValue(se.getName(), newValue);
                 } else {
-                    se.setValue(newValue);
+                    if (newValue instanceof List) {
+                        setTableValues(se, (List<Map<String, Object>>) newValue);
+                    } else {
+                        se.setValue(newValue);
+                    }
                 }
                 fireConnectionPropertyChangedEvent(newValue);
             }
@@ -135,6 +147,11 @@ public class GenericElementParameter extends ElementParameter {
                 fireShowDialogEvent(componentProperties.getForm(formtoShow.getName()));
             }
         }
+    }
+
+    private void setTableValues(Property prop, List<Map<String, Object>> value) {
+        List<Map<String, String>> newMap = ElementParameterParser.createTableValues(value, this);
+        prop.setValue(newMap);
     }
 
     private boolean hasPropertyChangeListener() {

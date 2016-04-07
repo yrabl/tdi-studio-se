@@ -15,6 +15,7 @@ package org.talend.designer.core.generic.model;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +26,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.ImageData;
 import org.talend.commons.exception.BusinessException;
+import org.talend.commons.exception.ExceptionHandler;
 import org.talend.components.api.component.ComponentDefinition;
 import org.talend.components.api.component.ComponentImageType;
 import org.talend.components.api.component.Connector;
@@ -48,8 +50,10 @@ import org.talend.core.model.temp.ECodePart;
 import org.talend.core.prefs.ITalendCorePrefConstants;
 import org.talend.core.runtime.services.ComponentServiceWithValueEvaluator;
 import org.talend.core.ui.services.IComponentsLocalProviderService;
+import org.talend.core.utils.TalendQuoteUtils;
 import org.talend.daikon.NamedThing;
 import org.talend.daikon.properties.Property;
+import org.talend.daikon.properties.error.PropertiesErrorCode;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.designer.core.DesignerPlugin;
 import org.talend.designer.core.generic.constants.IGenericConstants;
@@ -63,6 +67,10 @@ import org.talend.designer.core.model.components.NodeConnector;
 import org.talend.designer.core.model.components.NodeReturn;
 import org.talend.designer.core.ui.editor.nodes.Node;
 import org.talend.designer.core.ui.preferences.TalendDesignerPrefConstants;
+
+import us.monoid.json.JSONArray;
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
 
 /**
  * created by hcyi on Sep 10, 2015 Detailled comment
@@ -130,7 +138,9 @@ public class Component extends AbstractBasicComponent {
 
     @Override
     public List<ElementParameter> createElementParameters(INode node) {
-        node.setComponentProperties(ComponentsUtils.getComponentProperties(getName()));
+        if (node.getComponentProperties() == null) {
+            node.setComponentProperties(ComponentsUtils.getComponentProperties(getName()));
+        }
         List<ElementParameter> listParam;
         listParam = new ArrayList<>();
         addMainParameters(listParam, node);
@@ -886,6 +896,14 @@ public class Component extends AbstractBasicComponent {
         propsList.add(propInfo);
         processCodegenPropInfos(propsList, props, propInfo.fieldName);
         return propsList;
+    }
+
+    public Object getTableValue(Property property, String key, Object value) {
+        if (ComponentsUtils.isPrevColumnList(property.getChildMap().get(key))) {
+            return TalendQuoteUtils.addQuotes(value.toString());
+        } else {
+            return value;
+        }
     }
 
     public String getCodegenValue(Property property, String value) {
