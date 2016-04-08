@@ -68,6 +68,7 @@
 		<PARAMETER NAME="CLUSTER_VERSION" FIELD="OPENED_LIST"
 			NUM_ROW="32" SHOW_IF="ACTION=='START'" GROUP="CONFIGURATION">
 			<ITEMS DEFAULT="EMR4_1_0">
+				<ITEM NAME="EMR4_5_0" VALUE="&quot;emr-4.5.0&quot;" />			
 				<ITEM NAME="EMR4_2_0" VALUE="&quot;emr-4.2.0&quot;" />
 				<ITEM NAME="EMR4_1_0" VALUE="&quot;emr-4.1.0&quot;" />
 				<ITEM NAME="EMR4_0_0" VALUE="&quot;emr-4.0.0&quot;" />

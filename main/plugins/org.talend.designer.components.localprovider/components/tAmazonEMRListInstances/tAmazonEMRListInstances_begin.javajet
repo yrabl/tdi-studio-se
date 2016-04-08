@@ -1,0 +1,86 @@
+<%@ jet 
+	imports="
+		org.talend.core.model.process.INode 
+		org.talend.core.model.process.ElementParameterParser
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+		java.util.Map
+		java.util.List
+	"
+%>
+
+<%
+	CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+	INode node = (INode)codeGenArgument.getArgument();
+	String cid = node.getUniqueName();
+	
+	String action = ElementParameterParser.getValue(node, "__ACTION__");
+	String region = ElementParameterParser.getValue(node, "__REGION__");
+	
+	String cluster_id = ElementParameterParser.getValue(node, "__CLUSTER_ID__");
+	
+	boolean ignore_core_and_master_instance = "true".equals(ElementParameterParser.getValue(node, "__IGNORE_CORE_AND_MASTER_INSTANCE__"));
+	
+	boolean enable_key_pair = "true".equals(ElementParameterParser.getValue(node, "__ENABLE_KEY_PAIR__"));
+	String key_pair = ElementParameterParser.getValue(node, "__KEY_PAIR__");
+		
+	String accesskey = ElementParameterParser.getValue(node, "__ACCESS_KEY__");
+		
+%>
+	
+	int nb_line_<%=cid %> = 0;
+	
+	<%
+	String passwordFieldName = "__SECRET_KEY__";
+	%>	
+	<%@ include file="@{org.talend.designer.components.localprovider}/components/templates/password.javajet"%>
+	 	
+	com.amazonaws.auth.AWSCredentials credentials_<%=cid%> = new com.amazonaws.auth.BasicAWSCredentials(<%=accesskey%>,decryptedPassword_<%=cid%>);   	
+	com.amazonaws.services.elasticmapreduce.AmazonElasticMapReduceClient emr_<%=cid%> = new com.amazonaws.services.elasticmapreduce.AmazonElasticMapReduceClient(credentials_<%=cid%>);
+
+	<%
+	if(region!=null && !region.isEmpty() && !"DEFAULT".equalsIgnoreCase(region)){
+		%>
+		emr_<%=cid%>.setRegion(com.amazonaws.regions.RegionUtils.getRegion(<%=region%>));
+		<%
+	}
+	%>
+		
+	com.amazonaws.services.elasticmapreduce.model.ListInstanceGroupsRequest request_<%=cid%> = new com.amazonaws.services.elasticmapreduce.model.ListInstanceGroupsRequest()
+		.withClusterId(<%=cluster_id%>);
+		
+	com.amazonaws.services.elasticmapreduce.model.ListInstanceGroupsResult result_<%=cid%> = emr_<%=cid%>.listInstanceGroups(request_<%=cid%>);
+		 
+	List<com.amazonaws.services.elasticmapreduce.model.InstanceGroup> groupList_<%=cid%> = result_<%=cid%>.getInstanceGroups();
+	
+	java.util.Iterator<com.amazonaws.services.elasticmapreduce.model.InstanceGroup> iterator_<%=cid %> = groupList_<%=cid%>.iterator();
+	
+	com.amazonaws.services.elasticmapreduce.model.InstanceGroup instanceGroup_<%=cid %> = null;
+	
+	while (iterator_<%=cid %>.hasNext()) {
+
+		nb_line_<%=cid %>++;
+		instanceGroup_<%=cid %> = iterator_<%=cid %>.next();
+		String instanceGroupName_<%=cid%> = instanceGroup_<%=cid %>.getName();	
+		String instanceGroupId_<%=cid %> = instanceGroup_<%=cid %>.getId();
+		String instanceGroupType_<%=cid %> = instanceGroup_<%=cid %>.getInstanceGroupType();
+				
+		<% 
+		if(ignore_core_and_master_instance)
+		{
+			%> 
+			if(!instanceGroupType_<%=cid %>.equalsIgnoreCase("TASK"))	
+			{
+				continue;
+			}							
+			<% 
+		}
+		%>
+				
+		globalMap.put("<%=cid %>_CURRENT_GROUP_ID", instanceGroupId_<%=cid%>);
+		globalMap.put("<%=cid %>_CURRENT_GROUP_NAME", instanceGroupName_<%=cid%>);
+
+					
+
+
+	
+	

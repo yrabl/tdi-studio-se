@@ -187,6 +187,18 @@
     	<%}%>
 		globalMap.put("<%=cid %>_CLUSTER_FINAL_ID", result_<%=cid%>.getClusterIdentifier());
 	<%
+	} else if("RESIZE_CLUSTER".equals(action)) {
+	%>
+		com.amazonaws.services.redshift.model.ModifyClusterRequest request_Modify_<%=cid %> = 
+				new com.amazonaws.services.redshift.model.ModifyClusterRequest()
+				.withClusterIdentifier(<%=cluster_id%>).withNumberOfNodes(<%=node_count%>).withNodeType(<%=node_type%>);		
+				
+		com.amazonaws.services.redshift.model.Cluster result_<%=cid%> = client_<%=cid %>.modifyCluster(request_Modify_<%=cid %>);
+		<%if(isLog4jEnabled) {%>
+    	log.info("<%=cid%> - cluster status : " + result_<%=cid%>);
+    	<%}%>
+		globalMap.put("<%=cid %>_CLUSTER_FINAL_ID", result_<%=cid%>.getClusterIdentifier());
+	<%
 	} else if("RESTORE_FROM_SNAPSHOT".equals(action)) {
 	%>
 		com.amazonaws.services.redshift.model.RestoreFromClusterSnapshotRequest request_<%=cid%> = new com.amazonaws.services.redshift.model.RestoreFromClusterSnapshotRequest()

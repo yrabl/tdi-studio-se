@@ -198,7 +198,7 @@
 	steps_<%=cid %>.add(0, enabledebugging_<%=cid%>);
 
 	<%
-	boolean setApps = cluster_version!=null && "\"emr-4.2.0\",\"emr-4.1.0\",\"emr-4.0.0\"".contains(cluster_version);
+	boolean setApps = cluster_version!=null && "\"emr-4.2.0\",\"emr-4.1.0\",\"emr-4.0.0\",\"emr-4.5.0\"".contains(cluster_version);
 	if(setApps) {
 	%>
 	<%@ include file="./app_mapping.javajet"%>
