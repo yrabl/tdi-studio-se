@@ -62,8 +62,9 @@ java.sql.Connection conn_<%=cid%> = null;
 %>
 
 java.sql.PreparedStatement pstmt_<%=cid %> =null;
+int commitCounter_<%=cid%> = 0;
 <%
-if(isDynamic == false && columnList != null && columnList.size()>0){
+if(!isDynamic && columnList != null && columnList.size()>0){
 class Column{
 	IMetadataColumn column;
 	String name;
@@ -143,20 +144,7 @@ class Column{
 
 StringBuilder insertColName = new StringBuilder();
 StringBuilder insertValueStmt = new StringBuilder();
-// StringBuilder updateSetStmt = new StringBuilder();
-// StringBuilder updateWhereStmt = new StringBuilder();
 List<Column> stmtStructure =  new LinkedList<Column>();
-
-boolean hasDynamic = false;
-String dynamicColName = "";
-for(IMetadataColumn column:columnList) {
-	if (column.getTalendType().equals("id_Dynamic")) {
-		hasDynamic = true;
-		dynamicColName = column.getLabel();
-	} else {
-		stmtStructure.add(new Column(column));
-	}
-}
 
 int counterOuter =0;
 boolean firstKey = true;
@@ -164,66 +152,11 @@ boolean firstNoneKey = true;
 
 for(Column colStmt:stmtStructure){
 	String suffix = ",";
-	
-	if(colStmt.isReplaced()){
-		List<Column> replacedColumns = colStmt.getReplacement();
-		int counterReplace = 0;
-		if(counterOuter==(stmtStructure.size()-1) && counterReplace==(replacedColumns.size()-1) ){
+		if(counterOuter==(stmtStructure.size()-1)) {
 			suffix = "";
 		}
-		for(Column replacement:replacedColumns){
-			insertColName.append(replacement.getName()+suffix);
-			insertValueStmt.append(replacement.getSqlStmt()+suffix);
-			if(!colStmt.getColumn().isKey()){
-				if(!firstNoneKey){
-					updateSetStmt.append(",");
-				}else{
-					firstNoneKey = false;
-				}
-				updateSetStmt.append(replacement.getName());
-				updateSetStmt.append("=" + replacement.getSqlStmt());
-			}else{
-				if(!firstKey){
-					updateWhereStmt.append(" AND ");
-				}else{
-					firstKey = false;
-				}
-				updateWhereStmt.append(replacement.getName());
-				updateWhereStmt.append("=" + replacement.getSqlStmt());
-			}
-			counterReplace++;
-		}
-	}else{
-		if(counterOuter==(stmtStructure.size()-1)){
-			suffix = "";
-		}
-		if(colStmt.isAddCol()){
-			insertColName.append(colStmt.getName()+suffix);
-			insertValueStmt.append(colStmt.getSqlStmt()+suffix);
-//			updateSetStmt.append(colStmt.getName());
-//			updateSetStmt.append("=" + colStmt.getSqlStmt()+suffix);
-		}else{
-			insertColName.append(colStmt.getName()+suffix);
-			insertValueStmt.append(colStmt.getValue()+suffix);
-//			if(!colStmt.getColumn().isKey()){
-//				if(!firstNoneKey){
-//					updateSetStmt.append(",");
-//				}else{
-//					firstNoneKey = false;
-//				}
-//				updateSetStmt.append(colStmt.getName());
-//				updateSetStmt.append(colStmt.getSqlStmt());
-//			}else{
-//				if(!firstKey){
-//					updateWhereStmt.append(" AND ");
-//				}else{
-//					firstKey = false;
-//				}
-//				updateWhereStmt.append(colStmt.getName());
-//				updateWhereStmt.append(colStmt.getSqlStmt());
-//			}
-		}
-	}
+		insertColName.append(colStmt.getName()+suffix);
+		insertValueStmt.append(colStmt.getValue()+suffix);
 	counterOuter ++;
 }
 %>
@@ -237,7 +170,6 @@ for(Column colStmt:stmtStructure){
 	}
 
 		pstmt_<%=cid %> = conn_<%=cid%>.prepareStatement("INSERT INTO "+tableName_<%=cid%>+" (<%=insertColName.toString()%>) VALUES (<%=insertValueStmt.toString()%>)");
-		int commitCounter_<%=cid%> = 0;
 <%
 	if(!"".equals(commitEvery) && !"0".equals(commitEvery)){
 %>
