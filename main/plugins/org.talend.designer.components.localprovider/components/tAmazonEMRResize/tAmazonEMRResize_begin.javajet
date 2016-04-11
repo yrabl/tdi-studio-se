@@ -26,7 +26,7 @@
 	
 	String task_instance_type = ElementParameterParser.getValue(node, "__TASK_INSTANCE_TYPE__");
 		
-	boolean wait_for_cluster_ready = "true".equals(ElementParameterParser.getValue(node, "__WAIT_FOR_CLUSTER_READY__"));
+	boolean wait_for_cluster_ready = false;
 	
 	String accesskey = ElementParameterParser.getValue(node, "__ACCESS_KEY__");
 	

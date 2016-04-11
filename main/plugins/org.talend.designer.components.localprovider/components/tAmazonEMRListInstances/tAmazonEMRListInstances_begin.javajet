@@ -18,7 +18,7 @@
 	
 	String cluster_id = ElementParameterParser.getValue(node, "__CLUSTER_ID__");
 	
-	boolean ignore_core_and_master_instance = "true".equals(ElementParameterParser.getValue(node, "__IGNORE_CORE_AND_MASTER_INSTANCE__"));
+	boolean filter_core_and_master_instances = "true".equals(ElementParameterParser.getValue(node, "__FILTER_CORE_AND_MASTER_INSTANCES__"));
 	
 	boolean enable_key_pair = "true".equals(ElementParameterParser.getValue(node, "__ENABLE_KEY_PAIR__"));
 	String key_pair = ElementParameterParser.getValue(node, "__KEY_PAIR__");
@@ -65,7 +65,7 @@
 		String instanceGroupType_<%=cid %> = instanceGroup_<%=cid %>.getInstanceGroupType();
 				
 		<% 
-		if(ignore_core_and_master_instance)
+		if(filter_core_and_master_instances)
 		{
 			%> 
 			if(!instanceGroupType_<%=cid %>.equalsIgnoreCase("TASK"))	
