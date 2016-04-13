@@ -30,6 +30,17 @@
 			<DEFAULT>""</DEFAULT>
 		</PARAMETER>		
 			
+		<PARAMETER
+            NAME="ACTION"
+          FIELD="CLOSED_LIST"
+          NUM_ROW="40"
+		  GROUP="CONFIGURATION"
+        >
+            <ITEMS DEFAULT="QUERY">
+                <ITEM NAME="QUERY" VALUE="QUERY" />
+                <ITEM NAME="SCAN" VALUE="SCAN" />
+            </ITEMS>
+        </PARAMETER>
 			
 		<PARAMETER NAME="REGION" FIELD="OPENED_LIST" NUM_ROW="20"
 			REQUIRED="true" GROUP="CONFIGURATION">
@@ -71,10 +82,27 @@
 			<DEFAULT>""</DEFAULT>
 		</PARAMETER>
 
-		<PARAMETER NAME="QUERY" FIELD="MEMO" NUM_ROW="200"
-			REQUIRED="true" GROUP="CONFIGURATION">
-			<DEFAULT>"{TableName: "Music",KeyConditionExpression:"Artist = :artist",ExpressionAttributeValues: {":artist": "No One You Know"}}"</DEFAULT>
+		<PARAMETER NAME="KEY_CONDITION_EXPRESSION" FIELD="TEXT" NUM_ROW="200"
+			REQUIRED="true" GROUP="CONFIGURATION"
+			SHOW_IF="ACTION == 'QUERY'">
+			<DEFAULT>"#yr = :yyyy"</DEFAULT>
 		</PARAMETER>
+		
+		<PARAMETER NAME="NAME_MAP" FIELD="TEXT" NUM_ROW="201"
+			REQUIRED="true" GROUP="CONFIGURATION"
+			SHOW_IF="ACTION == 'QUERY'">
+			<DEFAULT>"{\"#yr\": \"year\"}"</DEFAULT>
+		</PARAMETER>
+		
+		<PARAMETER NAME="VALUE_MAP" FIELD="TEXT" NUM_ROW="202"
+			REQUIRED="true" GROUP="CONFIGURATION"
+			SHOW_IF="ACTION == 'QUERY'">
+			<DEFAULT>"{\":yyyy\": 1985}"</DEFAULT>
+		</PARAMETER>
+	
+		
+		
+		
 	</PARAMETERS>
 	
 	<ADVANCED_PARAMETERS>

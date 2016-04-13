@@ -93,7 +93,7 @@
    
 						<%
 						
-							if(column.isKey())
+							if(column.isKey()) 
 							{		
 								%>
 								if("<%=column.getOriginalDbColumnName() %>".equalsIgnoreCase(<%=hashKeyName%>))
@@ -132,6 +132,11 @@
   				}
 				
 				if ("DELETE".equalsIgnoreCase(dataAction)) {
+					%>
+					Object hashKeyValue = null;
+					Object rangeKeyValue = null;
+					
+					<%
 					for (int i = 0; i < sizeColumns; i++) {
 						IMetadataColumn column = columnList.get(i);
 
@@ -140,10 +145,19 @@
    
 						<%
 						
-							if(column.isKey())
-							{							
+							if(column.isKey()) 
+							{		
 								%>
-								item_<%=cid%>.withPrimaryKey("<%=column.getOriginalDbColumnName() %>", <%=conn.getName() %>.<%=column.getLabel() %>);
+								if("<%=column.getOriginalDbColumnName() %>".equalsIgnoreCase(<%=hashKeyName%>))
+								{									
+									hashKeyValue = <%=conn.getName() %>.<%=column.getLabel() %>;									
+								}
+
+								else if("<%=column.getOriginalDbColumnName() %>".equalsIgnoreCase(<%=rangeKeyName%>))
+								{
+									rangeKeyValue = <%=conn.getName() %>.<%=column.getLabel() %>;
+								}
+								
 								countKey_<%=cid%>++;
 								<%
 							
@@ -151,16 +165,18 @@
 							else
 							{
 								%>
-								item_<%=cid%>.with("<%=column.getOriginalDbColumnName() %>", <%=conn.getName() %>.<%=column.getLabel() %>);
+
+								
 							<%
 							}	
 							%>
 						}
 						
-								
+						
 					<%			
 					}
-					%>					
+					%>
+					deleteItemSpec_<%=cid%>.withPrimaryKey(<%=hashKeyName%>, hashKeyValue, <%=rangeKeyName%>, rangeKeyValue);		
                     <%
   				}
 				
@@ -173,33 +189,7 @@
 				// Other operations (UPDATE, UPSERT, DELETE)
 				}else{
 				%>
-					if(countKey_<%=cid%> <=0){
-						<%
-						if(dieOnError){
-						%>
-							throw new Exception("Must have at least one key in schema");
-						<%
-						}else{
-							%>
-							System.err.println("Must have at least one key in schema");
-						<%
-						}
-						%>
-					}
-					else if(countValue_<%=cid%> <=0){
-						<%
-						if(dieOnError){
-						%>
-							throw new Exception("Must have at least one value in schema");
-						<%
-						}else{
-							%>
-							System.err.println("Must have at least one value in schema");
-						<%
-						}
-						%>
-					}
-					else{
+
 						<%
 						// UPDATE
 						if("UPDATE".equalsIgnoreCase(dataAction)){
@@ -213,12 +203,11 @@
                         // DELETE
                         } else if("DELETE".equalsIgnoreCase(dataAction)){
 							%>
-							deleteItemSpec_<%=cid%> = new com.amazonaws.services.dynamodbv2.document.spec.DeleteItemSpec().withItem(item_<%=cid%>);
 							deleteItemOutcome_<%=cid%> = table_<%=cid%>.deleteItem(deleteItemSpec_<%=cid%>);
 							<%							
 						}
 						%>
-					}
+
 				<%
 				}
 

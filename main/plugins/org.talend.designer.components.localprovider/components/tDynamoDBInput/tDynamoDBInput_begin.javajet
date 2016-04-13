@@ -28,9 +28,12 @@
 	
     String endPoint   = ElementParameterParser.getValue(node, "__ENDPOINT__");
     String table   = ElementParameterParser.getValue(node, "__TABLE__");
-    String query = ElementParameterParser.getValue(node,"__QUERY__");
-    query = query.replaceAll("\n","");
-    query = query.replaceAll("\r","");
+	String action = ElementParameterParser.getValue(node, "__ACTION__");
+	
+	String keyConditionExpression = ElementParameterParser.getValue(node,"__KEY_CONDITION_EXPRESSION__");
+    String nameMap = ElementParameterParser.getValue(node,"__NAME_MAP__");
+	String valueMap = ElementParameterParser.getValue(node,"__VALUE_MAP__");
+	
 
   	List<IMetadataTable> metadatas = node.getMetadataList();
   	List<IMetadataColumn> columnList = null;
@@ -73,25 +76,56 @@
 							
 			com.amazonaws.services.dynamodbv2.document.DynamoDB dynamoDB = new com.amazonaws.services.dynamodbv2.document.DynamoDB(dynamoDBClient_<%=cid%>);
 			com.amazonaws.services.dynamodbv2.document.Table table = dynamoDB.getTable(<%=table%>);
-						
-			String jsonStr = com.jayway.jsonpath.JsonPath.parse(<%=query%>).read("$.KeyConditionExpression");
+		
+
+		<%
+		if(action.equalsIgnoreCase("Query")){
+		%>
 			
-			java.util.LinkedHashMap<String,Object> valueMap = com.jayway.jsonpath.JsonPath.parse(<%=query%>).read("$.ExpressionAttributeValues");			
-			java.util.LinkedHashMap<String,String> nameMap = com.jayway.jsonpath.JsonPath.parse(<%=query%>).read("$.ExpressionAttributeNames");
+			java.util.LinkedHashMap<String,Object> valueMap = null;			
+			java.util.LinkedHashMap<String,String> nameMap = null;
 			
+			if(!(<%=valueMap%>).isEmpty()){			
+				valueMap = com.jayway.jsonpath.JsonPath.parse(<%=valueMap%>).read("$", java.util.LinkedHashMap.class);							
+			}
+
+			if(!(<%=nameMap%>).isEmpty()){			
+				nameMap = com.jayway.jsonpath.JsonPath.parse(<%=nameMap%>).read("$", java.util.LinkedHashMap.class);			
+			}
+		
 			com.amazonaws.services.dynamodbv2.document.spec.QuerySpec querySpec = new com.amazonaws.services.dynamodbv2.document.spec.QuerySpec()
-			.withKeyConditionExpression(jsonStr)
-			.withNameMap(nameMap)
-			.withValueMap(valueMap);
+				.withKeyConditionExpression(<%=keyConditionExpression%>);
+			
+			if(valueMap!=null)
+			{
+				querySpec = querySpec.withValueMap(valueMap);
+			}
+		
+			if(nameMap!=null)
+			{
+				querySpec = querySpec.withNameMap(nameMap);
+			}
 
-      com.amazonaws.services.dynamodbv2.document.ItemCollection<com.amazonaws.services.dynamodbv2.document.QueryOutcome> items = null;
-      java.util.Iterator<com.amazonaws.services.dynamodbv2.document.Item> iterator = null;
-      com.amazonaws.services.dynamodbv2.document.Item item = null;
+			com.amazonaws.services.dynamodbv2.document.ItemCollection<com.amazonaws.services.dynamodbv2.document.QueryOutcome> items = null;
 
-      items = table.query(querySpec);
+			items = table.query(querySpec);
+		<%
+		}
+		else {
+		%>
+			com.amazonaws.services.dynamodbv2.document.spec.ScanSpec scanSpec = new com.amazonaws.services.dynamodbv2.document.spec.ScanSpec()
+			;
 
-       iterator = items.iterator();
-       while (iterator.hasNext()) {
+			com.amazonaws.services.dynamodbv2.document.ItemCollection<com.amazonaws.services.dynamodbv2.document.ScanOutcome> items = null;
+			items = table.scan(scanSpec);
+			
+		<%
+		}
+		%>
+		com.amazonaws.services.dynamodbv2.document.Item item = null;
+		java.util.Iterator<com.amazonaws.services.dynamodbv2.document.Item> iterator = null;
+		iterator = items.iterator();
+		while (iterator.hasNext()) {
   
 <%  
           columnList = metadata.getListColumns();
@@ -99,7 +133,6 @@
 %>
           nb_line_<%=cid %>++;
           item = iterator.next();
-          //System.out.println(item.getNumber("year") + ": "+ item.getString("title"));
           
 <%
 			if(firstConnName.length()>0){

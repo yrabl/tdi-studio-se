@@ -103,7 +103,6 @@
             <ITEMS DEFAULT="INSERT">
                 <ITEM NAME="INSERT" VALUE="INSERT" />
                 <ITEM NAME="UPDATE" VALUE="UPDATE"/>
-                <ITEM NAME="UPSERT" VALUE="UPSERT"/>
                 <ITEM NAME="DELETE" VALUE="DELETE"/>
             </ITEMS>
         </PARAMETER>
