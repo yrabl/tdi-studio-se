@@ -557,7 +557,7 @@ class GenerateToolByDom4j{
 
 //----------** dom4j to genenrate comparison expression **-------//
 class GenerateExprCmpByDom4j{
-//	String cid = null;
+	String cid = null;
 	XMLTool tool = null;
 	XMLNode groupNode = null;
 	boolean needEmptyNode = true;
@@ -700,6 +700,40 @@ class GenerateExprCmpByDom4j{
 			} else {
 %>.element("<%=arrNames[i]%>")
 <%
+			}
+		}
+	}
+	
+	public void setValuesForCache(XMLNode node){
+		if(node.relatedColumn != null){
+		%>
+			values_<%=cid%>.add(<%tool.getValue(node);%>);
+		<%
+		}else if(node.defaultValue!=null && !"".equals(node.defaultValue)){
+		%>
+			values_<%=cid%>.add("<%=node.defaultValue%>");
+		<%
+		}
+		
+		if(node.attributes!=null){
+			for(XMLNode attri:node.attributes){
+				if(attri.relatedColumn !=null){
+				%>
+					values_<%=cid%>.add(<%tool.getValue(attri); %>);
+				<%
+				}else if(attri.defaultValue!=null && !"".equals(attri.defaultValue)){
+				%>
+					values_<%=cid%>.add("<%=attri.defaultValue%>");
+				<%
+				}
+			}
+		}
+		
+		if(node.elements!=null){
+			for(XMLNode child:node.elements){
+				if(!child.isMainNode()){
+					setValuesForCache(child);
+				}
 			}
 		}
 	}
@@ -1064,8 +1098,15 @@ if(!this.isBeginPart && this.isOptimizeCode) {
 <% 
 		if(tables.get(1).size()>0){					//init the generate tool.
 		    String firstGroupPath = groupList.get(0).path;
+		    
+		    boolean cache_group_element = "true".equals(ElementParameterParser.getValue(node, "__CACHE_GROUP_ELEMENT__"));
 %>		
 		boolean bl_<%=cid %>= false;//true:find the insert node;false:not
+		
+		<%if(cache_group_element){%>
+		final java.util.List<String> values_<%=cid%> = new java.util.ArrayList<String>();
+		<%}%>
+		
 <%
 			for( int i=0; i<groupList.size();i++){
 				XMLNode groupNode= groupList.get(i);
@@ -1076,29 +1117,69 @@ if(!this.isBeginPart && this.isOptimizeCode) {
 				generateExprCmpByDom4j.groupNode = groupNode;
 				generateExprCmpByDom4j.namespaceHelper = namespaceHelper;
 				generateExprCmpByDom4j.needEmptyNode = ("true").equals(allowEmpty);
+				generateExprCmpByDom4j.cid = cid;
+				
+				boolean append = !sourceName.equals(firstConnName);
 %>
+
+<%
+				if(cache_group_element) {
+					generateExprCmpByDom4j.setValuesForCache(groupNode);
+				}
+%>
+		
+		
 		if(bl_<%=cid %>==false){
-			java.util.List<org.dom4j.Element> listNodes= <%generateToolByDom4j.touchXMLNode.getXMLElement("subTreeRootParent");%>.elements();
-			if(listNodes!=null && listNodes.size()>0){
-				int j=0;
-				for(j=0;j<listNodes.size();j++){
-					org.dom4j.Element tempElem =listNodes.get(j);
-					java.util.Map<String,String> currentDeclaredNamespacesMapping = null;
-					<%=namespaceHelper.buildCurrentGroupDeclaredNamespacesMapping("currentDeclaredNamespacesMapping")%>
-					if(DocumentHelper.compareNodes("<%=currentFinalGroupXpath %>",tempElem,uriToPrefixForDefaultNamespace_<%=sourceName %>_<%=cid%>,currentDeclaredNamespacesMapping,<%if(sourceName.equals(firstConnName)) {%>false<%} else {%>true<%}%>)){
-						if(<%generateExprCmpByDom4j.generateCode(groupNode, "tempElem"); %>){
-							<%generateToolByDom4j.touchXMLNode.putSubTreeRootParentByTempElem();%>
-							break;
+			org.dom4j.Element tempElem = null;
+			java.util.Map<String,String> currentDeclaredNamespacesMapping = null;
+			<%=namespaceHelper.buildCurrentGroupDeclaredNamespacesMapping("currentDeclaredNamespacesMapping")%>
+			
+			<%if(cache_group_element){%>
+				final routines.system.XMLGroupCache cache_<%=cid%> = routines.system.XMLGroupCache.getInstance("<%=cid%>");
+				final routines.system.XMLGroupCache.Key key_<%=cid%> = cache_<%=cid%>.createKey(
+					"<%=currentFinalGroupXpath %>", 
+					uriToPrefixForDefaultNamespace_<%=sourceName %>_<%=cid%>,
+					currentDeclaredNamespacesMapping, 
+					values_<%=cid%>
+				);
+				
+				tempElem = cache_<%=cid%>.get(key_<%=cid%>);
+				
+				if(tempElem!=null) {
+					<%generateToolByDom4j.touchXMLNode.putSubTreeRootParentByTempElem();%>
+				} else {
+			<%}%>
+			
+				java.util.List<org.dom4j.Element> listNodes= <%generateToolByDom4j.touchXMLNode.getXMLElement("subTreeRootParent");%>.elements();
+				if(listNodes!=null && listNodes.size()>0){
+					int j=0;
+					for(j=0;j<listNodes.size();j++){
+						tempElem =listNodes.get(j);
+						if(DocumentHelper.compareNodes("<%=currentFinalGroupXpath %>",tempElem,uriToPrefixForDefaultNamespace_<%=sourceName %>_<%=cid%>,currentDeclaredNamespacesMapping,<%=append%>)){
+							if(<%generateExprCmpByDom4j.generateCode(groupNode, "tempElem"); %>){
+								<%generateToolByDom4j.touchXMLNode.putSubTreeRootParentByTempElem();%>
+								
+								<%if(cache_group_element){%>
+								cache_<%=cid%>.put(key_<%=cid%>, tempElem);
+								<%}%>
+								
+								break;
+							}
 						}
 					}
-				}
-				if(j>=listNodes.size()){
+					if(j>=listNodes.size()){
+						bl_<%=cid %>=true;
+					}
+				}else{
 					bl_<%=cid %>=true;
 				}
-			}else{
-				bl_<%=cid %>=true;
+				
+			<%if(cache_group_element){%>	
 			}
+			<%}%>
+			
 		}
+		
 		if(bl_<%=cid %>==true){
 <% 
 				generateToolByDom4j.generateCode(groupList.get(i),"group"+i+"_","subTreeRootParent");

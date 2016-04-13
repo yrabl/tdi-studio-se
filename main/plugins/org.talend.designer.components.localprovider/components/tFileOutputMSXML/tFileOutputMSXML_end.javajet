@@ -39,6 +39,13 @@ if ((metadatas!=null)&&(metadatas.size()>0)) {
 <%@ include file="tFileOutputMSXML_begin.inc.javajet"%>
 
 <%
+	boolean cache_group_element = "true".equals(ElementParameterParser.getValue(node, "__CACHE_GROUP_ELEMENT__"));
+	if(cache_group_element) {
+%>
+		routines.system.XMLGroupCache.release("<%=cid%>");
+<%
+	}
+	
 	int schemaOptNum=100;
 	String schemaOptNumStr=ElementParameterParser.getValue(node, "__SCHEMA_OPT_NUM__");
 	if(schemaOptNumStr!=null && !"".equals(schemaOptNumStr) && !"\"\"".equals(schemaOptNumStr)){
