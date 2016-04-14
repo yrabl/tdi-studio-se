@@ -74,65 +74,65 @@
 			}
 		%>
 							
-			com.amazonaws.services.dynamodbv2.document.DynamoDB dynamoDB = new com.amazonaws.services.dynamodbv2.document.DynamoDB(dynamoDBClient_<%=cid%>);
-			com.amazonaws.services.dynamodbv2.document.Table table = dynamoDB.getTable(<%=table%>);
+			com.amazonaws.services.dynamodbv2.document.DynamoDB dynamoDB_<%=cid%> = new com.amazonaws.services.dynamodbv2.document.DynamoDB(dynamoDBClient_<%=cid%>);
+			com.amazonaws.services.dynamodbv2.document.Table table_<%=cid%> = dynamoDB_<%=cid%>.getTable(<%=table%>);
 		
 
 		<%
 		if(action.equalsIgnoreCase("Query")){
 		%>
 			
-			java.util.LinkedHashMap<String,Object> valueMap = null;			
-			java.util.LinkedHashMap<String,String> nameMap = null;
+			java.util.LinkedHashMap<String,Object> valueMap_<%=cid%> = null;			
+			java.util.LinkedHashMap<String,String> nameMap_<%=cid%> = null;
 			
 			if(!(<%=valueMap%>).isEmpty()){			
-				valueMap = com.jayway.jsonpath.JsonPath.parse(<%=valueMap%>).read("$", java.util.LinkedHashMap.class);							
+				valueMap_<%=cid%> = com.jayway.jsonpath.JsonPath.parse(<%=valueMap%>).read("$", java.util.LinkedHashMap.class);							
 			}
 
 			if(!(<%=nameMap%>).isEmpty()){			
-				nameMap = com.jayway.jsonpath.JsonPath.parse(<%=nameMap%>).read("$", java.util.LinkedHashMap.class);			
+				nameMap_<%=cid%> = com.jayway.jsonpath.JsonPath.parse(<%=nameMap%>).read("$", java.util.LinkedHashMap.class);			
 			}
 		
-			com.amazonaws.services.dynamodbv2.document.spec.QuerySpec querySpec = new com.amazonaws.services.dynamodbv2.document.spec.QuerySpec()
+			com.amazonaws.services.dynamodbv2.document.spec.QuerySpec querySpec_<%=cid%> = new com.amazonaws.services.dynamodbv2.document.spec.QuerySpec()
 				.withKeyConditionExpression(<%=keyConditionExpression%>);
 			
-			if(valueMap!=null)
+			if(valueMap_<%=cid%>!=null)
 			{
-				querySpec = querySpec.withValueMap(valueMap);
+				querySpec_<%=cid%> = querySpec_<%=cid%>.withValueMap(valueMap_<%=cid%>);
 			}
 		
-			if(nameMap!=null)
+			if(nameMap_<%=cid%>!=null)
 			{
-				querySpec = querySpec.withNameMap(nameMap);
+				querySpec_<%=cid%> = querySpec_<%=cid%>.withNameMap(nameMap_<%=cid%>);
 			}
 
-			com.amazonaws.services.dynamodbv2.document.ItemCollection<com.amazonaws.services.dynamodbv2.document.QueryOutcome> items = null;
+			com.amazonaws.services.dynamodbv2.document.ItemCollection<com.amazonaws.services.dynamodbv2.document.QueryOutcome> items_<%=cid%> = null;
 
-			items = table.query(querySpec);
+			items_<%=cid%> = table_<%=cid%>.query(querySpec_<%=cid%>);
 		<%
 		}
 		else {
 		%>
-			com.amazonaws.services.dynamodbv2.document.spec.ScanSpec scanSpec = new com.amazonaws.services.dynamodbv2.document.spec.ScanSpec()
+			com.amazonaws.services.dynamodbv2.document.spec.ScanSpec scanSpec_<%=cid%> = new com.amazonaws.services.dynamodbv2.document.spec.ScanSpec()
 			;
 
-			com.amazonaws.services.dynamodbv2.document.ItemCollection<com.amazonaws.services.dynamodbv2.document.ScanOutcome> items = null;
-			items = table.scan(scanSpec);
+			com.amazonaws.services.dynamodbv2.document.ItemCollection<com.amazonaws.services.dynamodbv2.document.ScanOutcome> items_<%=cid%> = null;
+			items_<%=cid%> = table_<%=cid%>.scan(scanSpec_<%=cid%>);
 			
 		<%
 		}
 		%>
-		com.amazonaws.services.dynamodbv2.document.Item item = null;
-		java.util.Iterator<com.amazonaws.services.dynamodbv2.document.Item> iterator = null;
-		iterator = items.iterator();
-		while (iterator.hasNext()) {
+		com.amazonaws.services.dynamodbv2.document.Item item_<%=cid%> = null;
+		java.util.Iterator<com.amazonaws.services.dynamodbv2.document.Item> iterator_<%=cid%> = null;
+		iterator_<%=cid%> = items_<%=cid%>.iterator();
+		while (iterator_<%=cid%>.hasNext()) {
   
 <%  
           columnList = metadata.getListColumns();
           int sizeColumns = columnList.size();
 %>
           nb_line_<%=cid %>++;
-          item = iterator.next();
+          item_<%=cid%> = iterator_<%=cid%>.next();
           
 <%
 			if(firstConnName.length()>0){
@@ -145,9 +145,7 @@
 					JavaType javaType = JavaTypesManager.getJavaTypeFromId(column.getTalendType());
 					String patternValue = column.getPattern() == null || column.getPattern().trim().length() == 0 ? null : column.getPattern();
 %>
-                   // valueObj_<%=cid%>=dbObjectInputUtil_<%=cid%>.getValue(pathMap_<%=cid%>.get("<%=column.getLabel() %>"),"<%=column.getOriginalDbColumnName() %>",o_<%=cid%>);
-
-					valueObj_<%=cid%>=item.get("<%=column.getLabel() %>");
+					valueObj_<%=cid%>=item_<%=cid%>.get("<%=column.getLabel() %>");
 
 <%
           			if(javaType == JavaTypesManager.OBJECT) {

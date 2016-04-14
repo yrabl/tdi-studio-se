@@ -78,12 +78,12 @@
 				
 				if ("UPDATE".equalsIgnoreCase(dataAction)) {
 					%>
-					Object hashKeyValue = null;
-					Object rangeKeyValue = null;
+					Object hashKeyValue_<%=cid%> = null;
+					Object rangeKeyValue_<%=cid%> = null;
 					
-					java.util.HashMap<String, Object> valueMap = new java.util.HashMap<String, Object>();					
-					StringBuffer updateExpressionBuffer = new StringBuffer();
-					updateExpressionBuffer.append("set ");
+					java.util.HashMap<String, Object> valueMap_<%=cid%> = new java.util.HashMap<String, Object>();					
+					StringBuffer updateExpressionBuffer_<%=cid%> = new StringBuffer();
+					updateExpressionBuffer_<%=cid%>.append("set ");
 					<%
 					for (int i = 0; i < sizeColumns; i++) {
 						IMetadataColumn column = columnList.get(i);
@@ -98,12 +98,12 @@
 								%>
 								if("<%=column.getOriginalDbColumnName() %>".equalsIgnoreCase(<%=hashKeyName%>))
 								{									
-									hashKeyValue = <%=conn.getName() %>.<%=column.getLabel() %>;									
+									hashKeyValue_<%=cid%> = <%=conn.getName() %>.<%=column.getLabel() %>;									
 								}
 
 								else if("<%=column.getOriginalDbColumnName() %>".equalsIgnoreCase(<%=rangeKeyName%>))
 								{
-									rangeKeyValue = <%=conn.getName() %>.<%=column.getLabel() %>;
+									rangeKeyValue_<%=cid%> = <%=conn.getName() %>.<%=column.getLabel() %>;
 								}
 								
 								countKey_<%=cid%>++;
@@ -113,8 +113,8 @@
 							else
 							{
 								%>
-								updateExpressionBuffer.append("<%=column.getOriginalDbColumnName() %>  =:<%=column.getOriginalDbColumnName() %>");
-								valueMap.put(":<%=column.getOriginalDbColumnName() %>", <%=conn.getName() %>.<%=column.getLabel() %>);
+								updateExpressionBuffer_<%=cid%>.append("<%=column.getOriginalDbColumnName() %>  =:<%=column.getOriginalDbColumnName() %>");
+								valueMap_<%=cid%>.put(":<%=column.getOriginalDbColumnName() %>", <%=conn.getName() %>.<%=column.getLabel() %>);
 								countValue_<%=cid%>++;
 								
 							<%
@@ -126,15 +126,15 @@
 					<%			
 					}
 					%>
-					updateItemSpec_<%=cid%>.withPrimaryKey(<%=hashKeyName%>, hashKeyValue, <%=rangeKeyName%>, rangeKeyValue);
-					updateItemSpec_<%=cid%> = updateItemSpec_<%=cid%>.withUpdateExpression(updateExpressionBuffer.toString()).withValueMap(valueMap);					
+					updateItemSpec_<%=cid%>.withPrimaryKey(<%=hashKeyName%>, hashKeyValue_<%=cid%>, <%=rangeKeyName%>, rangeKeyValue_<%=cid%>);
+					updateItemSpec_<%=cid%> = updateItemSpec_<%=cid%>.withUpdateExpression(updateExpressionBuffer_<%=cid%>.toString()).withValueMap(valueMap_<%=cid%>);					
                     <%
   				}
 				
 				if ("DELETE".equalsIgnoreCase(dataAction)) {
 					%>
-					Object hashKeyValue = null;
-					Object rangeKeyValue = null;
+					Object hashKeyValue_<%=cid%> = null;
+					Object rangeKeyValue_<%=cid%> = null;
 					
 					<%
 					for (int i = 0; i < sizeColumns; i++) {
@@ -150,33 +150,27 @@
 								%>
 								if("<%=column.getOriginalDbColumnName() %>".equalsIgnoreCase(<%=hashKeyName%>))
 								{									
-									hashKeyValue = <%=conn.getName() %>.<%=column.getLabel() %>;									
+									hashKeyValue_<%=cid%> = <%=conn.getName() %>.<%=column.getLabel() %>;									
 								}
 
 								else if("<%=column.getOriginalDbColumnName() %>".equalsIgnoreCase(<%=rangeKeyName%>))
 								{
-									rangeKeyValue = <%=conn.getName() %>.<%=column.getLabel() %>;
+									rangeKeyValue_<%=cid%> = <%=conn.getName() %>.<%=column.getLabel() %>;
 								}
 								
 								countKey_<%=cid%>++;
 								<%
 							
 							}
-							else
-							{
-								%>
-
-								
-							<%
-							}	
 							%>
+
 						}
 						
 						
 					<%			
 					}
 					%>
-					deleteItemSpec_<%=cid%>.withPrimaryKey(<%=hashKeyName%>, hashKeyValue, <%=rangeKeyName%>, rangeKeyValue);		
+					deleteItemSpec_<%=cid%>.withPrimaryKey(<%=hashKeyName%>, hashKeyValue_<%=cid%>, <%=rangeKeyName%>, rangeKeyValue_<%=cid%>);		
                     <%
   				}
 				
