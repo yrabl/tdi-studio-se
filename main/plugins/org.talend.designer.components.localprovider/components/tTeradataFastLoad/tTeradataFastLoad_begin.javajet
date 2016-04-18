@@ -146,6 +146,10 @@ StringBuilder insertColName = new StringBuilder();
 StringBuilder insertValueStmt = new StringBuilder();
 List<Column> stmtStructure =  new LinkedList<Column>();
 
+for(IMetadataColumn column:columnList) {
+	stmtStructure.add(new Column(column));
+}
+
 int counterOuter =0;
 boolean firstKey = true;
 boolean firstNoneKey = true;
