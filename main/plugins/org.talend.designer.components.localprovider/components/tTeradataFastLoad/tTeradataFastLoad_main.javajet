@@ -243,9 +243,10 @@ if(incomingConnName != null && columnList != null){
 				insertValueStmt.append("?, ");
 			}
 			%>
-			String tableName_<%=cid%> = <%=tableName%>;
-			String insert_<%=cid%> = "INSERT INTO " + tableName_<%=cid%> + " (<%=insertColName.toString()%> "+DynamicUtils.getInsertIntoStmtColumnsList(<%=incomingConnName%>.<%=getDynamicColumn()%>, <%=tableName%>)+") VALUES (<%=insertValueStmt.toString()%>"+DynamicUtils.getInsertIntoStmtValuesList(<%=incomingConnName%>.<%=getDynamicColumn()%>)+")";
-			pstmt_<%=cid %> = conn_<%=cid%>.prepareStatement(insert_<%=cid%>);
+			if (nb_line_<%=cid%> == 0) {
+				String insert_<%=cid%> = "INSERT INTO " + tableName_<%=cid%> + " (<%=insertColName.toString()%> "+DynamicUtils.getInsertIntoStmtColumnsList(<%=incomingConnName%>.<%=getDynamicColumn()%>, tableName_<%=cid%>)+") VALUES (<%=insertValueStmt.toString()%>"+DynamicUtils.getInsertIntoStmtValuesList(<%=incomingConnName%>.<%=getDynamicColumn()%>)+")";
+				pstmt_<%=cid %> = conn_<%=cid%>.prepareStatement(insert_<%=cid%>);
+			}
 			<%
 			for(IMetadataColumn column: stmtStructure) {
 				String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getTalendType(), column.isNullable());
@@ -253,7 +254,7 @@ if(incomingConnName != null && columnList != null){
 				counter++;
 			}
 			%>
-			DynamicUtils.writeColumnsToDatabse(<%=incomingConnName%>.<%=getDynamicColumn()%>, pstmt_<%=cid%>, <%=counter-1%>, <%=tableName%>);
+			DynamicUtils.writeColumnsToDatabse(<%=incomingConnName%>.<%=getDynamicColumn()%>, pstmt_<%=cid%>, <%=counter-1%>, tableName_<%=cid%>);
 			<%
 		}
 		%>

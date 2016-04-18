@@ -64,7 +64,7 @@ java.sql.Connection conn_<%=cid%> = null;
 java.sql.PreparedStatement pstmt_<%=cid %> =null;
 int commitCounter_<%=cid%> = 0;
 <%
-if(!isDynamic && columnList != null && columnList.size()>0){
+if(columnList != null && columnList.size()>0){
 class Column{
 	IMetadataColumn column;
 	String name;
@@ -172,9 +172,12 @@ for(Column colStmt:stmtStructure){
 	} else {
     	tableName_<%=cid%> = dbname_<%=cid%> + "." + <%=tableName%>;
 	}
-
+<%
+if (!isDynamic) {
+%>
 		pstmt_<%=cid %> = conn_<%=cid%>.prepareStatement("INSERT INTO "+tableName_<%=cid%>+" (<%=insertColName.toString()%>) VALUES (<%=insertValueStmt.toString()%>)");
 <%
+}
 	if(!"".equals(commitEvery) && !"0".equals(commitEvery)){
 %>
 	int commitEvery_<%=cid%> = <%=commitEvery%>;
