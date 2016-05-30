@@ -38,13 +38,18 @@ import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.model.repository.RepositoryViewObject;
 import org.talend.core.model.utils.AbstractDragAndDropServiceHandler;
+import org.talend.core.model.utils.ContextParameterUtils;
 import org.talend.core.model.utils.IComponentName;
 import org.talend.core.repository.RepositoryComponentSetting;
 import org.talend.core.repository.model.repositoryObject.MetadataColumnRepositoryObject;
 import org.talend.core.repository.model.repositoryObject.MetadataTableRepositoryObject;
 import org.talend.core.runtime.services.IGenericWizardService;
 import org.talend.core.runtime.util.GenericTypeUtils;
+import org.talend.core.utils.TalendQuoteUtils;
+import org.talend.daikon.NamedThing;
+import org.talend.daikon.properties.EnumProperty;
 import org.talend.daikon.properties.Property;
+import org.talend.daikon.properties.PropertyValueEvaluator;
 import org.talend.designer.core.generic.constants.IGenericConstants;
 import org.talend.designer.core.generic.model.Component;
 import org.talend.designer.core.generic.model.GenericElementParameter;
@@ -172,8 +177,8 @@ public class GenericDragAndDropHandler extends AbstractDragAndDropServiceHandler
             Connection connection = ((ConnectionItem) repositoryViewObj.getProperty().getItem()).getConnection();
             if (canHandle(connection)) {
                 GenericConnection genericConnection = (GenericConnection) connection;
-                currentComponentProperties = ComponentsUtils.getComponentPropertiesFromSerialized(genericConnection
-                        .getCompProperties(), connection);
+                currentComponentProperties = ComponentsUtils.getComponentPropertiesFromSerialized(
+                        genericConnection.getCompProperties(), connection);
             }
         } else if (object instanceof MetadataTableRepositoryObject) {
             MetadataTableRepositoryObject metaTableRepObj = (MetadataTableRepositoryObject) object;
@@ -245,5 +250,121 @@ public class GenericDragAndDropHandler extends AbstractDragAndDropServiceHandler
     @Override
     public void handleTableRelevantParameters(Connection connection, IElement ele, IMetadataTable metadataTable) {
 
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.talend.core.model.utils.AbstractDragAndDropServiceHandler#hasModifications(org.talend.core.model.process.
+     * INode, org.talend.core.model.metadata.builder.connection.Connection)
+     */
+    @Override
+    public boolean hasModifications(INode node, Connection connection) {
+        if (canHandle(connection)) {
+            if (GlobalServiceRegister.getDefault().isServiceRegistered(IGenericWizardService.class)) {
+                IGenericWizardService wizardService = (IGenericWizardService) GlobalServiceRegister.getDefault().getService(
+                        IGenericWizardService.class);
+                if (wizardService != null && wizardService.isGenericConnection(connection)) {
+                    List<ComponentProperties> componentProperties = wizardService.getAllComponentProperties(connection);
+                    ComponentProperties properties = node.getComponentProperties();
+                    ComponentProperties fromOldProp = ComponentsUtils.getComponentProperties(node.getComponent().getName());
+                    fromOldProp.assignNestedProperties(properties);
+                    ComponentProperties withNewProp = ComponentsUtils.getComponentProperties(node.getComponent().getName());
+                    withNewProp.assignNestedProperties(properties);
+                    withNewProp.assignNestedProperties(componentProperties.toArray(new ComponentProperties[0]));
+                    if (!connection.isContextMode()) {
+                        updateSubProperties(withNewProp);
+                    }
+
+                    if (!isSameProperties(fromOldProp, "", withNewProp)) { //$NON-NLS-1$
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return super.hasModifications(node, connection);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.talend.core.model.utils.AbstractDragAndDropServiceHandler#updateNodeFromConnection(org.talend.core.model.
+     * process.INode, org.talend.core.model.metadata.builder.connection.Connection)
+     */
+    @Override
+    public void updateNodeFromConnection(INode node, Connection connection) {
+        if (canHandle(connection)) {
+            if (GlobalServiceRegister.getDefault().isServiceRegistered(IGenericWizardService.class)) {
+                IGenericWizardService wizardService = (IGenericWizardService) GlobalServiceRegister.getDefault().getService(
+                        IGenericWizardService.class);
+                if (wizardService != null && wizardService.isGenericConnection(connection)) {
+                    if (hasModifications(node, connection)) {
+                        System.out.println("modif?");
+                    }
+                    List<ComponentProperties> componentProperties = wizardService.getAllComponentProperties(connection);
+                    ComponentProperties properties = node.getComponentProperties();
+                    properties.assignNestedProperties(componentProperties.toArray(new ComponentProperties[0]));
+                    if (!connection.isContextMode()) {
+                        updateSubProperties(properties);
+                    }
+                    if (hasModifications(node, connection)) {
+                        System.out.println("modif?");
+                    }
+                }
+            }
+        }
+        super.updateNodeFromConnection(node, connection);
+    }
+
+    /**
+     * DOC nrousseau Comment method "updateSubProperties".
+     * 
+     * @param properties
+     */
+    private boolean isSameProperties(ComponentProperties oldProperties, String propertiesPath, ComponentProperties newProperties) {
+        String path = propertiesPath;
+        for (NamedThing nt : oldProperties.getProperties()) {
+            path = path + nt.getName();
+            if (nt instanceof Property) {
+                Property<?> oldProperty = (Property<?>) nt;
+                Property<?> newProperty = newProperties.getValuedProperty(path);
+                if (newProperty == null) {
+                    return false;
+                }
+                if (oldProperty.getStoredValue() == null && newProperty.getStoredValue() != null) {
+                    return false;
+                }
+                if (!oldProperty.getStoredValue().equals(newProperty.getStoredValue())) {
+                    return false;
+                }
+            } else if (nt instanceof ComponentProperties) {
+                boolean isSame = isSameProperties(oldProperties, path +"/", newProperties); //$NON-NLS-1$
+                if (!isSame) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * DOC nrousseau Comment method "updateSubProperties".
+     * 
+     * @param properties
+     */
+    private void updateSubProperties(ComponentProperties properties) {
+        for (NamedThing nt : properties.getProperties()) {
+            if (nt instanceof Property) {
+                Property property = (Property) nt;
+                if (GenericTypeUtils.isStringType(property)) {
+                    property.setStoredValue(TalendQuoteUtils.addQuotes(String.valueOf(property.getStoredValue())));
+                }
+            } else if (nt instanceof ComponentProperties) {
+                updateSubProperties((ComponentProperties) nt);
+            }
+        }
     }
 }

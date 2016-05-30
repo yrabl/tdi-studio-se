@@ -300,6 +300,9 @@ public class ChangeValuesFromRepository extends ChangeMetadataCommand {
             IElementParameter propertyParam = elem.getElementParameter(propertyName);
             List<IElementParameter> elementParameters = new ArrayList<>(elem.getElementParameters());
             for (IElementParameter param : elementParameters) {
+                if (param.isSerialized()) {
+                    continue;
+                }
                 String repositoryValue = param.getRepositoryValue();
                 if (param.getFieldType() == EParameterFieldType.PROPERTY_TYPE) {
                     continue;
@@ -590,6 +593,12 @@ public class ChangeValuesFromRepository extends ChangeMetadataCommand {
                             param.setReadOnly(false);
                         }
                     }
+                }
+            }
+            if (elem instanceof INode) {
+                INode node = (INode) elem;
+                if (node.getComponentProperties() != null) {
+                    RepositoryToComponentProperty.updateNodeFromConnection(node, connection);
                 }
             }
             // (bug 5198)
