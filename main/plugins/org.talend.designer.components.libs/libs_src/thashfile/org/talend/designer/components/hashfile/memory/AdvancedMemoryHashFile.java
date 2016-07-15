@@ -19,9 +19,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.talend.designer.components.hashfile.common.Cache;
 import org.talend.designer.components.hashfile.common.IteratorHashFile;
 import org.talend.designer.components.hashfile.common.MATCHING_MODE;
 
+/**
+ * @deprecated use {@link Cache} instead
+ */
 public class AdvancedMemoryHashFile<V> {
 
     // it is for the MATCHING_MODE.FIRST_MATCH

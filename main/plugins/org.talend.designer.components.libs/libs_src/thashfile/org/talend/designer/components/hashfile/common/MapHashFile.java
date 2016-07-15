@@ -7,6 +7,9 @@ import java.util.Set;
 import java.util.Iterator;
 import org.talend.designer.components.hashfile.memory.AdvancedMemoryHashFile;
 
+/**
+ * @deprecated use {@link MemoryCaches} instead
+ */
 public class MapHashFile {
 	//use this map instead of globalMap
 	private Map<String, AdvancedMemoryHashFile> resourceMap = Collections.synchronizedMap(new HashMap<String, AdvancedMemoryHashFile>());
