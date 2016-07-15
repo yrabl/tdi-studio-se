@@ -14,8 +14,8 @@ package org.talend.designer.components.hashfile.memory;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.talend.designer.components.hashfile.common.Cache;
 
@@ -27,13 +27,13 @@ public class KeepLastMemoryCache<V> implements Cache<V> {
     /**
      * Stores last met records
      */
-    private Map<V, V> lastMetCache;
+    private Set<V> lastMetCache;
     
     /**
      * Constructor creates synchronized map to store last records with certain key
      */
     public KeepLastMemoryCache() {
-        lastMetCache = Collections.synchronizedMap(new LinkedHashMap<V, V>());
+        lastMetCache = Collections.synchronizedSet(new LinkedHashSet<V>());
     }
     
     /**
@@ -43,7 +43,7 @@ public class KeepLastMemoryCache<V> implements Cache<V> {
      */
     @Override
     public Iterator<V> iterator() {
-        return new NotRemovingIterator<V>(lastMetCache.keySet().iterator());
+        return new NotRemovingIterator<V>(lastMetCache.iterator());
     }   
         
     /**
@@ -52,8 +52,13 @@ public class KeepLastMemoryCache<V> implements Cache<V> {
     @Override
     public V put(V value) {
         if (value != null) {
-            lastMetCache.put(value, value);
-            return value;
+            // check if value is already in set
+            if(!lastMetCache.add(value)) {
+                // remove old value
+                lastMetCache.remove(value);
+                // add new value
+                lastMetCache.add(value);
+            }
         }
         return null;
     }

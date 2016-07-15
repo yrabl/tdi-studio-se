@@ -166,7 +166,7 @@ if (!isLinked) {
 	if (incommingDataConn != null) {
 		String connectionName = incommingDataConn.getName();
 %>    
-		org.talend.designer.components.hashfile.common.Cache<<%=tHashOutput_incommingDataConnName %>Struct> cache_<%=cid %> = null;
+		org.talend.designer.components.hashfile.common.Cache<<%=connectionName %>Struct> cache_<%=cid %> = null;
 		String hashKey_<%=cid %> = "tHashFile_<%=jobName %>_" + pid + "_<%=cid %>";
 <%
 		// It is used when Iterator exists in the same job
@@ -175,8 +175,8 @@ if (!isLinked) {
 			synchronized(org.talend.designer.components.hashfile.common.MapHashFile.resourceLockMap.get(hashKey_<%=cid %>)) {
 				// if first iteration
 			    if (memoryCaches_<%=cid %>.getMemoryCache(hashKey_<%=cid %>) == null) {
-					cache_<%=cid %> = org.talend.designer.components.hashfile.memory.MemoryCacheFactory.createMemoryCache(<%=matchingMode %>);
-	      		    memoryCaches_<%=cid %>.addMemoryCache(hashKey_<%=cid %>, keepCache_<%=cid %>);
+					cache_<%=cid %> = org.talend.designer.components.hashfile.memory.MemoryCacheFactory.createMemoryCache("<%=matchingMode %>");
+	      		    memoryCaches_<%=cid %>.addMemoryCache(hashKey_<%=cid %>, cache_<%=cid %>);
 				// if not first iteration
 			    }else{
 			    	cache_<%=cid %> = memoryCaches_<%=cid %>.getMemoryCache(hashKey_<%=cid %>);

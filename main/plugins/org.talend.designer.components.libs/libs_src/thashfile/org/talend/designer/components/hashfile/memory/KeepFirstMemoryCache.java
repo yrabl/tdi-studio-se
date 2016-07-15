@@ -14,8 +14,8 @@ package org.talend.designer.components.hashfile.memory;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.talend.designer.components.hashfile.common.Cache;
 
@@ -27,13 +27,13 @@ public class KeepFirstMemoryCache<V> implements Cache<V> {
     /**
      * Stores first met records
      */
-    private Map<V, V> firstMetCache;
+    private Set<V> firstMetCache;
     
     /**
      * Constructor creates synchronized map to store records, which key was firstly met
      */
     public KeepFirstMemoryCache() {
-        firstMetCache = Collections.synchronizedMap(new LinkedHashMap<V, V>());
+        firstMetCache = Collections.synchronizedSet(new LinkedHashSet<V>());
     }
     
     /**
@@ -43,7 +43,7 @@ public class KeepFirstMemoryCache<V> implements Cache<V> {
      */
     @Override
     public Iterator<V> iterator() {
-        return new NotRemovingIterator<V>(firstMetCache.keySet().iterator());
+        return new NotRemovingIterator<V>(firstMetCache.iterator());
     }
 
     /**
@@ -52,10 +52,8 @@ public class KeepFirstMemoryCache<V> implements Cache<V> {
     @Override
     public V put(V value) {
         if (value != null) {
-            if (!firstMetCache.containsKey(value)) {
-                firstMetCache.put(value, value);
-                return value;
-            }
+            firstMetCache.add(value);
+            return value;
         }
         return null;
     }
