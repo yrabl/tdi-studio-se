@@ -13,6 +13,7 @@
   <properties>
     <bulkload.dir>${project.basedir}/components/tMDMBulkLoad</bulkload.dir>
     <marketo.dir>${project.basedir}/components/tMarketoInput</marketo.dir>
+	<hash.dir>${project.basedir}/components/tHashInput</hash.dir>
   </properties>
   
   <build>
@@ -33,6 +34,12 @@
                         <directory>${marketo.dir}</directory>
                         <includes>
                             <include>talend-marketo-rest*.jar</include>
+                        </includes>
+                    </fileset>
+					<fileset>
+                        <directory>${hash.dir}</directory>
+                        <includes>
+                            <include>thashfile*.jar</include>
                         </includes>
                     </fileset>
                 </filesets>
@@ -64,7 +71,7 @@
                     </configuration>
                 </execution>
                 <execution>
-                    <id>copy-marketo-jar</id>
+                    <id>copy-jars</id>
                     <phase>generate-sources</phase>
                     <goals>
                         <goal>copy</goal>
@@ -78,6 +85,14 @@
                                 <type>jar</type>
                                 <overWrite>true</overWrite>
                                 <outputDirectory>${marketo.dir}</outputDirectory>
+                            </artifactItem>
+							<artifactItem>
+                                <groupId>org.talend.libraries</groupId>
+                                <artifactId>thashfile</artifactId>
+                                <version>1.0-20160718</version>
+                                <type>jar</type>
+                                <overWrite>true</overWrite>
+                                <outputDirectory>${hash.dir}</outputDirectory>
                             </artifactItem>
                         </artifactItems>
                     </configuration>
