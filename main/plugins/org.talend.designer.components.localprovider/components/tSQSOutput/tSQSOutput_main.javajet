@@ -1,0 +1,99 @@
+<%@ jet 
+imports="
+    org.talend.core.model.process.INode 
+    org.talend.core.model.process.ElementParameterParser 
+    org.talend.designer.codegen.config.CodeGeneratorArgument
+	org.talend.core.model.metadata.IMetadataColumn
+	org.talend.core.model.metadata.IMetadataTable
+	org.talend.core.model.process.EConnectionType
+	org.talend.core.model.process.IConnection
+	org.talend.core.model.process.IConnectionCategory
+	org.talend.core.model.process.INode
+	java.util.List
+	java.util.Map
+" 
+%>
+	<%
+    CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+    INode node = (INode)codeGenArgument.getArgument();
+    String cid = node.getUniqueName();
+    String queueUrl = ElementParameterParser.getValue(node,"__QUEUE_URL__");
+    boolean dieOnError = "true".equals(ElementParameterParser.getValue(node,"__DIE_ON_ERROR__"));
+    boolean isLog4jEnabled = ("true").equals(ElementParameterParser.getValue(node.getProcess(), "__LOG4J_ACTIVATE__"));    
+	%>
+	<%
+		List<IMetadataTable> metadatas = node.getMetadataList();
+		if ((metadatas!=null)&&(metadatas.size()>0)) {
+			IMetadataTable metadata = metadatas.get(0);
+			List<IMetadataColumn> columns = metadata.getListColumns();
+			List< ? extends IConnection> conns = node.getIncomingConnections();
+			if((conns!=null)&&(conns.size()>0)) {
+				IConnection conn = conns.get(0);		
+				if (conn.getLineStyle().equals(EConnectionType.FLOW_MAIN)||conn.getLineStyle().equals(EConnectionType.FLOW_MERGE)){
+	%>
+   						com.amazonaws.services.sqs.model.SendMessageRequest <%=cid%>_sendMessageRequest = new com.amazonaws.services.sqs.model.SendMessageRequest();
+    					<%=cid%>_sendMessageRequest.setQueueUrl(<%=queueUrl%>);
+    <%				
+    					for (int i = 0; i < columns.size(); i++) 
+    					{
+     						IMetadataColumn column = columns.get(i);
+     						if (column.getLabel().equals("Body") && "id_String".equals(column.getTalendType()))
+     						{
+	%>
+								<%=cid%>_sendMessageRequest.setMessageBody(<%=conn.getName()%>.Body);							
+	<% 
+							}
+							else if ("id_String".equals(column.getTalendType()))
+							{
+	%>
+								com.amazonaws.services.sqs.model.MessageAttributeValue <%=cid%>_<%=column.getLabel()%>_messageAttributeValue = new com.amazonaws.services.sqs.model.MessageAttributeValue();
+								<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setDataType("String");
+								<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setStringValue(<%=conn.getName()%>.<%=column.getLabel()%>);
+								<%=cid%>_sendMessageRequest.addMessageAttributesEntry("<%=column.getLabel()%>", <%=cid%>_<%=column.getLabel()%>_messageAttributeValue);
+	<%
+							}
+						}
+	%>
+						com.amazonaws.services.sqs.model.SendMessageResult <%=cid%>_sendMessageResult = conn_<%=cid%>.sendMessage(<%=cid%>_sendMessageRequest);
+	<%
+				}
+			}
+		}
+	%>
+										
+        log.debug("Sending the message" );
+        nbline_<%=cid %>++;
+
+	<%
+		if(isLog4jEnabled){
+	%>	
+			log.debug("<%=cid%> - Message Start: ");
+			log.debug("<%=cid%> - MessageId: " + <%=cid%>_sendMessageResult.getMessageId());
+			log.debug("<%=cid%> - MD5OfBody: " + <%=cid%>_sendMessageResult.getMD5OfMessageBody());
+			log.debug("<%=cid%> - Message End ");
+	<%
+        }            
+	%>	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
