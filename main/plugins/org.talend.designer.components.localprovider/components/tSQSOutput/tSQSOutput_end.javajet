@@ -18,8 +18,6 @@ imports="
 	%>
 
 
-
-		globalMap.put("<%=cid %>_NB_LINE", nbline_<%=cid%>);
 	
 	}catch(java.lang.Exception e_<%=cid%>){
 		<%
@@ -48,3 +46,4 @@ imports="
 		%>
 	}
 	
+	globalMap.put("<%=cid %>_NB_LINE", nbline_<%=cid%>);

@@ -107,13 +107,35 @@
     >
     <DEFAULT>""</DEFAULT>
     </PARAMETER>
+    
+    <PARAMETER
+      NAME="QUEUE_ATTRIBUTES"
+      FIELD="TABLE"
+      NUM_ROW="50"
+      NB_LINES="5"
+    >
+      <ITEMS>
+        <ITEM NAME="ATTRIBUTE" FIELD="OPENED_LIST">
+            <ITEMS DEFAULT="DELAYSECONDS">
+                <ITEM NAME="DELAYSECONDS" VALUE="DelaySeconds"/>
+                <ITEM NAME="MAXIMUMMESSAGESIZE" VALUE="MaximumMessageSize"/>
+                <ITEM NAME="MESSAGERETENTIONPERIOD" VALUE="MessageRetentionPeriod"/>
+                <ITEM NAME="POLICY" VALUE="Policy"/>
+                <ITEM NAME="RECEIVEMESSAGEWAITTIMESECONDS" VALUE="ReceiveMessageWaitTimeSeconds"/>
+                <ITEM NAME="REDRIVEPOLICY" VALUE="RedrivePolicy"/>
+                <ITEM NAME="VISIBILITYTIMEOUT" VALUE="VisibilityTimeout"/>
+            </ITEMS>
+        </ITEM>
+        <ITEM NAME="VALUE" />
+      </ITEMS>
+    </PARAMETER>
 
     <PARAMETER
         NAME="DIE_ON_ERROR"
         FIELD="CHECK"
         NUM_ROW="90"
     >
-        <DEFAULT>false</DEFAULT>
+        <DEFAULT>true</DEFAULT>
     </PARAMETER>
     
    </PARAMETERS>

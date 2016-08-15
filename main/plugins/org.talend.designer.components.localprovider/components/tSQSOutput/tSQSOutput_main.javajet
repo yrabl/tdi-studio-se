@@ -5,6 +5,7 @@ imports="
     org.talend.designer.codegen.config.CodeGeneratorArgument
 	org.talend.core.model.metadata.IMetadataColumn
 	org.talend.core.model.metadata.IMetadataTable
+	org.talend.core.model.metadata.types.JavaTypesManager
 	org.talend.core.model.process.EConnectionType
 	org.talend.core.model.process.IConnection
 	org.talend.core.model.process.IConnectionCategory
@@ -34,47 +35,65 @@ imports="
    						com.amazonaws.services.sqs.model.SendMessageRequest <%=cid%>_sendMessageRequest = new com.amazonaws.services.sqs.model.SendMessageRequest();
     					<%=cid%>_sendMessageRequest.setQueueUrl(<%=queueUrl%>);
     <%				
-    					for (int i = 0; i < columns.size(); i++) 
-    					{
+    					for (int i = 0; i < columns.size(); i++) {
      						IMetadataColumn column = columns.get(i);
-     						if (column.getLabel().equals("Body") && "id_String".equals(column.getTalendType()))
-     						{
+     						if (column.getLabel().equals("Body")) {
 	%>
 								<%=cid%>_sendMessageRequest.setMessageBody(<%=conn.getName()%>.Body);							
 	<% 
-							}
-							else if ("id_String".equals(column.getTalendType()))
-							{
+							}else {
+								String dataType=null;;
+								if ("id_String".equals(column.getTalendType())) {
+									dataType="String";
+								}else if (JavaTypesManager.isNumber(column.getTalendType())){
+									dataType="Number";
+								}else if ("id_byte[]".equals(column.getTalendType())){
+									dataType="Binary";
+								}
+								if(dataType!=null){
 	%>
-								com.amazonaws.services.sqs.model.MessageAttributeValue <%=cid%>_<%=column.getLabel()%>_messageAttributeValue = new com.amazonaws.services.sqs.model.MessageAttributeValue();
-								<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setDataType("String");
-								<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setStringValue(<%=conn.getName()%>.<%=column.getLabel()%>);
-								<%=cid%>_sendMessageRequest.addMessageAttributesEntry("<%=column.getLabel()%>", <%=cid%>_<%=column.getLabel()%>_messageAttributeValue);
+									if(<%=conn.getName()%>.<%=column.getLabel()%> != null){
+        								com.amazonaws.services.sqs.model.MessageAttributeValue <%=cid%>_<%=column.getLabel()%>_messageAttributeValue = new com.amazonaws.services.sqs.model.MessageAttributeValue();
+        								<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setDataType("<%=dataType%>");
+    <%
+    									if ("Binary".equals(dataType)){
+    %>
+    										<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setBinaryValue(java.nio.ByteBuffer.wrap(<%=conn.getName()%>.<%=column.getLabel()%>));
+    <%
+    									}else{ 
+    %>
+    										<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setStringValue(String.valueOf(<%=conn.getName()%>.<%=column.getLabel()%>));
+    <%
+    									}
+    %>
+    									<%=cid%>_sendMessageRequest.addMessageAttributesEntry("<%=column.getLabel()%>", <%=cid%>_<%=column.getLabel()%>_messageAttributeValue);
+    								}
 	<%
+								}
 							}
+						}
+						if(isLog4jEnabled){
+	%>
+							log.debug("Sending the message" );
+	<%
 						}
 	%>
 						com.amazonaws.services.sqs.model.SendMessageResult <%=cid%>_sendMessageResult = conn_<%=cid%>.sendMessage(<%=cid%>_sendMessageRequest);
+						nbline_<%=cid %>++;
+
 	<%
+						if(isLog4jEnabled){
+	%>	
+                			log.debug("<%=cid%> - Message Start: ");
+                			log.debug("<%=cid%> - MessageId: " + <%=cid%>_sendMessageResult.getMessageId());
+                			log.debug("<%=cid%> - MD5OfBody: " + <%=cid%>_sendMessageResult.getMD5OfMessageBody());
+                			log.debug("<%=cid%> - Message End ");
+	<%
+						}
 				}
 			}
 		}
 	%>
-										
-        log.debug("Sending the message" );
-        nbline_<%=cid %>++;
-
-	<%
-		if(isLog4jEnabled){
-	%>	
-			log.debug("<%=cid%> - Message Start: ");
-			log.debug("<%=cid%> - MessageId: " + <%=cid%>_sendMessageResult.getMessageId());
-			log.debug("<%=cid%> - MD5OfBody: " + <%=cid%>_sendMessageResult.getMD5OfMessageBody());
-			log.debug("<%=cid%> - Message End ");
-	<%
-        }            
-	%>	
-
 
 
 
