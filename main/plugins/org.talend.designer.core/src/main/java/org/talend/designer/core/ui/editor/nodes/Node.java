@@ -414,6 +414,8 @@ public class Node extends Element implements IGraphicalNode {
         if (param != null) {
             param.setValue(Boolean.TRUE);
         }
+
+        updateComponentStatusIfNeeded(true);
     }
 
     public Node(IComponent component, IProcess2 process, boolean insertSet, boolean template) {

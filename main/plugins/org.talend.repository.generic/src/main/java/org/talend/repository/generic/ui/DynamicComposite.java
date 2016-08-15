@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Display;
 import org.talend.commons.ui.gmf.util.DisplayUtils;
 import org.talend.components.api.properties.ComponentProperties;
 import org.talend.components.api.service.ComponentService;
+import org.talend.core.model.components.IComponent;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.metadata.builder.connection.MetadataTable;
 import org.talend.core.model.process.EComponentCategory;
@@ -50,6 +51,7 @@ import org.talend.designer.core.generic.model.GenericElementParameter;
 import org.talend.designer.core.generic.utils.ComponentsUtils;
 import org.talend.designer.core.generic.utils.SchemaUtils;
 import org.talend.designer.core.model.FakeElement;
+import org.talend.designer.core.model.components.AbstractBasicComponent;
 import org.talend.designer.core.model.components.EParameterName;
 import org.talend.designer.core.model.components.ElementParameter;
 import org.talend.designer.core.model.components.EmfComponent;
@@ -96,6 +98,7 @@ public class DynamicComposite extends MultipleThreadDynamicComposite implements 
         if (drivedByForm) {
             internalService.getComponentService().makeFormCancelable(form.getProperties(), form.getName());
         }
+        resetParameters();
     }
 
     private void resetComponentProperties() {
@@ -134,7 +137,16 @@ public class DynamicComposite extends MultipleThreadDynamicComposite implements 
                 properties.refreshLayout(form);
             }
             properties.setValueEvaluator(null); // For context display.
-            parameters = ComponentsUtils.getParametersFromForm(element, false, section, (ComponentProperties) properties, form);
+            boolean isInitializing = false;
+            if (element instanceof INode) {
+                INode node = (INode) element;
+                IComponent component = node.getComponent();
+                if (component instanceof AbstractBasicComponent) {
+                    isInitializing = ((AbstractBasicComponent) component).isInitializing();
+                }
+            }
+            parameters = ComponentsUtils.getParametersFromForm(element, isInitializing, section, (ComponentProperties) properties,
+                    form);
             addUpdateParameterIfNotExist(parameters);
             properties.setValueEvaluator(evaluator);
         }
