@@ -13,6 +13,7 @@ imports="
     String cid = node.getUniqueName();
     String queueUrl = ElementParameterParser.getValue(node,"__QUEUE_URL__");
     boolean visibilityTimeout = "true".equals(ElementParameterParser.getValue(node,"__VISIBILITY_TIMEOUT__"));
+    boolean isCustomeWaitTime = "true".equals(ElementParameterParser.getValue(node,"__CUSTOME_WAIT_TIME__"));
     boolean deleteMessages = "true".equals(ElementParameterParser.getValue(node,"__DELETE_MESSAGE__"));
     boolean readAllMessages = "true".equals(ElementParameterParser.getValue(node,"__READ_ALL_MESSAGE__"));
     boolean getAttributes = "true".equals(ElementParameterParser.getValue(node,"__GET_ATTRIBUTES__"));
@@ -20,6 +21,7 @@ imports="
     boolean dieOnError = "true".equals(ElementParameterParser.getValue(node,"__DIE_ON_ERROR__"));
     
     String visibilityTimeoutValue = ElementParameterParser.getValue(node,"__VISIBILITY_TIMEOUT_VALUE__");
+    String waitTime = ElementParameterParser.getValue(node,"__WAIT_TIME__");
 	%>
 	<%@ include file="../tSQSConnection/SQSClient.javajet" %>
 	
@@ -33,16 +35,16 @@ imports="
 		<%
 		}
 		%>
-		com.amazonaws.services.sqs.model.ReceiveMessageRequest <%=cid%>_receiveMessageRequest = new com.amazonaws.services.sqs.model.ReceiveMessageRequest(<%=queueUrl%>);
-		<%=cid%>_receiveMessageRequest.setMaxNumberOfMessages(10);
-		
+		com.amazonaws.services.sqs.model.ReceiveMessageRequest <%=cid%>_receiveMessageRequest = new com.amazonaws.services.sqs.model.ReceiveMessageRequest(<%=queueUrl%>).withMaxNumberOfMessages(10);
 		<%
-		if (visibilityTimeout==true)
-		{
+		if (visibilityTimeout){
 		%>	
-			 int visibilityTimeoutValue = Integer.parseInt("<%=visibilityTimeoutValue%>");
-			 <%=cid%>_receiveMessageRequest.setVisibilityTimeout(new Integer(visibilityTimeoutValue));
-			
+			 <%=cid%>_receiveMessageRequest.setVisibilityTimeout(<%=visibilityTimeoutValue%>);
+		<%
+		}
+		if (isCustomeWaitTime){
+		%>	
+			 <%=cid%>_receiveMessageRequest.setWaitTimeSeconds(<%=waitTime%>);
 		<%
 		}
 		%>

@@ -12,6 +12,7 @@
     STARTABLE="false"
     PARTITIONING="NONE"
     LOG4J_ENABLED="true"
+    SUPPORTS_DB_TYPE="true"
   >
     <SIGNATURE/>
   </HEADER>

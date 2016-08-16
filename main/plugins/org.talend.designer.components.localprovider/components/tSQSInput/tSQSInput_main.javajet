@@ -5,6 +5,8 @@ imports="
     org.talend.designer.codegen.config.CodeGeneratorArgument
 	org.talend.core.model.metadata.IMetadataColumn
 	org.talend.core.model.metadata.IMetadataTable
+	org.talend.core.model.metadata.types.JavaType
+	org.talend.core.model.metadata.types.JavaTypesManager
 	org.talend.core.model.process.EConnectionType
 	org.talend.core.model.process.IConnection
 	org.talend.core.model.process.INode
@@ -23,6 +25,8 @@ imports="
     boolean getMessageAttributes = "true".equals(ElementParameterParser.getValue(node,"__GET_MESSAGE_ATTRIBUTES__"));
     boolean dieOnError = "true".equals(ElementParameterParser.getValue(node,"__DIE_ON_ERROR__"));
     boolean isLog4jEnabled = ("true").equals(ElementParameterParser.getValue(node.getProcess(), "__LOG4J_ACTIVATE__"));
+    java.util.List<String> msgInfoField = java.util.Arrays.asList("MessageId","ReceiptHandle","MD5OfBody","Body");
+    java.util.List<String> msgDefultAttributes = java.util.Arrays.asList("ApproximateFirstReceiveTimestamp","ApproximateReceiveCount","SenderId","SentTimestamp");
     
 	%>
 
@@ -33,34 +37,63 @@ imports="
  			if (metadata != null) {//a
   				List<IMetadataColumn> columns = metadata.getListColumns();	
   				List< ? extends IConnection> outConns = node.getOutgoingConnections();
-  				for (IConnection conn : outConns) 
-  				{ //2	
-   					if (conn.getLineStyle().equals(EConnectionType.FLOW_MAIN)||conn.getLineStyle().equals(EConnectionType.FLOW_MERGE))
-   					{ //3
+  				for (IConnection conn : outConns) { //2	
+   					if (conn.getLineStyle().equals(EConnectionType.FLOW_MAIN)||conn.getLineStyle().equals(EConnectionType.FLOW_MERGE)) { //3
     					String outputConnName = conn.getName();
-    					for (int i = 0; i < columns.size(); i++) 
-    					{//4
-     						IMetadataColumn column = columns.get(i);
-     						String column_label = column.getLabel();
-     						if (column_label.equals("MessageId")||column_label.equals("ReceiptHandle")||column_label.equals("MD5OfBody")||column_label.equals("Body"))
-     						{
+   	%>
+   						<%=outputConnName%> = new <%=outputConnName %>Struct();
+   	<%
+    					if (getAttributes){
 	%>
-							<%=outputConnName %>.<%=column.getLabel() %> = <%=cid%>_message.get<%=column.getLabel() %>();
-	<% 
-							}
-							else if (column_label.equals("ApproximateFirstReceiveTimestamp")||column_label.equals("ApproximateReceiveCount")||column_label.equals("SenderId")||column_label.equals("SentTimestamp"))
-							{
-								if (getAttributes){
-	%>
-							<%=outputConnName %>.<%=column.getLabel() %> = <%=cid%>_message.getAttributes().get("<%=column.getLabel()%>");
+    						java.util.Map<String,String> attributes_<%=cid%> = <%=cid%>_message.getAttributes();
 	<%
-								}
-							}
-							else
-							{
+    					}
+    					if (getMessageAttributes){
+	%>
+    						java.util.Map<String,com.amazonaws.services.sqs.model.MessageAttributeValue> msgAttributes_<%=cid%> = <%=cid%>_message.getMessageAttributes();
+    						com.amazonaws.services.sqs.model.MessageAttributeValue attributeValue_<%=cid%> = null;
+	<%
+    					}
+    					for (int i = 0; i < columns.size(); i++) {//4
+     						IMetadataColumn column = columns.get(i);
+     						if (msgInfoField.contains(column.getLabel())) {
+	%>
+								<%=outputConnName %>.<%=column.getLabel() %> = <%=cid%>_message.get<%=column.getLabel() %>();
+	<% 
+							} else if (msgDefultAttributes.contains(column.getLabel()) && getAttributes) {
+	%>
+									<%=outputConnName %>.<%=column.getLabel() %> = attributes_<%=cid%>.get("<%=column.getLabel()%>");
+	<%
+							} else {
 								if (getMessageAttributes){
 	%>
-							<%=outputConnName %>.<%=column.getLabel() %> = <%=cid%>_message.getMessageAttributes().get("<%=column.getLabel()%>").getStringValue();
+									attributeValue_<%=cid%> = msgAttributes_<%=cid%>.get("<%=column.getOriginalDbColumnName()%>");
+        							if(attributeValue_<%=cid%> != null){
+	<%
+        								if ("id_byte[]".equals(column.getTalendType())){
+	%>
+											java.nio.ByteBuffer binaryValue_<%=cid%> = attributeValue_<%=cid%>.getBinaryValue();
+											if(binaryValue_<%=cid%>!=null){
+												<%=outputConnName %>.<%=column.getLabel() %> = binaryValue_<%=cid%>.array();
+											}
+	<%
+        								}else{
+        									String typeToGenerate = JavaTypesManager.getTypeToGenerate(column.getTalendType(), column.isNullable());
+											JavaType javaType = JavaTypesManager.getJavaTypeFromId(column.getTalendType());
+    										if (javaType == JavaTypesManager.STRING || javaType == JavaTypesManager.OBJECT) {
+   	%>
+   												<%=outputConnName %>.<%=column.getLabel() %> = attributeValue_<%=cid%>.getStringValue();
+   	<%
+   											}else{
+    %>
+    											if(attributeValue_<%=cid%>.getStringValue()!=null){
+    												<%=outputConnName %>.<%=column.getLabel() %> = ParserUtils.parseTo_<%= typeToGenerate %>(attributeValue_<%=cid%>.getStringValue());
+    											}
+    <%
+    										}
+        								}
+	%>
+        							}
 	<%
 								}
 							}

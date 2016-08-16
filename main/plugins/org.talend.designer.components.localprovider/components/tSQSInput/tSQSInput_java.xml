@@ -12,6 +12,7 @@
     STARTABLE="true"
     PARTITIONING="NONE"
     LOG4J_ENABLED="true"
+    SUPPORTS_DB_TYPE="true"
   >
     <SIGNATURE/>
   </HEADER>
@@ -35,198 +36,225 @@
   </CONNECTORS>
 
     <PARAMETERS>
-    <PARAMETER NAME="USE_EXISTING_CONNECTION" FIELD="CHECK"
-        NUM_ROW="2"  GROUP="CONNECTION_CONFIG">
-        <DEFAULT>false</DEFAULT>
-    </PARAMETER>
-    <PARAMETER NAME="CONNECTION" FIELD="COMPONENT_LIST" REQUIRED="true" FILTER="tSQSConnection"
-        NUM_ROW="2" SHOW_IF="USE_EXISTING_CONNECTION == 'true'" GROUP="CONNECTION_CONFIG"/>
-
-    <PARAMETER
-      NAME="ACCESS_KEY"
-      FIELD="TEXT"
-      NUM_ROW="20"
-      REQUIRED="true"
-      GROUP="CONNECTION_CONFIG"
-      SHOW_IF="(USE_EXISTING_CONNECTION == 'false') AND (INHERIT_CREDENTIALS == 'false')"
-    >
-      <DEFAULT>""</DEFAULT>
-    </PARAMETER>
-
-    <PARAMETER
-      NAME="SECRET_KEY"
-      FIELD="PASSWORD"
-      NUM_ROW="20"
-      REQUIRED="true"
-      GROUP="CONNECTION_CONFIG"
-      SHOW_IF="(USE_EXISTING_CONNECTION == 'false') AND (INHERIT_CREDENTIALS == 'false')"
-    >
-      <DEFAULT>""</DEFAULT>
-    </PARAMETER>
-    
-    <PARAMETER
-      NAME="INHERIT_CREDENTIALS"
-      FIELD="CHECK"
-      NUM_ROW="21"
-      REQUIRED="true"
-      GROUP="CONNECTION_CONFIG"
-      SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
-    >
-      <DEFAULT>false</DEFAULT>
-    </PARAMETER>
-    <PARAMETER 
-	    NAME="REGION" 
-	    FIELD="OPENED_LIST" 
-	    RAW="true" 
-	    NUM_ROW="25" 
-	    REQUIRED="true" 
-	    SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
-	 >
-     	<ITEMS DEFAULT="DEFAULT">
-        	<ITEM NAME="DEFAULT" VALUE="DEFAULT" />
-         	<ITEM NAME="AP_SOUTHEAST_1" VALUE="&quot;ap-southeast-1&quot;" />
-	        <ITEM NAME="AP_SOUTHEAST_2" VALUE="&quot;ap-southeast-2&quot;" />
-	        <ITEM NAME="AP_NORTHEAST_1" VALUE="&quot;ap-northeast-1&quot;" />
-	        <ITEM NAME="CN_NORTH_1" VALUE="&quot;cn-north-1&quot;" />
-	        <ITEM NAME="EU_WEST_1" VALUE="&quot;eu-west-1&quot;" />
-	        <ITEM NAME="EU_CENTRAL_1" VALUE="&quot;eu-central-1&quot;" />
-	        <ITEM NAME="GovCloud" VALUE="&quot;us-gov-west-1&quot;" />
-	        <ITEM NAME="SA_EAST_1" VALUE="&quot;sa-east-1&quot;" />
-	        <ITEM NAME="US_EAST_1" VALUE="&quot;us-east-1&quot;" />
-	        <ITEM NAME="US_WEST_1" VALUE="&quot;us-west-1&quot;" />
-	        <ITEM NAME="US_WEST_2" VALUE="&quot;us-west-2&quot;" />
-    	</ITEMS>
-    </PARAMETER>
-    
-    <PARAMETER
-      NAME="QUEUE_URL"
-      FIELD="TEXT"
-      NUM_ROW="30"
-      REQUIRED="true"
-    >
-    <DEFAULT>""</DEFAULT>
-    </PARAMETER>
-    
-    <PARAMETER NAME="SCHEMA" FIELD="SCHEMA_TYPE" NUM_ROW="50" REQUIRED="true">
-		<TABLE>
-			<COLUMN KEY="true" NAME="MessageId" TYPE="id_String" />
-			<COLUMN KEY="false" NAME="ReceiptHandle" TYPE="id_String" />
-			<COLUMN KEY="false" NAME="MD5OfBody" TYPE="id_String" />
-			<COLUMN KEY="false" NAME="Body" TYPE="id_String" />
-		</TABLE>
-	</PARAMETER>    
-    
-     <PARAMETER
-      NAME="GET_ATTRIBUTES"
-      FIELD="CHECK"
-      NUM_ROW="60"
-      REQUIRED="true"
-    >
-    <DEFAULT>true</DEFAULT>
-    </PARAMETER>
-
-     <PARAMETER
-      NAME="GET_MESSAGE_ATTRIBUTES"
-      FIELD="CHECK"
-      NUM_ROW="70"
-      REQUIRED="true"
-    >
-    <DEFAULT>true</DEFAULT>
-    </PARAMETER>
-
-    
-    <PARAMETER
-      NAME="VISIBILITY_TIMEOUT"
-      FIELD="CHECK"
-      NUM_ROW="80"
-      REQUIRED="true"
-    >
-    <DEFAULT>false</DEFAULT>
-    </PARAMETER>
-
-  <PARAMETER
-      NAME="VISIBILITY_TIMEOUT_VALUE"
-      FIELD="TEXT"
-      NUM_ROW="80"
-      REQUIRED="true"
-      SHOW_IF="VISIBILITY_TIMEOUT == 'true'"
-    >
-    <DEFAULT>30</DEFAULT>
-    </PARAMETER>
-
-
-    <PARAMETER
-      NAME="DELETE_MESSAGE"
-      FIELD="CHECK"
-      NUM_ROW="90"
-      REQUIRED="true"
-    >
-    <DEFAULT>true</DEFAULT>
-    </PARAMETER>
-    
-    <PARAMETER
-      NAME="READ_ALL_MESSAGE"
-      FIELD="CHECK"
-      NUM_ROW="100"
-      REQUIRED="true"
-      SHOW_IF="DELETE_MESSAGE == 'true'"
-    >
-    <DEFAULT>true</DEFAULT>
-    </PARAMETER>
-
-    
-    <PARAMETER
-      NAME="DIE_ON_ERROR"
-      FIELD="CHECK"
-      NUM_ROW="121"
-    >
-      <DEFAULT>true</DEFAULT>
-    </PARAMETER>
+		<PARAMETER
+			NAME="USE_EXISTING_CONNECTION"
+			FIELD="CHECK"
+			NUM_ROW="2"
+			GROUP="CONNECTION_CONFIG"
+		>
+			<DEFAULT>false</DEFAULT>
+		</PARAMETER>
+		<PARAMETER
+			NAME="CONNECTION"
+			FIELD="COMPONENT_LIST"
+			REQUIRED="true"
+			FILTER="tSQSConnection"
+			NUM_ROW="2"
+			SHOW_IF="USE_EXISTING_CONNECTION == 'true'"
+			GROUP="CONNECTION_CONFIG" />
+	
+		<PARAMETER
+			NAME="ACCESS_KEY"
+			FIELD="TEXT"
+			NUM_ROW="20"
+			REQUIRED="true"
+			GROUP="CONNECTION_CONFIG"
+			SHOW_IF="(USE_EXISTING_CONNECTION == 'false') AND (INHERIT_CREDENTIALS == 'false')"
+		>
+			<DEFAULT>""</DEFAULT>
+		</PARAMETER>
+	
+		<PARAMETER
+			NAME="SECRET_KEY"
+			FIELD="PASSWORD"
+			NUM_ROW="20"
+			REQUIRED="true"
+			GROUP="CONNECTION_CONFIG"
+			SHOW_IF="(USE_EXISTING_CONNECTION == 'false') AND (INHERIT_CREDENTIALS == 'false')"
+		>
+			<DEFAULT>""</DEFAULT>
+		</PARAMETER>
+	
+		<PARAMETER
+			NAME="INHERIT_CREDENTIALS"
+			FIELD="CHECK"
+			NUM_ROW="21"
+			REQUIRED="true"
+			GROUP="CONNECTION_CONFIG"
+			SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
+		>
+			<DEFAULT>false</DEFAULT>
+		</PARAMETER>
+		
+	    <PARAMETER 
+		    NAME="REGION" 
+		    FIELD="OPENED_LIST" 
+		    RAW="true" 
+		    NUM_ROW="25" 
+		    REQUIRED="true" 
+		    SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
+		 >
+	     	<ITEMS DEFAULT="DEFAULT">
+	        	<ITEM NAME="DEFAULT" VALUE="DEFAULT" />
+	         	<ITEM NAME="AP_SOUTHEAST_1" VALUE="&quot;ap-southeast-1&quot;" />
+		        <ITEM NAME="AP_SOUTHEAST_2" VALUE="&quot;ap-southeast-2&quot;" />
+		        <ITEM NAME="AP_NORTHEAST_1" VALUE="&quot;ap-northeast-1&quot;" />
+		        <ITEM NAME="CN_NORTH_1" VALUE="&quot;cn-north-1&quot;" />
+		        <ITEM NAME="EU_WEST_1" VALUE="&quot;eu-west-1&quot;" />
+		        <ITEM NAME="EU_CENTRAL_1" VALUE="&quot;eu-central-1&quot;" />
+		        <ITEM NAME="GovCloud" VALUE="&quot;us-gov-west-1&quot;" />
+		        <ITEM NAME="SA_EAST_1" VALUE="&quot;sa-east-1&quot;" />
+		        <ITEM NAME="US_EAST_1" VALUE="&quot;us-east-1&quot;" />
+		        <ITEM NAME="US_WEST_1" VALUE="&quot;us-west-1&quot;" />
+		        <ITEM NAME="US_WEST_2" VALUE="&quot;us-west-2&quot;" />
+	    	</ITEMS>
+	    </PARAMETER>
+	
+		<PARAMETER
+			NAME="QUEUE_URL"
+			FIELD="TEXT"
+			NUM_ROW="30"
+			REQUIRED="true"
+		>
+			<DEFAULT>""</DEFAULT>
+	    </PARAMETER>
+	    
+	    <PARAMETER NAME="SCHEMA" FIELD="SCHEMA_TYPE" NUM_ROW="50" REQUIRED="true">
+			<TABLE>
+				<COLUMN KEY="true" NAME="MessageId" TYPE="id_String" />
+				<COLUMN KEY="false" NAME="ReceiptHandle" TYPE="id_String" />
+				<COLUMN KEY="false" NAME="MD5OfBody" TYPE="id_String" />
+				<COLUMN KEY="false" NAME="Body" TYPE="id_String" />
+			</TABLE>
+		</PARAMETER>
+	
+		<PARAMETER
+			NAME="GET_ATTRIBUTES"
+			FIELD="CHECK"
+			NUM_ROW="60"
+			REQUIRED="true"
+		>
+			<DEFAULT>true</DEFAULT>
+		</PARAMETER>
+	
+		<PARAMETER
+			NAME="GET_MESSAGE_ATTRIBUTES"
+			FIELD="CHECK"
+			NUM_ROW="70"
+			REQUIRED="true"
+		>
+			<DEFAULT>true</DEFAULT>
+		</PARAMETER>
+	
+		<PARAMETER
+			NAME="VISIBILITY_TIMEOUT"
+			FIELD="CHECK"
+			NUM_ROW="80"
+			REQUIRED="true"
+		>
+			<DEFAULT>false</DEFAULT>
+		</PARAMETER>
+	
+		<PARAMETER
+			NAME="VISIBILITY_TIMEOUT_VALUE"
+			FIELD="TEXT"
+			NUM_ROW="80"
+			REQUIRED="true"
+			SHOW_IF="VISIBILITY_TIMEOUT == 'true'"
+		>
+			<DEFAULT>30</DEFAULT>
+		</PARAMETER>
+		
+		<PARAMETER
+			NAME="CUSTOM_WAIT_TIME"
+			FIELD="CHECK"
+			NUM_ROW="85"
+			REQUIRED="true"
+		>
+			<DEFAULT>false</DEFAULT>
+		</PARAMETER>
+	
+		<PARAMETER
+			NAME="WAIT_TIME"
+			FIELD="TEXT"
+			NUM_ROW="85"
+			REQUIRED="true"
+			SHOW_IF="CUSTOM_WAIT_TIME == 'true'"
+		>
+			<DEFAULT>10</DEFAULT>
+		</PARAMETER>
+	
+		<PARAMETER
+			NAME="DELETE_MESSAGE"
+			FIELD="CHECK"
+			NUM_ROW="90"
+			REQUIRED="true"
+		>
+			<DEFAULT>true</DEFAULT>
+		</PARAMETER>
+	
+		<PARAMETER
+			NAME="READ_ALL_MESSAGE"
+			FIELD="CHECK"
+			NUM_ROW="100"
+			REQUIRED="true"
+			SHOW_IF="DELETE_MESSAGE == 'true'"
+		>
+			<DEFAULT>true</DEFAULT>
+		</PARAMETER>
+	
+		<PARAMETER
+			NAME="DIE_ON_ERROR"
+			FIELD="CHECK"
+			NUM_ROW="121"
+		>
+			<DEFAULT>true</DEFAULT>
+		</PARAMETER>
     
    </PARAMETERS>
 
     <ADVANCED_PARAMETERS>
-    <PARAMETER
-      NAME="CONFIG_CLIENT"
-      FIELD="CHECK"
-      NUM_ROW="10"
-      NB_LINES="5"
-      SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
-      GROUP="CLIENT_CONFIG"
-    >
-    </PARAMETER>
-
-    <PARAMETER
-      NAME="CLIENT_CONFIGURATION"
-      FIELD="TABLE"
-      NUM_ROW="30"
-      NB_LINES="5"
-      REQUIRED="true"
-      GROUP="CLIENT_CONFIG"
-      SHOW_IF="(CONFIG_CLIENT =='true') AND (USE_EXISTING_CONNECTION == 'false')"
-    >
-      <ITEMS>
-        <ITEM NAME="CLIENT_PARAMETER" FIELD="CLOSED_LIST">
-            <ITEMS DEFAULT="CONNECTIONTIMEOUT">
-                <ITEM NAME="CONNECTIONTIMEOUT" VALUE="ConnectionTimeout"/>
-                <ITEM NAME="MAXCONNECTIONS" VALUE="MaxConnections"/>
-                <ITEM NAME="MAXERRORRETRY" VALUE="MaxErrorRetry"/>
-                <ITEM NAME="PROTOCOL" VALUE="Protocol"/>
-                <ITEM NAME="PROXYDOMAIN" VALUE="ProxyDomain"/>
-                <ITEM NAME="PROXYHOST" VALUE="ProxyHost"/>
-                <ITEM NAME="PROXYPASSWORD" VALUE="ProxyPassword"/>
-                <ITEM NAME="PROXYPORT" VALUE="ProxyPort"/>
-                <ITEM NAME="PROXYUSERNAME" VALUE="ProxyUsername"/>
-                <ITEM NAME="PROXYWORKSTATION" VALUE="ProxyWorkstation"/>
-                <ITEM NAME="SOCKETTIMEOUT" VALUE="SocketTimeout"/>
-                <ITEM NAME="USERAGENT" VALUE="UserAgent"/>
-                <ITEM NAME="SOCKETRECEIVEBUFFERSIZEHINT" VALUE="SocketReceiveBufferSizeHints"/>
-                <ITEM NAME="SOCKETSENDBUFFERSIZEHINT" VALUE="SocketSendBufferSizeHints"/>
-            </ITEMS>
-        </ITEM>
-        <ITEM NAME="VALUE" />
-      </ITEMS>
-    </PARAMETER>
+	    <PARAMETER
+	      NAME="CONFIG_CLIENT"
+	      FIELD="CHECK"
+	      NUM_ROW="10"
+	      NB_LINES="5"
+	      SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
+	      GROUP="CLIENT_CONFIG"
+	    >
+	    </PARAMETER>
+	
+	    <PARAMETER
+	      NAME="CLIENT_CONFIGURATION"
+	      FIELD="TABLE"
+	      NUM_ROW="30"
+	      NB_LINES="5"
+	      REQUIRED="true"
+	      GROUP="CLIENT_CONFIG"
+	      SHOW_IF="(CONFIG_CLIENT =='true') AND (USE_EXISTING_CONNECTION == 'false')"
+	    >
+	      <ITEMS>
+	        <ITEM NAME="CLIENT_PARAMETER" FIELD="CLOSED_LIST">
+	            <ITEMS DEFAULT="CONNECTIONTIMEOUT">
+	                <ITEM NAME="CONNECTIONTIMEOUT" VALUE="ConnectionTimeout"/>
+	                <ITEM NAME="MAXCONNECTIONS" VALUE="MaxConnections"/>
+	                <ITEM NAME="MAXERRORRETRY" VALUE="MaxErrorRetry"/>
+	                <ITEM NAME="PROTOCOL" VALUE="Protocol"/>
+	                <ITEM NAME="PROXYDOMAIN" VALUE="ProxyDomain"/>
+	                <ITEM NAME="PROXYHOST" VALUE="ProxyHost"/>
+	                <ITEM NAME="PROXYPASSWORD" VALUE="ProxyPassword"/>
+	                <ITEM NAME="PROXYPORT" VALUE="ProxyPort"/>
+	                <ITEM NAME="PROXYUSERNAME" VALUE="ProxyUsername"/>
+	                <ITEM NAME="PROXYWORKSTATION" VALUE="ProxyWorkstation"/>
+	                <ITEM NAME="SOCKETTIMEOUT" VALUE="SocketTimeout"/>
+	                <ITEM NAME="USERAGENT" VALUE="UserAgent"/>
+	                <ITEM NAME="SOCKETRECEIVEBUFFERSIZEHINT" VALUE="SocketReceiveBufferSizeHints"/>
+	                <ITEM NAME="SOCKETSENDBUFFERSIZEHINT" VALUE="SocketSendBufferSizeHints"/>
+	            </ITEMS>
+	        </ITEM>
+	        <ITEM NAME="VALUE" />
+	      </ITEMS>
+	    </PARAMETER>
 
     </ADVANCED_PARAMETERS>
 
