@@ -20,14 +20,19 @@ imports="
 	%>
 
 			} //for loop
-			<%=cid%>_messages = null;
-		<%
+			<%
 			if (deleteMessages && readAllMessages){
-		%>
-    		} // while loop
- 		<%
- 			}
- 		%>
+    		%>
+        			isContinueReceive_<%=cid%> = <%=cid%>_messages.size() > 0;
+     		<%
+     			} else {
+     		%>
+     				isContinueReceive_<%=cid%> = false;
+     		<%	
+     			}
+     		%>
+     		<%=cid%>_messages = null;
+    	} // while loop
 		
 	}catch(java.lang.Exception e_<%=cid%>){
 		<%

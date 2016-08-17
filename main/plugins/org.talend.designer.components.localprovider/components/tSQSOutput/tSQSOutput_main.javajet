@@ -9,7 +9,6 @@ imports="
 	org.talend.core.model.process.EConnectionType
 	org.talend.core.model.process.IConnection
 	org.talend.core.model.process.IConnectionCategory
-	org.talend.core.model.process.INode
 	java.util.List
 	java.util.Map
 " 
@@ -21,98 +20,74 @@ imports="
     String queueUrl = ElementParameterParser.getValue(node,"__QUEUE_URL__");
     boolean dieOnError = "true".equals(ElementParameterParser.getValue(node,"__DIE_ON_ERROR__"));
     boolean isLog4jEnabled = ("true").equals(ElementParameterParser.getValue(node.getProcess(), "__LOG4J_ACTIVATE__"));    
+	List<IMetadataTable> metadatas = node.getMetadataList();
+	if ((metadatas!=null)&&(metadatas.size()>0)) {
+		IMetadataTable metadata = metadatas.get(0);
+		List<IMetadataColumn> columns = metadata.getListColumns();
+		List< ? extends IConnection> conns = node.getIncomingConnections();
+		if((conns!=null)&&(conns.size()>0)) {
+			IConnection conn = conns.get(0);		
+			if (conn.getLineStyle().equals(EConnectionType.FLOW_MAIN)||conn.getLineStyle().equals(EConnectionType.FLOW_MERGE)){
 	%>
-	<%
-		List<IMetadataTable> metadatas = node.getMetadataList();
-		if ((metadatas!=null)&&(metadatas.size()>0)) {
-			IMetadataTable metadata = metadatas.get(0);
-			List<IMetadataColumn> columns = metadata.getListColumns();
-			List< ? extends IConnection> conns = node.getIncomingConnections();
-			if((conns!=null)&&(conns.size()>0)) {
-				IConnection conn = conns.get(0);		
-				if (conn.getLineStyle().equals(EConnectionType.FLOW_MAIN)||conn.getLineStyle().equals(EConnectionType.FLOW_MERGE)){
-	%>
-   						com.amazonaws.services.sqs.model.SendMessageRequest <%=cid%>_sendMessageRequest = new com.amazonaws.services.sqs.model.SendMessageRequest();
-    					<%=cid%>_sendMessageRequest.setQueueUrl(<%=queueUrl%>);
+				com.amazonaws.services.sqs.model.SendMessageRequest <%=cid%>_sendMessageRequest = new com.amazonaws.services.sqs.model.SendMessageRequest();
+				<%=cid%>_sendMessageRequest.setQueueUrl(<%=queueUrl%>);
     <%				
-    					for (int i = 0; i < columns.size(); i++) {
-     						IMetadataColumn column = columns.get(i);
-     						if (column.getLabel().equals("Body")) {
+				for (int i = 0; i < columns.size(); i++) {
+					IMetadataColumn column = columns.get(i);
+					if (column.getLabel().equals("Body")) {
 	%>
-								<%=cid%>_sendMessageRequest.setMessageBody(<%=conn.getName()%>.Body);							
+						<%=cid%>_sendMessageRequest.setMessageBody(<%=conn.getName()%>.Body);							
 	<% 
-							}else {
-								String dataType=null;;
-								if ("id_String".equals(column.getTalendType())) {
-									dataType="String";
-								}else if (JavaTypesManager.isNumber(column.getTalendType())){
-									dataType="Number";
-								}else if ("id_byte[]".equals(column.getTalendType())){
-									dataType="Binary";
-								}
-								if(dataType!=null){
+					}else {
+						String dataType=null;;
+						if ("id_String".equals(column.getTalendType())) {
+							dataType="String";
+						}else if (JavaTypesManager.isNumber(column.getTalendType())){
+							dataType="Number";
+						}else if ("id_byte[]".equals(column.getTalendType())){
+							dataType="Binary";
+						}
+						if(dataType!=null){
 	%>
-									if(<%=conn.getName()%>.<%=column.getLabel()%> != null){
-        								com.amazonaws.services.sqs.model.MessageAttributeValue <%=cid%>_<%=column.getLabel()%>_messageAttributeValue = new com.amazonaws.services.sqs.model.MessageAttributeValue();
-        								<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setDataType("<%=dataType%>");
+							if(<%=conn.getName()%>.<%=column.getLabel()%> != null){
+								com.amazonaws.services.sqs.model.MessageAttributeValue <%=cid%>_<%=column.getLabel()%>_messageAttributeValue = new com.amazonaws.services.sqs.model.MessageAttributeValue();
+								<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setDataType("<%=dataType%>");
     <%
-    									if ("Binary".equals(dataType)){
+								if ("Binary".equals(dataType)){
     %>
-    										<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setBinaryValue(java.nio.ByteBuffer.wrap(<%=conn.getName()%>.<%=column.getLabel()%>));
+									<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setBinaryValue(java.nio.ByteBuffer.wrap(<%=conn.getName()%>.<%=column.getLabel()%>));
     <%
-    									}else{ 
+								}else{ 
     %>
-    										<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setStringValue(String.valueOf(<%=conn.getName()%>.<%=column.getLabel()%>));
+									<%=cid%>_<%=column.getLabel()%>_messageAttributeValue.setStringValue(String.valueOf(<%=conn.getName()%>.<%=column.getLabel()%>));
     <%
-    									}
-    %>
-    									<%=cid%>_sendMessageRequest.addMessageAttributesEntry("<%=column.getOriginalDbColumnName()%>", <%=cid%>_<%=column.getLabel()%>_messageAttributeValue);
-    								}
-	<%
 								}
+    %>
+								<%=cid%>_sendMessageRequest.addMessageAttributesEntry("<%=column.getOriginalDbColumnName()%>", <%=cid%>_<%=column.getLabel()%>_messageAttributeValue);
 							}
-						}
-						if(isLog4jEnabled){
-	%>
-							log.debug("Sending the message" );
 	<%
 						}
+					}
+				}
+				if(isLog4jEnabled){
 	%>
-						com.amazonaws.services.sqs.model.SendMessageResult <%=cid%>_sendMessageResult = conn_<%=cid%>.sendMessage(<%=cid%>_sendMessageRequest);
-						nbline_<%=cid %>++;
+					log.debug("Sending the message" );
+	<%
+				}
+	%>
+				com.amazonaws.services.sqs.model.SendMessageResult <%=cid%>_sendMessageResult = conn_<%=cid%>.sendMessage(<%=cid%>_sendMessageRequest);
+				nbline_<%=cid %>++;
 
 	<%
-						if(isLog4jEnabled){
+				if(isLog4jEnabled){
 	%>	
-                			log.debug("<%=cid%> - Message Start: ");
-                			log.debug("<%=cid%> - MessageId: " + <%=cid%>_sendMessageResult.getMessageId());
-                			log.debug("<%=cid%> - MD5OfBody: " + <%=cid%>_sendMessageResult.getMD5OfMessageBody());
-                			log.debug("<%=cid%> - Message End ");
+        			log.debug("<%=cid%> - Message Start: ");
+        			log.debug("<%=cid%> - MessageId: " + <%=cid%>_sendMessageResult.getMessageId());
+        			log.debug("<%=cid%> - MD5OfBody: " + <%=cid%>_sendMessageResult.getMD5OfMessageBody());
+        			log.debug("<%=cid%> - Message End ");
 	<%
-						}
 				}
 			}
 		}
+	}
 	%>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

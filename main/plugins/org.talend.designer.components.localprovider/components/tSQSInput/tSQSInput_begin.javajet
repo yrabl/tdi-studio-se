@@ -13,7 +13,7 @@ imports="
     String cid = node.getUniqueName();
     String queueUrl = ElementParameterParser.getValue(node,"__QUEUE_URL__");
     boolean visibilityTimeout = "true".equals(ElementParameterParser.getValue(node,"__VISIBILITY_TIMEOUT__"));
-    boolean isCustomeWaitTime = "true".equals(ElementParameterParser.getValue(node,"__CUSTOME_WAIT_TIME__"));
+    boolean isCustomeWaitTime = "true".equals(ElementParameterParser.getValue(node,"__CUSTOM_WAIT_TIME__"));
     boolean deleteMessages = "true".equals(ElementParameterParser.getValue(node,"__DELETE_MESSAGE__"));
     boolean readAllMessages = "true".equals(ElementParameterParser.getValue(node,"__READ_ALL_MESSAGE__"));
     boolean getAttributes = "true".equals(ElementParameterParser.getValue(node,"__GET_ATTRIBUTES__"));
@@ -35,62 +35,16 @@ imports="
 		<%
 		}
 		%>
-		com.amazonaws.services.sqs.model.ReceiveMessageRequest <%=cid%>_receiveMessageRequest = new com.amazonaws.services.sqs.model.ReceiveMessageRequest(<%=queueUrl%>).withMaxNumberOfMessages(10);
-		<%
-		if (visibilityTimeout){
-		%>	
-			 <%=cid%>_receiveMessageRequest.setVisibilityTimeout(<%=visibilityTimeoutValue%>);
-		<%
-		}
-		if (isCustomeWaitTime){
-		%>	
-			 <%=cid%>_receiveMessageRequest.setWaitTimeSeconds(<%=waitTime%>);
-		<%
-		}
-		%>
+		com.amazonaws.services.sqs.model.ReceiveMessageRequest <%=cid%>_receiveMessageRequest = new com.amazonaws.services.sqs.model.ReceiveMessageRequest(<%=queueUrl%>)
+		<% if (visibilityTimeout){ %>.withVisibilityTimeout(<%=visibilityTimeoutValue%>)<% } %>
+		<% if (isCustomeWaitTime){ %>.withWaitTimeSeconds(<%=waitTime%>)<% } %>
+		<% if (getAttributes){ %>.withAttributeNames("All")<% } %>
+		<% if (getMessageAttributes){ %>.withMessageAttributeNames("All")<% } %>.withMaxNumberOfMessages(10);
 		
 		List<com.amazonaws.services.sqs.model.Message> <%=cid%>_messages = null;
-		<%
-			if (deleteMessages && readAllMessages){
-				if (getAttributes && getMessageAttributes){
-		%>
-    				while ((<%=cid%>_messages = conn_<%=cid%>.receiveMessage(<%=cid%>_receiveMessageRequest.withAttributeNames("All").withMessageAttributeNames("All")).getMessages()).size() >0 ) {
- 		<%
- 				}else if (getAttributes){
- 		%>
- 					while ((<%=cid%>_messages = conn_<%=cid%>.receiveMessage(<%=cid%>_receiveMessageRequest.withAttributeNames("All")).getMessages()).size() >0 ) {
- 		<%	
- 				} else if (getMessageAttributes){
- 		%>
- 					while ((<%=cid%>_messages = conn_<%=cid%>.receiveMessage(<%=cid%>_receiveMessageRequest.withMessageAttributeNames("All")).getMessages()).size() >0 ) {
- 		<%
- 				}else {
- 		%>
- 					while ((<%=cid%>_messages = conn_<%=cid%>.receiveMessage(<%=cid%>_receiveMessageRequest).getMessages()).size() >0 ) {
- 		<%
- 				}
- 			}
- 			else
- 			{
- 				if (getAttributes && getMessageAttributes){
- 		%>
- 					<%=cid%>_messages = conn_<%=cid%>.receiveMessage(<%=cid%>_receiveMessageRequest.withAttributeNames("All").withMessageAttributeNames("All")).getMessages();
- 		<%
- 				} else if (getAttributes){
- 		%>
- 					<%=cid%>_messages = conn_<%=cid%>.receiveMessage(<%=cid%>_receiveMessageRequest.withAttributeNames("All")).getMessages();
- 		<%
- 				} else if (getMessageAttributes){
- 		%>
- 					<%=cid%>_messages = conn_<%=cid%>.receiveMessage(<%=cid%>_receiveMessageRequest.withMessageAttributeNames("All")).getMessages();
- 		<%
- 				} else {
- 		%>
- 					<%=cid%>_messages = conn_<%=cid%>.receiveMessage(<%=cid%>_receiveMessageRequest).getMessages();
- 		<%	
- 				}
- 			}
- 		%>
+		boolean isContinueReceive_<%=cid%> = true;
+		while (isContinueReceive_<%=cid%>) {
+			<%=cid%>_messages = conn_<%=cid%>.receiveMessage(<%=cid%>_receiveMessageRequest).getMessages();
  			for (com.amazonaws.services.sqs.model.Message <%=cid%>_message : <%=cid%>_messages) {
  				nbline_<%=cid %>++;
 		
