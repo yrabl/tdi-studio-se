@@ -183,6 +183,11 @@ org.talend.daikon.properties.ValidationResult vr_<%=cid%> = sourceOrSink_<%=cid%
 if (vr_<%=cid%>.getStatus() == org.talend.daikon.properties.ValidationResult.Result.ERROR ) {
     throw new RuntimeException(vr_<%=cid%>.getMessage());
 }
+
+// Variables required for flow variables support
+org.apache.avro.Schema schemaWithFlows_<%=cid%> = null;
+org.apache.avro.Schema schemaWithoutFlows_<%=cid%> = null;
+java.util.List<String> flowVariableNames_<%=cid%> = null;
     
 <%
 // Return at this point if there is no metadata.
@@ -259,6 +264,90 @@ if (hasOutputOnly) {
 
         try {
             Object data_<%=cid%> = reader_<%=cid%>.getCurrent();
+            
+            // TODO It is flow variable support code
+            if (data_<%=cid%> instanceof org.apache.avro.generic.IndexedRecord) {
+            
+                org.apache.avro.generic.IndexedRecord recordWithFlows_<%=cid%> = (org.apache.avro.generic.IndexedRecord) data_<%=cid%>;
+                if (schemaWithFlows_<%=cid%> == null) {
+                    schemaWithFlows_<%=cid%> = recordWithFlows_<%=cid%>.getSchema();
+                }
+                
+                // A. Schema recreation block. 
+                // This is done only once - for the first record. All subsequent records should have the same schema. 
+                if (schemaWithoutFlows_<%=cid%> == null) {
+                    java.util.List<org.apache.avro.Schema.Field> fieldsWithFlows_<%=cid%> = schemaWithFlows_<%=cid%>.getFields();
+                    java.util.List<org.apache.avro.Schema.Field> fieldsWithoutFlows_<%=cid%> = new java.util.ArrayList<org.apache.avro.Schema.Field>();
+                    flowVariableNames_<%=cid%> = new java.util.ArrayList<String>();
+                    
+                    // Iterate through fields in original schema
+                    for (org.apache.avro.Schema.Field fieldWithFlows_<%=cid%> : fieldsWithFlows_<%=cid%>) {
+                    
+                        // iterate through properties of current field to find flow variable property
+                        boolean isFlowVariable_<%=cid%> = false;
+                        for (java.util.Map.Entry<String, Object> fieldProperty_<%=cid%> : fieldWithFlows_<%=cid%>.getObjectProps().entrySet()) {
+                            String propertyKey_<%=cid%> = fieldProperty_<%=cid%>.getKey();
+                    	    if (org.talend.daikon.di.DiSchemaConstants.TALEND6_COLUMN_CUSTOM.equals(propertyKey_<%=cid%>)) {
+                        	    isFlowVariable_<%=cid%> = true;
+                        	    break;
+                        	}
+                        }
+                    
+                        if (isFlowVariable_<%=cid%>) {
+                            // It is flow variable. Add it to the list
+                    	    flowVariableNames_<%=cid%>.add(fieldWithFlows_<%=cid%>.name());                    	    
+                        } else {
+                            // it is not flow variable. Create a new field. Add this field to new schema
+                        
+                            // copy original field
+                            org.apache.avro.Schema.Field fieldWithoutFlows_<%=cid%> = new org.apache.avro.Schema.Field(fieldWithFlows_<%=cid%>.name(), fieldWithFlows_<%=cid%>.schema(), fieldWithFlows_<%=cid%>.doc(), fieldWithFlows_<%=cid%>.defaultVal());
+                            for (java.util.Map.Entry<String, Object> fieldProperty_<%=cid%> : fieldWithFlows_<%=cid%>.getObjectProps().entrySet()) {
+                                fieldWithoutFlows_<%=cid%>.addProp(fieldProperty_<%=cid%>.getKey(), fieldProperty_<%=cid%>.getValue());
+                            }
+                            fieldsWithoutFlows_<%=cid%>.add(fieldWithoutFlows_<%=cid%>);
+                        }
+                    }
+                    schemaWithoutFlows_<%=cid%> = org.apache.avro.Schema.createRecord(schemaWithFlows_<%=cid%>.getName(), schemaWithFlows_<%=cid%>.getDoc(), schemaWithFlows_<%=cid%>.getNamespace(), schemaWithFlows_<%=cid%>.isError());
+                    // copy schema properties
+                    for (java.util.Map.Entry<String, Object> schemaProperty_<%=cid%> : schemaWithFlows_<%=cid%>.getObjectProps().entrySet()) {
+                        schemaWithoutFlows_<%=cid%>.addProp(schemaProperty_<%=cid%>.getKey(), schemaProperty_<%=cid%>.getValue());
+                    }
+                    schemaWithoutFlows_<%=cid%>.setFields(fieldsWithoutFlows_<%=cid%>);
+                }
+                
+                // B. Retrieve flow variables
+                for (String flowVariableName_<%=cid%> : flowVariableNames_<%=cid%>) {
+                    // 1. Retrieve flow variable value
+                    org.apache.avro.Schema.Field flowVariableField_<%=cid%> = schemaWithFlows_<%=cid%>.getField(flowVariableName_<%=cid%>);
+                    Object flowVariableValue_<%=cid%> = recordWithFlows_<%=cid%>.get(flowVariableField_<%=cid%>.pos());
+                    String flowVariableKey_<%=cid%> = flowVariableField_<%=cid%>.name();
+                    	   
+                    // 2. Make it uppercase
+                    StringBuilder studio_key_<%=cid%> = new StringBuilder();
+                    for (int i_<%=cid%> = 0; i_<%=cid%> < flowVariableKey_<%=cid%>.length(); i_<%=cid%>++) {
+                        char ch_<%=cid%> = flowVariableKey_<%=cid%>.charAt(i_<%=cid%>);
+                        if(Character.isUpperCase(ch_<%=cid%>) && i_<%=cid%> > 0) {
+                	        studio_key_<%=cid%>.append('_');
+                        }
+                        studio_key_<%=cid%>.append(ch_<%=cid%>);
+                    }
+			                
+                    // 3. Put it in globalMap
+                    container_<%=cid%>.setComponentData("<%=cid%>", studio_key_<%=cid%>.toString().toUpperCase(java.util.Locale.ENGLISH), flowVariableValue_<%=cid%>);
+                }
+                                
+                // C. Record recreation block.
+                org.apache.avro.generic.IndexedRecord recordWithoutFlows_<%=cid%> = (org.apache.avro.generic.IndexedRecord) org.apache.avro.generic.GenericData.get().newRecord(null, schemaWithoutFlows_<%=cid%>);
+                
+                // insert all not flow variable fields inside new record
+                for (org.apache.avro.Schema.Field fieldWithoutFlows_<%=cid%> : schemaWithoutFlows_<%=cid%>.getFields()) {
+                     org.apache.avro.Schema.Field originalField_<%=cid%> = schemaWithFlows_<%=cid%>.getField(fieldWithoutFlows_<%=cid%>.name());
+                     Object valueToCopy_<%=cid%> = recordWithFlows_<%=cid%>.get(originalField_<%=cid%>.pos());
+                     recordWithoutFlows_<%=cid%>.put(fieldWithoutFlows_<%=cid%>.pos(),valueToCopy_<%=cid%>);
+                }
+                data_<%=cid%> = recordWithFlows_<%=cid%>;
+            }
+            
             <%
             if (main != null) {
                 %>
