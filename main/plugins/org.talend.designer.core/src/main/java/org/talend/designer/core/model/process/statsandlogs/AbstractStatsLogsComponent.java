@@ -404,7 +404,7 @@ public abstract class AbstractStatsLogsComponent implements IComponent {
         IMultipleComponentItem currentItem = multipleComponentManager.addItem(componentId, subComponent);
         if (useFile) {
             currentItem.getOutputConnections().add(new MultipleComponentConnection("FLOW", "FILE")); //$NON-NLS-1$ //$NON-NLS-2$
-            currentItem = multipleComponentManager.addItem("FILE", "tFileOutputDelimited"); //$NON-NLS-1$ //$NON-NLS-2$
+            currentItem = multipleComponentManager.addItem("FILE", "tFileOutputDelimitedOld"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         if (useDb) {
             currentItem.getOutputConnections().add(new MultipleComponentConnection("FLOW", "DB")); //$NON-NLS-1$ //$NON-NLS-2$
