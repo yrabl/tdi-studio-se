@@ -104,6 +104,8 @@ public class Component extends AbstractBasicComponent {
 
     private ComponentDefinition componentDefinition;
 
+    private RuntimeInfo runtimeInfo;
+
     private List<ModuleNeeded> componentImportNeedsList;
 
     private ComponentsProvider provider;
@@ -1050,7 +1052,7 @@ public class Component extends AbstractBasicComponent {
 
     @Override
     public List<ModuleNeeded> getModulesNeeded(INode node) {
-        if (componentImportNeedsList != null) {
+        if (runtimeInfo != null && componentImportNeedsList != null) {
             return componentImportNeedsList;
         } else {
             componentImportNeedsList = new ArrayList<>();
@@ -1074,9 +1076,8 @@ public class Component extends AbstractBasicComponent {
                     topology = topologies.iterator().next();
                 }
             }
-            RuntimeInfo ri = null;
             try {
-                ri = componentDefinition.getRuntimeInfo(node == null ? null : node.getComponentProperties(), topology);
+                runtimeInfo = componentDefinition.getRuntimeInfo(node == null ? null : node.getComponentProperties(), topology);
             } catch (Exception e) {
                 if (node == null) {
                     // not handled, must because the runtime info must have a node configuration (properties are null)
@@ -1084,8 +1085,8 @@ public class Component extends AbstractBasicComponent {
                     ExceptionHandler.process(e);
                 }
             }
-            if (ri != null) {
-                for (URL mvnUri : ri.getMavenUrlDependencies()) {
+            if (runtimeInfo != null) {
+                for (URL mvnUri : runtimeInfo.getMavenUrlDependencies()) {
                     ModuleNeeded moduleNeeded = new ModuleNeeded(getName(), "", true, mvnUri.toString()); //$NON-NLS-1$
                     componentImportNeedsList.add(moduleNeeded);
                 }
