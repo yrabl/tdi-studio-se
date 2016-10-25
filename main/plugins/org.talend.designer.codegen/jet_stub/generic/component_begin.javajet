@@ -312,16 +312,25 @@ if (hasOutputOnly) {
                         <%
                     }
                 }
-                if (main != null) {
-                %>
-                    <%=main.getName()%> = null;
-                <%
-                }
             } else {
             %>
-            	//TODO use a method instead of getting method by the special key "error"
-            	String errorMessage_<%=cid%> = "Row "+ nb_line_<%=cid %> + ":" + info_<%=cid%>.get("error");
+            	//TODO use a method instead of getting method by the special key "error/errorMessage"
+            	Object errorMessage_<%=cid%> = null;
+            	if(info_<%=cid%>.containsKey("error")){
+            		errorMessage_<%=cid%> = info_<%=cid%>.get("error");
+        		}else if(info_<%=cid%>.containsKey("errorMessage")){
+            		errorMessage_<%=cid%> = info_<%=cid%>.get("errorMessage");
+        		}else{
+        			errorMessage_<%=cid%> = "Rejected but error message missing";
+        		}
+        		errorMessage_<%=cid%> = "Row "+ nb_line_<%=cid %> + ": "+errorMessage_<%=cid%>;
     			System.err.println(errorMessage_<%=cid%>);
+            <%
+            }
+            if (main != null) {
+            %>
+            	// If the record is reject, the main line record should put NULL
+            	<%=main.getName()%> = null;
             <%
             }
         %>
