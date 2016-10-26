@@ -175,7 +175,7 @@
               name="NewGenericWizardMigrationTask"
               version="6.2.0">
         </projecttask>
-        <projecttask
+        <!--<projecttask
               beforeLogon="false"
               breaks="6.3.0"
               class="org.talend.repository.generic.model.migration.NewDelimitedFileWizardMigrationTask"
@@ -183,6 +183,6 @@
               id="org.talend.repository.generic.model.migration.NewDelimitedFileWizardMigrationTask"
               name="NewDelimitedFileWizardMigrationTask"
               version="6.3.0">
-        </projecttask>
+        </projecttask>-->
    </extension>
 </plugin>

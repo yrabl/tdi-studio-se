@@ -29,7 +29,7 @@
               name="Salesforce620Migration"
               version="6.2.1">
         </projecttask>
-        <projecttask
+        <!--<projecttask
               beforeLogon="false"
               breaks="6.3.0"
               class="org.talend.designer.core.generic.model.migration.NewFileDelimitedMigrationTask"
@@ -37,7 +37,7 @@
               id="org.talend.designer.core.generic.model.migration.NewFileDelimitedMigrationTask"
               name="NewFileDelimitedMigrationTask"
               version="6.3.0">
-        </projecttask> 
+        </projecttask> -->
    </extension>
    <extension
          point="org.talend.designer.core.generic.fieldType_mapping">
