@@ -73,11 +73,8 @@ public class GenericContextUtil {
                     if (GenericTypeUtils.isIntegerType(property)) {
                         type = JavaTypesManager.INTEGER;
                     }
-                    String propertyValue = StringEscapeUtils.escapeJava(String.valueOf(property.getValue()));
-                    if (GenericTypeUtils.isStringType(property)) {
-                        propertyValue = TalendQuoteUtils.addPairQuotesIfNotExist(ComponentsUtils.unescapeForJava(propertyValue));
-                    }
-                    String value = property == null || property.getValue() == null ? null : propertyValue;
+                    String value = property == null || property.getValue() == null ? null
+                            : StringEscapeUtils.escapeJava(String.valueOf(property.getValue()));
                     ConnectionContextHelper.createParameters(varList, paramName, value, type);
                 }
             }
