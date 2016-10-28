@@ -402,22 +402,12 @@ if ((metadatas!=null)&&(metadatas.size()>0)) {
 			
 			String[] temp_row_<%= cid %> = new String[tempRowLength_<%=cid%>];
 			int actual_end_column_<%= cid %> = end_column_<%= cid %> >	row_<%= cid %>.length ? row_<%= cid %>.length : end_column_<%= cid %>;
-<%
-                            	if(hasDynamic){
-%>	
+
 				java.util.TimeZone zone = java.util.TimeZone.getTimeZone("GMT");
                 java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(<%=datePattern%>);
                 sdf.setTimeZone(zone);
                 
-<%
-		                     	}else{
-%>
-				java.util.TimeZone zone = java.util.TimeZone.getTimeZone("GMT");
-				java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat();
-				sdf.setTimeZone(zone);
-<%
-		                     	}
-%>
+
 			for(int i=0;i<tempRowLength_<%=cid%>;i++){
 
 				if(i + start_column_<%= cid %> < actual_end_column_<%= cid %>){
@@ -432,28 +422,11 @@ if ((metadatas!=null)&&(metadatas.size()>0)) {
                             if(temp_row_<%=cid%>[i]!=null) {
                                 temp_row_<%=cid%>[i] = df_<%=cid %>.format(doubleCell_<%=cid%>);
                             }
-                     } else if(jxl.CellType.DATE== cell_<%=cid%>.getType()){
-<%
-                            	if(hasDynamic){
-%>
-	                            	if(i>=<%=dynamic_index-1%> && i<(<%=dynamic_index-1%> + dynamic_<%=cid%>.getColumnCount())){
+                    	} else if(jxl.CellType.DATE== cell_<%=cid%>.getType()){
+
 	                            		  	jxl.DateCell dc = (jxl.DateCell)cell_<%=cid%>;
                             				java.util.Date date = dc.getDate();
                         					temp_row_<%= cid %>[i] = sdf.format(date);
-	                            	}else{
-<%
-		                     	}
-%>
-										jxl.DateCell dc = (jxl.DateCell)cell_<%=cid%>;
-                            			java.util.Date date = dc.getDate();
-                        				temp_row_<%= cid %>[i] = sdf.format(date);
-<%
-                            	if(hasDynamic){
-%>
-                            		}
-<%
-                            	}
-%>        	
                         } else{
                             temp_row_<%= cid %>[i] = cell_<%=cid%>.getContents();
                         }
