@@ -18,6 +18,8 @@ import org.apache.axis2.client.Options;
 import org.apache.axis2.client.ServiceClient;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.axis2.context.ConfigurationContextFactory;
+import org.apache.axis2.transport.http.HTTPConstants;
+import org.apache.http.impl.client.SystemDefaultHttpClient;
 import org.apache.log4j.Logger;
 import org.datacontract.schemas._2004._07.system_collections_generic.KeyValuePairOfEndpointTypestringztYlk6OT;
 import org.talend.ms.crm.sdk.OnlineAuthenticationPolicy;
@@ -272,6 +274,7 @@ public class MSCRMClient {
             // pathToAxis2File);
             ctx = ConfigurationContextFactory.createConfigurationContextFromURIs(
                     MSCRMClient.class.getClassLoader().getResource("org/talend/ms/crm/sdk/axis2_mscrm.xml"), null);
+            ctx.setProperty(HTTPConstants.CACHED_HTTP_CLIENT, new SystemDefaultHttpClient());
         } catch (AxisFault e) {
             logger.error(e.getMessage());
             throw e;
