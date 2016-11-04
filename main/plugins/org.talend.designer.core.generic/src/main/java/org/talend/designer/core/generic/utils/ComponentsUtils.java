@@ -363,6 +363,11 @@ public class ComponentsUtils {
             if (!param.isReadOnly()) {
                 param.setReadOnly(widget.isReadonly() || element.isReadOnly());
             }
+            // For issue TUP-16139
+            if (EParameterFieldType.COMPONENT_REFERENCE.equals(fieldType) && param.getNumRow() == 2
+                    && EComponentCategory.BASIC.equals(compCategory)) {
+                param.setNumRow(1);
+            }
             param.setSerialized(true);
             param.setDynamicSettings(true);
             // Avoid adding duplicate prameter.
