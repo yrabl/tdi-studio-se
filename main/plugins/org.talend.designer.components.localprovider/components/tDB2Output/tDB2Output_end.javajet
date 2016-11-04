@@ -85,6 +85,11 @@ imports="
 	    	<%
 	    	}%>
     }catch (java.sql.BatchUpdateException e){
+           String message_<%=cid%> = e.getMessage(); 
+           java.sql.SQLException ne_<%=cid%> = e.getNextException();
+           if (ne_<%=cid%> != null) {
+           message_<%=cid%> = message_<%=cid%> + "\ncaused by: " + ne_<%=cid%>.getMessage();
+           }
     	<%if(("true").equals(dieOnError)) {
     	%>
     		throw(e);
@@ -110,7 +115,7 @@ imports="
     	}
     	dbLog.logPrintedException("e.getMessage()");
     	%>
-    	System.err.println(e.getMessage());
+    	System.err.println(message_<%=cid%>);
     	<%
     	}%>
 	}
@@ -139,5 +144,15 @@ imports="
     <%
 	}
     %>
+    <%@ include file="../templates/DB/Output/DBOutputEndGlobalVars.javajet"%>
+    } catch (java.sql.SQLException e) {
+       String message_<%=cid%> = e.getMessage(); 
+       java.sql.SQLException ne_<%=cid%> = e.getNextException();
+       if (ne_<%=cid%> != null) {
+       message_<%=cid%> = message_<%=cid%> + "\ncaused by: " + ne_<%=cid%>.getMessage();
+       }
+       System.err.println(message_<%=cid%>);
+       throw e;
+   }
 
-<%@ include file="../templates/DB/Output/DBOutputEndGlobalVars.javajet"%>
+

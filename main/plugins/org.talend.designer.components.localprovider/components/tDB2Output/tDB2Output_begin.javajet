@@ -56,7 +56,7 @@ boolean useBatch = useBatchSize && (rejectConnName == null)
               ("INSERT").equals(dataAction) || ("UPDATE").equals(dataAction) || ("DELETE").equals(dataAction)
             );
 %>
-
+try{
 <%
 getManager(dbmsId, cid, node);
 
@@ -516,6 +516,5 @@ class DataPropagateUtil_<%=cid%> {
 }
 
 DataPropagateUtil_<%=cid%> dataPropagateUtil_<%=cid%> = new DataPropagateUtil_<%=cid%>();
-
 
 
