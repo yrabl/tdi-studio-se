@@ -13,5 +13,6 @@ imports="
 	String cid = node.getUniqueName();
 	%>
 	<%@ include file="S3Client.javajet" %>
+	List<com.amazonaws.services.s3.model.Bucket> bucket_<%=cid%> = conn_<%=cid%>.listBuckets();
 	globalMap.put("conn_" + "<%=cid%>",conn_<%=cid%>);
 	
