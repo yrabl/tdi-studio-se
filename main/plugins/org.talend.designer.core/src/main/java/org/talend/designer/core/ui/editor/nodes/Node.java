@@ -75,6 +75,8 @@ import org.talend.core.model.process.Element;
 import org.talend.core.model.process.ElementParameterParser;
 import org.talend.core.model.process.IConnection;
 import org.talend.core.model.process.IConnectionCategory;
+import org.talend.core.model.process.IContext;
+import org.talend.core.model.process.IContextParameter;
 import org.talend.core.model.process.IElement;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.IExternalData;
@@ -2656,14 +2658,19 @@ public class Node extends Element implements IGraphicalNode {
                             if (itemParameter.getFieldType() == EParameterFieldType.PREV_COLUMN_LIST) {
                                 preColumnListParamNames.add(itemParameter.getName());
                             }
-                            if (itemParameter.getFieldType() == EParameterFieldType.CONTEXT_PARAM_NAME_LIST) {
+                            if (itemParameter.getFieldType() == EParameterFieldType.CONTEXT_PARAM_NAME_LIST && tableValues.size() > 0) {
+                                Object[] itemsValue = itemParameter.getListItemsValue();
+                                if (itemParameter.getListItemsDisplayName() == null || itemParameter.getListItemsDisplayName().length == 0) {
+                                    itemsValue = getContextParamsFromProcess();
+                                } 
+                                
                                 for (int index = 0; index < tableValues.size(); index++) {
                                     Map<String, Object> tabMap = tableValues.get(index);
-
                                     Object value = tabMap.get(itemParameter.getName());
+
                                     if (itemParameter.getListItemsValue() != null && value != null) {
                                         boolean found = false;
-                                        for (Object o : itemParameter.getListItemsValue()) {
+                                        for (Object o : itemsValue) {
                                             if (o.equals(value)) {
                                                 found = true;
                                                 break;
@@ -2963,6 +2970,24 @@ public class Node extends Element implements IGraphicalNode {
             }
         }
 
+    }
+    
+    private Object[] getContextParamsFromProcess() {
+        IElementParameter contextElemParam = this.getElementParameter(EParameterName.PROCESS_TYPE_CONTEXT.getName());
+        if (contextElemParam != null && this.process != null) {
+            String contextName = (String) contextElemParam.getValue();
+            if (contextName == null) {
+                contextName = new String();
+            }
+            List<String> contextParameterNamesList = new ArrayList<String>();
+            IContext context = process.getContextManager().getContext(contextName);
+            for (IContextParameter contextParam : context.getContextParameterList()) {
+                contextParameterNamesList.add(contextParam.getName());
+            }
+
+            return contextParameterNamesList.toArray(new String[0]);
+        }
+        return new String[0];
     }
 
     private List<String> getColumnLabels(IMetadataTable metadataTable) {

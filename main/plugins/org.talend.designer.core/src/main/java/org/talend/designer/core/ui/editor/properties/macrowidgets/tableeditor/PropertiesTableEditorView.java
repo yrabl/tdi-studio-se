@@ -22,10 +22,11 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColorCellEditor;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
-import org.eclipse.jface.viewers.ICellEditorListener;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -261,18 +262,11 @@ public class PropertiesTableEditorView<B> extends AbstractDataTableEditorView<B>
                             return returnedValue;
                         };
                     });
-                    cellEditor.addListener(new ICellEditorListener() {
+                    
+                    ((CCombo) cellEditor.getControl()).addFocusListener(new FocusAdapter() {
 
                         @Override
-                        public void editorValueChanged(boolean oldValidState, boolean newValidState) {
-                        }
-
-                        @Override
-                        public void cancelEditor() {
-                        }
-
-                        @Override
-                        public void applyEditorValue() {
+                        public void focusLost(FocusEvent e) {
                             if (element instanceof Node) {
                                 IProcess process = ((Node) element).getProcess();
                                 if (process instanceof IProcess2) {
@@ -288,9 +282,9 @@ public class PropertiesTableEditorView<B> extends AbstractDataTableEditorView<B>
                                     }
                                 }
                             }
-
                         }
                     });
+
                     break;
                 case OPENED_LIST:
                     final EditableComboBoxCellEditor editCellEditor = new EditableComboBoxCellEditor(table,
