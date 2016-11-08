@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.swt.graphics.Image;
 import org.talend.commons.ui.runtime.image.ECoreImage;
@@ -48,13 +47,16 @@ public class ErrorDetailTreeBuilder {
      * @param jobNames
      * @return
      */
-    public List<JobErrorEntry> createTreeInput(List<Problem> errors, Set<String> jobIds) {
+    public List<JobErrorEntry> createTreeInput(List<Problem> errors, Map<String, Boolean> jobIds) {
         for (Problem error : errors) {
             if (error instanceof TalendProblem) {
                 TalendProblem talendProblem = (TalendProblem) error;
                 if (talendProblem != null && talendProblem.getJobInfo() != null) {
                     String jobId = talendProblem.getJobInfo().getJobId();
-                    if (!jobIds.contains(jobId)) {
+                    if (!jobIds.containsKey(jobId)) {
+                        continue;
+                    } else if (jobIds.get(jobId)) {
+                        // this job has checked compile error ok.
                         continue;
                     }
                     String componentName = GENERAL_ERROR;
@@ -74,7 +76,7 @@ public class ErrorDetailTreeBuilder {
             } else {
                 if (error != null && error.getJobInfo() != null) {
                     String jobId = error.getJobInfo().getJobId();
-                    if (!jobIds.contains(jobId)) {
+                    if (!jobIds.containsKey(jobId)) {
                         continue;
                     }
                     String componentName = error.getNodeName();

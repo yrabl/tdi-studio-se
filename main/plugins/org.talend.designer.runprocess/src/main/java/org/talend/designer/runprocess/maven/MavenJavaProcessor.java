@@ -301,13 +301,22 @@ public class MavenJavaProcessor extends JavaProcessor {
 
     @Override
     public void build(IProgressMonitor monitor) throws Exception {
+        build(null, monitor);
+    }
+    
+    @Override
+    public void build(JobInfo jobInfo, IProgressMonitor monitor) throws Exception {
         final ITalendProcessJavaProject talendJavaProject = getTalendJavaProject();
         // compile with JDT first in order to make the maven packaging work with a JRE.
+        final Map<String, Object> argumentsMap = new HashMap<>();
+        if (jobInfo != null) {
+            String currentPomFileName = PomUtil.getPomFileName(jobInfo.getJobName(), jobInfo.getJobVersion());
+            argumentsMap.put(TalendProcessArgumentConstant.ARG_CURRENT_POM_NAME, currentPomFileName);
+        }
         if (TalendMavenConstants.GOAL_PACKAGE.equals(getGoals())) {
-            talendJavaProject.buildModules(monitor, null, null);
+            talendJavaProject.buildModules(monitor, null, argumentsMap);
         }
 
-        final Map<String, Object> argumentsMap = new HashMap<>();
         argumentsMap.put(TalendProcessArgumentConstant.ARG_GOAL, getGoals());
         argumentsMap.put(TalendProcessArgumentConstant.ARG_PROGRAM_ARGUMENTS, "-Dmaven.main.skip=true -P !" //$NON-NLS-1$
                 + TalendMavenConstants.PROFILE_PACKAGING_AND_ASSEMBLY);

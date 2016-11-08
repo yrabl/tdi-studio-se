@@ -1197,6 +1197,12 @@ public class JavaProcessor extends AbstractJavaProcessor implements IJavaBreakpo
         String libsStr = basePathClasspath + classPathSeparator + neededModulesJarStr.toString();
         if (isExportConfig() || isRunAsExport()) {
             libsStr += classPathSeparator + getExportJarsStr();
+        } else {
+            // add just for context when running job.
+            ITalendProcessJavaProject tProcessJvaProject = this.getTalendJavaProject();
+            IFolder classesFolder = tProcessJvaProject.getOutputFolder();
+            String outputPath = classesFolder.getLocation().toPortableString();
+            libsStr += classPathSeparator + outputPath;
         }
         // no classPathSeparator in the end.
         if (libsStr.lastIndexOf(classPathSeparator) != libsStr.length() - 1) {
@@ -1262,10 +1268,37 @@ public class JavaProcessor extends AbstractJavaProcessor implements IJavaBreakpo
             }
         } else {
             ITalendProcessJavaProject tProcessJvaProject = this.getTalendJavaProject();
-            IFolder classesFolder = tProcessJvaProject.getOutputFolder();
-            String outputPath = classesFolder.getLocation().toPortableString();
-            outputPath += classPathSeparator + '.'; // add current path
+            String jarName = JavaResourcesHelper.getJobJarName(process.getName(), process.getVersion());
+            IFolder targetFolder = tProcessJvaProject.getTargetFolder();
+            String outputPath = targetFolder.getLocation().toPortableString() + JavaUtils.PATH_SEPARATOR;
+            
+            basePath.append("."); //$NON-NLS-1$
+            
+            List<String> codesJars = PomUtil.getCodesExportJars(this.getProcess());
+            for (String codesJar : codesJars) {
+                basePath.append(classPathSeparator);
+                basePath.append(outputPath);
+                basePath.append(JavaUtils.PATH_SEPARATOR);
+                basePath.append(codesJar);
+            }
+            basePath.append(classPathSeparator);
             basePath.append(outputPath);
+            basePath.append(JavaUtils.PATH_SEPARATOR);
+            basePath.append(jarName);
+            basePath.append(FileExtensions.JAR_FILE_SUFFIX);
+
+            Set<JobInfo> infos = getBuildChildrenJobs();
+            for (JobInfo jobInfo : infos) {
+                if (jobInfo.isTestContainer()) {
+                    continue;
+                }
+                String childJarName = JavaResourcesHelper.getJobJarName(jobInfo.getJobName(), jobInfo.getJobVersion());
+                basePath.append(classPathSeparator);
+                basePath.append(outputPath);
+                basePath.append(JavaUtils.PATH_SEPARATOR);
+                basePath.append(childJarName);
+                basePath.append(FileExtensions.JAR_FILE_SUFFIX);
+            }
         }
 
         return basePath.toString();
@@ -1944,5 +1977,10 @@ public class JavaProcessor extends AbstractJavaProcessor implements IJavaBreakpo
     public void build(IProgressMonitor monitor) throws Exception {
         // build whole project by default.
         getTalendJavaProject().buildModules(monitor, null, null);
+    }
+
+    @Override
+    public void build(JobInfo jobInfo, IProgressMonitor monitor) throws Exception {
+        build(monitor);
     }
 }
