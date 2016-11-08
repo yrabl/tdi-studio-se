@@ -11439,7 +11439,7 @@
                 <!-- 2011 -->
                 <!-- crm client -->
                 <IMPORT NAME="talend-mscrm-2.0-20161102" MODULE="talend-mscrm-2.0-20161102.jar" MVN="mvn:org.talend.libraries/talend-mscrm-2.0-20161102/6.0.0"  UrlPath="platform:/plugin/org.talend.libraries.crm/lib/talend-mscrm-2.0-20161102.jar" REQUIRED_IF="(AUTH_TYPE=='ONLINE') AND (API_VERSION=='API_2011')" />
-                <!-- axis2 1.6.2 -->
+                <!-- axis2 1.7.0 -->
                 <IMPORT NAME="activation-1.1" MODULE="activation-1.1.jar" MVN="mvn:org.talend.libraries/activation-1.1/6.0.0"  UrlPath="platform:/plugin/org.talend.libraries.apache.axis2/lib/activation-1.1.jar" REQUIRED_IF="(AUTH_TYPE=='ONLINE') AND (API_VERSION=='API_2011')" />
                 <IMPORT NAME="axiom-api-1.2.17" MODULE="axiom-api-1.2.17.jar" MVN="mvn:org.talend.libraries/axiom-api-1.2.17/6.0.0"  REQUIRED_IF="(AUTH_TYPE=='ONLINE') AND (API_VERSION=='API_2011')" />
                 <IMPORT NAME="axiom-impl-1.2.17" MODULE="axiom-impl-1.2.17.jar" MVN="mvn:org.talend.libraries/axiom-impl-1.2.17/6.0.0"  REQUIRED_IF="(AUTH_TYPE=='ONLINE') AND (API_VERSION=='API_2011')" />
