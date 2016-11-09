@@ -195,6 +195,7 @@ try{
             log.error("<%=cid%> - " + e.getMessage());
         <%}%>
         System.err.println(e.getMessage());
+        globalMap.put(currentComponent + "_ERROR_MESSAGE",e.getMessage());
     <%}else{%>
         throw e;
     <%}%>
