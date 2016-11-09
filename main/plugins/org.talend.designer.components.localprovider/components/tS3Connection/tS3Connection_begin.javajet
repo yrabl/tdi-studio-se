@@ -13,6 +13,16 @@ imports="
 	String cid = node.getUniqueName();
 	%>
 	<%@ include file="S3Client.javajet" %>
-	List<com.amazonaws.services.s3.model.Bucket> bucket_<%=cid%> = conn_<%=cid%>.listBuckets();
+	
+	try{
+			conn_tS3Connection_1.getBucketLoggingConfiguration("Check-Connection-Only");
+	}catch(com.amazonaws.AmazonServiceException ase){
+			if(ase.getErrorCode().equals("NoSuchBucket")){
+			//ignore
+			}else{
+					throw ase;
+			}
+	}
+	
 	globalMap.put("conn_" + "<%=cid%>",conn_<%=cid%>);
 	
