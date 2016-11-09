@@ -25,8 +25,6 @@ import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -262,29 +260,6 @@ public class PropertiesTableEditorView<B> extends AbstractDataTableEditorView<B>
                             return returnedValue;
                         };
                     });
-                    
-                    ((CCombo) cellEditor.getControl()).addFocusListener(new FocusAdapter() {
-
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            if (element instanceof Node) {
-                                IProcess process = ((Node) element).getProcess();
-                                if (process instanceof IProcess2) {
-                                    ((IProcess2) process).checkProcess();
-                                }
-                                // enable to refresh component setting after change modules.
-                                // so far, for cMessagingEndpoint (TUP-1119)
-                                if (element != null && "LIBPATH".equals(copyOfTmpParam.getName())) { //$NON-NLS-1$
-                                    IElementParameter updateComponentsParam = element
-                                            .getElementParameter(EParameterName.UPDATE_COMPONENTS.getName());
-                                    if (updateComponentsParam != null) {
-                                        updateComponentsParam.setValue(Boolean.TRUE);
-                                    }
-                                }
-                            }
-                        }
-                    });
-
                     break;
                 case OPENED_LIST:
                     final EditableComboBoxCellEditor editCellEditor = new EditableComboBoxCellEditor(table,
@@ -817,6 +792,7 @@ public class PropertiesTableEditorView<B> extends AbstractDataTableEditorView<B>
                             }
                         }
 
+                        boolean isNeedReCheck = false;
                         switch (tmpParam.getFieldType()) {
                         case CONTEXT_PARAM_NAME_LIST:
                         case CLOSED_LIST:
@@ -825,6 +801,7 @@ public class PropertiesTableEditorView<B> extends AbstractDataTableEditorView<B>
                         case CONNECTION_LIST:
                         case LOOKUP_COLUMN_LIST:
                         case PREV_COLUMN_LIST:
+                            isNeedReCheck = true;
                             if (value instanceof String) {
                                 Object[] itemNames = ((IElementParameter) itemsValue[curCol]).getListItemsDisplayName();
                                 Object[] itemValues = ((IElementParameter) itemsValue[curCol]).getListItemsValue();
@@ -875,8 +852,25 @@ public class PropertiesTableEditorView<B> extends AbstractDataTableEditorView<B>
                          */
                         if (param.getFieldType().equals(EParameterFieldType.TABLE)) {
                             element.setPropertyValue(param.getName(), param.getValue());
+                        } 
+                        
+                        if (isNeedReCheck && element instanceof Node) {
+                            IProcess process = ((Node) element).getProcess();
+                            if (process instanceof IProcess2) {
+                                ((IProcess2) process).checkProcess();
+                            }
+                            // enable to refresh component setting after change modules.
+                            // so far, for cMessagingEndpoint (TUP-1119)
+                            final IElementParameter copyOfTmpParam = currentParam;
+                            if (element != null && "LIBPATH".equals(copyOfTmpParam.getName())) { //$NON-NLS-1$
+                                IElementParameter updateComponentsParam = element
+                                        .getElementParameter(EParameterName.UPDATE_COMPONENTS.getName());
+                                if (updateComponentsParam != null) {
+                                    updateComponentsParam.setValue(Boolean.TRUE);
+                                }
+                            }
                         }
-                    }
+                   }
                 });
             }
         }
