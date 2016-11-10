@@ -152,7 +152,7 @@ try{
                 log.error("<%=cid%> - " + responseCode_<%=cid%> + " " + responseMessage_<%=cid%>);
             <%}%>
             System.err.println(responseCode_<%=cid%> + " " + responseMessage_<%=cid%>);
-            globalMap.put(currentComponent + "_ERROR_MESSAGE","Request failed:" + responseCode_<%=cid%> + " " + responseMessage_<%=cid%>);
+            globalMap.put("<%=cid%>" + "_ERROR_MESSAGE","Request failed:" + responseCode_<%=cid%> + " " + responseMessage_<%=cid%>);
         <%}else{%>
             throw new RuntimeException("Request failed:" + responseCode_<%=cid%> + " " + responseMessage_<%=cid%>);
         <%}%>
@@ -196,7 +196,7 @@ try{
             log.error("<%=cid%> - " + e.getMessage());
         <%}%>
         System.err.println(e.getMessage());
-        globalMap.put(currentComponent + "_ERROR_MESSAGE",e.getMessage());
+        globalMap.put("<%=cid%>" + "_ERROR_MESSAGE",e.getMessage());
     <%}else{%>
         throw e;
     <%}%>
