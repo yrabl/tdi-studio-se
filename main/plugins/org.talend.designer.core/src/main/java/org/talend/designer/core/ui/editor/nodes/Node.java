@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -120,6 +121,8 @@ import org.talend.designer.core.model.components.AbstractBasicComponent;
 import org.talend.designer.core.model.components.EParameterName;
 import org.talend.designer.core.model.components.EmfComponent;
 import org.talend.designer.core.model.components.NodeReturn;
+import org.talend.designer.core.model.utils.emf.talendfile.ContextParameterType;
+import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
 import org.talend.designer.core.model.utils.emf.talendfile.ElementParameterType;
 import org.talend.designer.core.ui.AbstractMultiPageTalendEditor;
 import org.talend.designer.core.ui.ActiveProcessTracker;
@@ -2664,7 +2667,7 @@ public class Node extends Element implements IGraphicalNode {
                             if (itemParameter.getFieldType() == EParameterFieldType.CONTEXT_PARAM_NAME_LIST && tableValues.size() > 0) {
                                 Object[] itemsValue = itemParameter.getListItemsValue();
                                 if (itemParameter.getListItemsDisplayName() == null || itemParameter.getListItemsDisplayName().length == 0) {
-                                    itemsValue = getContextParamsFromChildProcess();
+                                     itemsValue = getContextParamsFromProcess();
                                 } 
                                 
                                 for (int index = 0; index < tableValues.size(); index++) {
@@ -2975,7 +2978,7 @@ public class Node extends Element implements IGraphicalNode {
 
     }
     
-    private Object[] getContextParamsFromChildProcess() {
+    private Object[] getContextParamsFromProcess() {
         IElementParameter processTypeParam = this.getElementParameterFromField(EParameterFieldType.PROCESS_TYPE);
         if (processTypeParam == null) {
             processTypeParam = this.getElementParameterFromField(EParameterFieldType.ROUTE_INPUT_PROCESS_TYPE);
@@ -3000,22 +3003,22 @@ public class Node extends Element implements IGraphicalNode {
                     String[] split = processId.split(";");
                     processId = split[0];
                 }
-
                 ProcessItem processItem = ItemCacheManager.getProcessItem(processId, (String) jobVersionParam.getValue());
-                Process process = null;
-                if (processItem != null) {
-                    List<String> contextParameterNamesList = new ArrayList<String>();
-                    IDesignerCoreService service = CorePlugin.getDefault().getDesignerCoreService();
-                    process = (Process) service.getProcessFromItem(processItem);
-                    IContext context = process.getContextManager().getContext(contextName);
-                    for (IContextParameter contextParam : context.getContextParameterList()) {
-                        contextParameterNamesList.add(contextParam.getName());
+                if (processItem != null && processItem.getProcess() != null) {
+                    final EList context = processItem.getProcess().getContext();
+                    if (!context.isEmpty()) {
+                        List<String> contextParameterNamesList = new ArrayList<String>();
+                        final ContextType contextType = (ContextType) context.get(0);
+                        for (Object p : contextType.getContextParameter()) {
+                            if (p instanceof ContextParameterType) {
+                                contextParameterNamesList.add(((ContextParameterType) p).getName());
+                            }
+                        }
+                        return contextParameterNamesList.toArray(new String[0]);
                     }
-                    return contextParameterNamesList.toArray(new String[0]);
                 }
             }
         }
-
         return new String[0];
     }
 
