@@ -152,6 +152,7 @@ try{
                 log.error("<%=cid%> - " + responseCode_<%=cid%> + " " + responseMessage_<%=cid%>);
             <%}%>
             System.err.println(responseCode_<%=cid%> + " " + responseMessage_<%=cid%>);
+            globalMap.put(currentComponent + "_ERROR_MESSAGE","Request failed:" + responseCode_<%=cid%> + " " + responseMessage_<%=cid%>);
         <%}else{%>
             throw new RuntimeException("Request failed:" + responseCode_<%=cid%> + " " + responseMessage_<%=cid%>);
         <%}%>
