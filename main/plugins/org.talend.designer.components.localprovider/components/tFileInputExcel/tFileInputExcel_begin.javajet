@@ -402,6 +402,12 @@ if ((metadatas!=null)&&(metadatas.size()>0)) {
 			
 			String[] temp_row_<%= cid %> = new String[tempRowLength_<%=cid%>];
 			int actual_end_column_<%= cid %> = end_column_<%= cid %> >	row_<%= cid %>.length ? row_<%= cid %>.length : end_column_<%= cid %>;
+
+				java.util.TimeZone zone_<%= cid %> = java.util.TimeZone.getTimeZone("GMT");
+                java.text.SimpleDateFormat sdf_<%= cid %> = new java.text.SimpleDateFormat(<%=datePattern%>);
+                sdf_<%= cid %>.setTimeZone(zone_<%= cid %>);
+                
+
 			for(int i=0;i<tempRowLength_<%=cid%>;i++){
 
 				if(i + start_column_<%= cid %> < actual_end_column_<%= cid %>){
@@ -410,12 +416,18 @@ if ((metadatas!=null)&&(metadatas.size()>0)) {
 <%
                     if(bReadRealValue){
 %>
-                        if (jxl.CellType.NUMBER == cell_<%=cid%>.getType()){
+                        if (jxl.CellType.NUMBER == cell_<%=cid%>.getType()||jxl.CellType.NUMBER_FORMULA == cell_<%=cid%>.getType()){
                             double doubleCell_<%=cid%> = ((jxl.NumberCell)cell_<%=cid%>).getValue();
                             temp_row_<%=cid%>[i] = String.valueOf(doubleCell_<%=cid%>);
                             if(temp_row_<%=cid%>[i]!=null) {
                                 temp_row_<%=cid%>[i] = df_<%=cid %>.format(doubleCell_<%=cid%>);
                             }
+                    	} else if(jxl.CellType.DATE== cell_<%=cid%>.getType()||jxl.CellType.DATE_FORMULA== cell_<%=cid%>.getType()){
+
+	                            		  	jxl.DateCell dc_<%= cid %> = (jxl.DateCell)cell_<%=cid%>;
+                            				java.util.Date date_<%= cid %> = dc_<%= cid %>.getDate();
+                        					temp_row_<%= cid %>[i] = sdf_<%= cid %>.format(date_<%= cid %>);
+                        					
                         } else{
                             temp_row_<%= cid %>[i] = cell_<%=cid%>.getContents();
                         }
