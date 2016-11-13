@@ -31,6 +31,10 @@
 	
 	destination = destination.replace("input_row", connName); 
 	
+	String srcFileFolderPath = ElementParameterParser.getValue(node, "__SOURCE_DERECTORY__");
+	
+	srcFileFolderPath = srcFileFolderPath.replace("input_row", connName);
+	
 	boolean rename = ("true").equals(ElementParameterParser.getValue(node, "__RENAME__"));
 	
 	String destination_filename  = ElementParameterParser.getValue(node, "__DESTINATION_RENAME__");
@@ -51,9 +55,9 @@
 	
 	if (isCopyADir){ // copy a directory
 %>     
-        String srcFileFolderPath_<%=cid %> = <%=ElementParameterParser.getValue(node, "__SOURCE_DERECTORY__")%>;
+        String srcFileFolderPath_<%=cid %> = <%=srcFileFolderPath%>;
 
-        String desFileFolderPath_<%=cid %> = <%=ElementParameterParser.getValue(node, "__DESTINATION__")%>;
+        String desFileFolderPath_<%=cid %> = <%=destination%>;
 		
 		java.io.File srcFileFolder_<%=cid %> = new java.io.File(srcFileFolderPath_<%=cid %>);
 
